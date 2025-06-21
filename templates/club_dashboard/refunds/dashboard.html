@@ -1,0 +1,298 @@
+{% extends "base_club_dashboard.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Title and main button -->
+    <div class="flex justify-between items-center py-8 animate-fade-in">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2 transform transition-all duration-500 opacity-0 animate-title">
+            <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                </svg>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %} إدارة المطالبات والمنازعات {% else %} Refund & Dispute Management {% endif %}
+        </h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'export' %}" class="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all duration-300 transform opacity-0 animate-button shadow-md hover:shadow-gray-300/40">
+                {% if LANGUAGE_CODE == 'ar' %} تصدير إكسل {% else %} Export to Excel {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 opacity-0 animate-fade-in" style="animation-delay: 0.2s">
+        <!-- Total Disputes -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} إجمالي المنازعات {% else %} Total Disputes {% endif %}</h3>
+                <div class="bg-blue-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.total_disputes }}</p>
+        </div>
+
+        <!-- Pending Disputes -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-amber-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} قيد الانتظار {% else %} Pending {% endif %}</h3>
+                <div class="bg-amber-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-amber-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-13h2v6h-2zm0 8h2v2h-2z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.pending_disputes }}</p>
+        </div>
+
+        <!-- Overdue Disputes -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-red-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} متأخرة {% else %} Overdue {% endif %}</h3>
+                <div class="bg-red-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.overdue_disputes }}</p>
+        </div>
+
+        <!-- Total Refund Amount -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-green-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} إجمالي المبالغ {% else %} Total Refunds {% endif %}</h3>
+                <div class="bg-green-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.total_refund_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-4 mb-6 opacity-0 animate-fade-in" style="animation-delay: 0.3s">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Status Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} الحالة {% else %} Status {% endif %}</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">{% if LANGUAGE_CODE == 'ar' %} الكل {% else %} All {% endif %}</option>
+                    {% for status in status_choices %}
+                    <option value="{{ status.0 }}" {% if current_filters.status == status.0 %}selected{% endif %}>{{ status.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Dispute Type Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} نوع المنازعة {% else %} Dispute Type {% endif %}</label>
+                <select name="dispute_type" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">{% if LANGUAGE_CODE == 'ar' %} الكل {% else %} All {% endif %}</option>
+                    {% for type in dispute_type_choices %}
+                    <option value="{{ type.0 }}" {% if current_filters.dispute_type == type.0 %}selected{% endif %}>{{ type.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Priority Filter -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} الأولوية {% else %} Priority {% endif %}</label>
+                <select name="priority" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">{% if LANGUAGE_CODE == 'ar' %} الكل {% else %} All {% endif %}</option>
+                    {% for priority in priority_choices %}
+                    <option value="{{ priority.0 }}" {% if current_filters.priority == priority.0 %}selected{% endif %}>{{ priority.1 }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Search -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} بحث {% else %} Search {% endif %}</label>
+                <input type="text" name="search" value="{{ current_filters.search }}"
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                       placeholder="{% if LANGUAGE_CODE == 'ar' %}ابحث بالعنوان، الوصف، المعرف...{% else %}Search by title, description, ID...{% endif %}">
+            </div>
+
+            <div class="md:col-span-2 lg:col-span-4 flex justify-end space-x-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                    {% if LANGUAGE_CODE == 'ar' %} تطبيق الفلاتر {% else %} Apply Filters {% endif %}
+                </button>
+                <a href="{% url 'dashboard' %}" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors duration-200">
+                    {% if LANGUAGE_CODE == 'ar' %} إعادة تعيين {% else %} Reset {% endif %}
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Disputes Table -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden transition-all duration-500 opacity-0 animate-table transform translate-y-5 hover:shadow-xl">
+        <table class="w-full text-sm text-gray-700">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} المعرف {% else %} ID {% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} العنوان {% else %} Title {% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} العميل {% else %} Client {% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} المبلغ {% else %} Amount {% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} الحالة {% else %} Status {% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} الأولوية {% else %} Priority {% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{% if LANGUAGE_CODE == 'ar' %} الإجراءات {% else %} Actions {% endif %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for dispute in disputes %}
+            <tr class="bg-white/80 border-b border-gray-100 hover:bg-gray-50/60 transition-all duration-200 opacity-0 animate-row" style="animation-delay: {{ forloop.counter|add:2 }}00ms">
+                <td class="px-6 py-4 font-medium text-gray-900">#{{ dispute.id }}</td>
+                <td class="px-6 py-4">
+                    <a href="{% url 'detail' dispute.id %}" class="text-blue-600 hover:text-blue-800 hover:underline">{{ dispute.title|truncatechars:30 }}</a>
+                </td>
+                <td class="px-6 py-4">
+                    {% if dispute.client %}
+                    {{ dispute.client.get_full_name|default:dispute.client.username }}
+                    {% else %}
+                    <span class="text-gray-400">{% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}N/A{% endif %}</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    {% if dispute.approved_refund_amount %}
+                    <span class="font-semibold text-green-600">{{ dispute.approved_refund_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                    {% else %}
+                    <span class="font-semibold">{{ dispute.requested_refund_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    {% if dispute.status == 'pending' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800">{% if LANGUAGE_CODE == 'ar' %}قيد الانتظار{% else %}Pending{% endif %}</span>
+                    {% elif dispute.status == 'approved' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">{% if LANGUAGE_CODE == 'ar' %}مقبول{% else %}Approved{% endif %}</span>
+                    {% elif dispute.status == 'rejected' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">{% if LANGUAGE_CODE == 'ar' %}مرفوض{% else %}Rejected{% endif %}</span>
+                    {% elif dispute.status == 'investigating' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{% if LANGUAGE_CODE == 'ar' %}قيد التحقيق{% else %}Investigating{% endif %}</span>
+                    {% elif dispute.status == 'resolved' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">{% if LANGUAGE_CODE == 'ar' %}تم الحل{% else %}Resolved{% endif %}</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    {% if dispute.priority == 'low' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-800">{% if LANGUAGE_CODE == 'ar' %}منخفض{% else %}Low{% endif %}</span>
+                    {% elif dispute.priority == 'medium' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">{% if LANGUAGE_CODE == 'ar' %}متوسط{% else %}Medium{% endif %}</span>
+                    {% elif dispute.priority == 'high' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800">{% if LANGUAGE_CODE == 'ar' %}عالي{% else %}High{% endif %}</span>
+                    {% elif dispute.priority == 'urgent' %}
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-red-100 text-red-800">{% if LANGUAGE_CODE == 'ar' %}عاجل{% else %}Urgent{% endif %}</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">
+                    <a href="{% url 'detail' dispute.id %}" class="text-blue-600 hover:text-blue-800 transition-colors duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %}عرض{% else %}View{% endif %}
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr class="bg-white/80 border-b border-gray-100 opacity-0 animate-fade-in" style="animation-delay: 300ms">
+                <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                    {% if LANGUAGE_CODE == 'ar' %} 🚫 لا توجد منازعات حالياً {% else %} 🚫 No disputes available currently {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if disputes.has_other_pages %}
+    <div class="mt-6 flex justify-center opacity-0 animate-fade-in" style="animation-delay: 0.4s">
+        <nav class="inline-flex rounded-md shadow">
+            {% if disputes.has_previous %}
+            <a href="?page=1{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                &laquo;
+            </a>
+            <a href="?page={{ disputes.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                &lsaquo;
+            </a>
+            {% endif %}
+
+            {% for i in disputes.paginator.page_range %}
+            {% if disputes.number == i %}
+            <span class="px-3 py-2 border-t border-b border-gray-300 bg-blue-500 text-white">{{ i }}</span>
+            {% elif i > disputes.number|add:'-3' and i < disputes.number|add:'3' %}
+            <a href="?page={{ i }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                {{ i }}
+            </a>
+            {% endif %}
+            {% endfor %}
+
+            {% if disputes.has_next %}
+            <a href="?page={{ disputes.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 border-t border-b border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                &rsaquo;
+            </a>
+            <a href="?page={{ disputes.paginator.num_pages }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                &raquo;
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    /* Animation effects */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes titleIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .animate-title {
+        animation: titleIn 0.8s ease-out 0.3s forwards;
+    }
+
+    .animate-button {
+        animation: fadeIn 0.8s ease-out 0.4s forwards;
+    }
+
+    .animate-table {
+        animation: slideIn 0.8s ease-out 0.5s forwards;
+    }
+
+    .animate-row {
+        animation: fadeIn 0.6s ease-out forwards;
+    }
+</style>
+{% endblock %}

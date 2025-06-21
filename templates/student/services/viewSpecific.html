@@ -1,0 +1,442 @@
+{% extends "base_student_dashboard.html" %}
+{% load students_tags %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+
+<style>
+    .swiper-button-next,
+    .swiper-button-prev {
+      background-color: #ffffff;
+      border-radius: 50%;
+      border: 1px solid #f8e0e6;
+      color: #d53f8c;
+      font-size: 8px;
+      box-shadow: 0 2px 4px rgba(213, 63, 140, 0.1);
+      transition: all 0.3s ease;
+      padding: 12px;
+      width: 15px;
+      height: 15px;
+    }
+
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+      background-color: #fff5f7;
+      color: #b83280;
+      box-shadow: 0 4px 6px rgba(213, 63, 140, 0.15);
+    }
+
+    .swiper-button-next:after,
+    .swiper-button-prev:after {
+      font-size: 8px;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-right: 1.5rem;
+    }
+
+    .feature-list li i {
+      position: absolute;
+      right: 0;
+      top: 0.25rem;
+    }
+
+    .service-image-container {
+      height: 250px;
+      overflow: hidden;
+      border-radius: 12px;
+      border: 1px solid #fcd9e4;
+    }
+
+    .service-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+
+    .service-image-container img:hover {
+      transform: scale(1.05);
+    }
+
+    .pink-gradient {
+      background: linear-gradient(135deg, #fff5f7 0%, #fce7f3 100%);
+    }
+
+    .card-shadow {
+      box-shadow: 0 4px 12px rgba(213, 63, 140, 0.1);
+    }
+    /* Modal styles */
+#renewalModal {
+    transition: opacity 0.3s ease;
+}
+</style>
+
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen py-8">
+    <div class="container mx-auto px-4">
+        <!-- Breadcrumb Navigation -->
+        <div class="mb-6 flex items-center text-sm text-pink-700">
+            <a href="{% url 'studentViewServices' %}" class="hover:text-pink-600">{% if LANGUAGE_CODE == 'ar' %}
+                الخدمات
+                {% else %}
+                Services
+                {% endif %}</a>
+            <span class="mx-2">/</span>
+            <span class="text-pink-600">{{ service.title }}</span>
+        </div>
+
+        <!-- Main Service Details Card -->
+        <div class="bg-white rounded-lg card-shadow overflow-hidden mb-10 border border-pink-100">
+            <div class="flex flex-col md:flex-row">
+
+                <!-- Image Section -->
+                {% if service.image %}
+                <img src="{{ service.image.url }}" alt="{{ service.title }}" class="w-full h-full object-cover">
+                {% else %}
+                <div class="w-full h-full flex items-center justify-center bg-pink-50 text-pink-400 text-sm">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    لا توجد صورة متاحة
+                    {% else %}
+                    No image available
+                    {% endif %}
+                </div>
+                {% endif %}
+
+                <!-- Service Details Section -->
+                <div class="md:w-1/2 p-6 md:p-8 flex flex-col justify-center">
+                    <div class="mb-6">
+                        <h1 class="text-3xl font-bold mb-2 text-right text-pink-700">{{ service.title }}</h1>
+
+                        <div class="mb-4">
+                            <!--
+                            {% if service.classification %}
+                            <span class="inline-block bg-pink-100 text-pink-700 text-sm font-semibold px-3 py-1 rounded-full">
+                              {{ service.classification.title }}
+                            </span>
+                            {% endif %}
+                            -->
+                        </div>
+
+                        <p class="text-gray-600 mb-6 text-right leading-relaxed">{{ service.desc }}</p>
+                    </div>
+
+                    <!-- Service Details Table -->
+                    <div class="bg-pink-50 rounded-lg p-4 mb-6">
+                        <div class="grid grid-cols-2 gap-4 text-right">
+                            <div>
+                                <p class="text-pink-500 text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                                    السعر
+                                    {% else %}
+                                    Price
+                                    {% endif %}</p>
+                                <p class="font-bold text-xl text-pink-600">
+                                    {% if service.discounted_price %}
+                                    <span class="line-through text-gray-500 text-lg mr-2">{{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                                    {{ service.discounted_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    {% else %}
+                                    {{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            {% if service.duration %}
+                            <div>
+                                <p class="text-pink-500 text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                                    المدة
+                                    {% else %}
+                                    Duration
+                                    {% endif %}</p>
+                                <p class="font-bold text-xl text-pink-600">
+                                    {% if service.duration >= 60 %}
+                                    {% with hours=service.duration|divisibleby:1|div:60 minutes=service.duration|modulo:60 %}
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    {% if hours > 0 %}{{ hours }} ساعة {% endif %}{% if minutes > 0 %}{{ minutes }} دقيقة{% endif %}
+                                    {% else %}
+                                    {% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% endif %}
+                                    {% endif %}
+                                    {% endwith %}
+                                    {% else %}
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    {{ service.duration }} دقيقة
+                                    {% else %}
+                                    {{ service.duration }}m
+                                    {% endif %}
+                                    {% endif %}
+
+                                </p>
+                            </div>
+                            {% endif %}
+
+                            {% if service.is_enabled != None %}
+                            <div>
+                                <p class="text-pink-500 text-sm mb-2">{% if LANGUAGE_CODE == 'ar' %}
+                                    الحالة
+                                    {% else %}
+                                    Status
+                                    {% endif %}</p>
+                                <p class="font-bold">
+                                    {% if service.is_enabled %}
+                                    <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                        متاح
+                      {% else %}
+                        Available
+                      {% endif %}</span>
+                                    {% else %}
+                                    <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                        غير متاح
+                      {% else %}
+                        Not Available
+                      {% endif %}</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                            {% endif %}
+
+                            <div>
+                                <p class="text-pink-500 text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                                    رمز الخدمة
+                                    {% else %}
+                                    Service Code
+                                    {% endif %}</p>
+                                <p class="font-bold text-gray-700">{{ service.id }}</p>
+                            </div>
+                        </div>
+                        {% if service.coaches.all %}
+                        {% for coach in service.coaches.all %}
+                        <div class="flex items-center bg-gray-50 p-3 rounded-lg mt-4">
+                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <div class="text-gray-500 text-xs">
+                                    {% if LANGUAGE_CODE == 'ar' %}المدرب{% else %}Employee{% endif %}
+                                </div>
+                                <div class="font-medium text-gray-700">{{ coach.full_name }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %}
+                        <!-- Subscription Period Badge -->
+                        <div class="mb-3 mt-4 mr-2">
+                        <span class="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full font-medium">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                                فترة الاشتراك: {{ service.pricing_period_months }}
+                                {% if service.pricing_period_months == 1 %}شهر{% else %}أشهر{% endif %}
+                            {% else %}
+                                {% for period_value, period_label in PRICING_PERIOD_CHOICES %}
+                                    {% if period_value == service.pricing_period_months %}{{ period_label }}{% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </span>
+                        </div>
+                        <!-- Display Classifications -->
+                        {% if service.classification.all %}
+                        <div class="mb-3 mt-4 mr-2">
+                            {% for classification in service.classification.all %}
+                            <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
+                           {% if LANGUAGE_CODE == 'ar' %}التصنيف: {% else %}Category: {% endif %}{{ classification.title }}
+                        </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Booking Section (now correctly placed under the table) -->
+                    <div class="mt-4">
+                        <div class="flex flex-col sm:flex-row gap-4 items-center">
+                            <form method="POST" action="{% url 'add_service_to_cart' %}" class="w-full" id="addToCartForm">
+                                {% csrf_token %}
+                                <input type="hidden" name="service_id" value="{{ service.id }}">
+                                <input type="hidden" name="quantity" value="1">
+                                <button type="submit"
+                                        class="w-full py-3 px-8 rounded-full transition duration-300 transform focus:outline-none focus:ring-2 focus:ring-opacity-50
+               {% if service.is_enabled %}
+               bg-pink-600 text-white hover:bg-pink-700 hover:scale-105 focus:ring-pink-500
+               {% else %}
+               bg-gray-300 text-gray-500 cursor-not-allowed
+               {% endif %}"
+                                        {% if not service.is_enabled %} disabled {% endif %}
+                                >
+                                    <i class="fas fa-calendar-alt mr-2"></i>
+                                    <span>{% if LANGUAGE_CODE == 'ar' %}
+            اشترك في هذه خدمتك الآن
+          {% else %}
+            Book Your Appointment Now
+          {% endif %}</span>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Related Services -->
+        <div class="mb-10">
+            <h2 class="text-2xl font-bold mb-6 text-right text-pink-700">{% if LANGUAGE_CODE == 'ar' %}
+                خدمات ذات صلة
+                {% else %}
+                Related Services
+                {% endif %}</h2>
+            {% if services|length == 0 %}
+            <div class="text-center text-gray-500 py-8">
+                {% if LANGUAGE_CODE == 'ar' %}
+                لا توجد خدمات متاحة حالياً
+                {% else %}
+                No services available currently
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-24">
+                {% for related_service in services %}
+                {% if related_service.id != service.id %}
+                <div class="bg-white rounded-lg card-shadow overflow-hidden service-card hover:shadow-lg transition-shadow duration-300 border border-pink-100">
+                    <div class="p-4 text-center">
+                        {% if related_service.image %}
+                        <div class="mb-3 service-image-container">
+                            <img src="{{ related_service.image.url }}" alt="{{ related_service.title }}">
+                        </div>
+                        {% endif %}
+                        <h3 class="text-pink-600 text-xl font-bold mb-2">{{ related_service.title }}</h3>
+                        <p class="text-gray-600 mb-4 line-clamp-2">{{ related_service.desc }}</p>
+
+                        <div class="flex justify-center items-center gap-2 mb-4">
+                            <i class="fas fa-coins text-pink-400"></i>
+                            {% if related_service.discounted_price %}
+                            <span class="line-through text-gray-500">{{ related_service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            <span class="text-pink-600 font-bold">{{ related_service.discounted_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            {% else %}
+                            <span>{{ related_service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-pink-500 hover:bg-pink-600 text-white w-full py-2 text-center transition-colors duration-300">
+                        <a href="{% url 'viewServicesSpecific' related_service.id %}" class="block w-full h-full text-white">{% if LANGUAGE_CODE == 'ar' %}
+                            عرض التفاصيل
+                            {% else %}
+                            View Details
+                            {% endif %}</a>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+    // Initialize Swiper
+    var swiper = new Swiper(".swiper-container", {
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+    });
+
+    // Handle session selection
+    document.getElementById('sessions')?.addEventListener('change', function() {
+      const basePrice = {{ service.discounted_price|default:service.price }};
+      const sessions = parseInt(this.value);
+      const totalPrice = basePrice * sessions;
+
+      // If you want to update the price display based on number of sessions
+      // Uncomment and implement this
+      /*
+      const priceElement = document.getElementById('total-price');
+      if(priceElement) {
+        priceElement.textContent = totalPrice + ' ر.س';
+      }
+      */
+    });
+</script>
+<!-- Confirmation Modal -->
+<div id="renewalModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-xl font-bold text-pink-700 mb-4">{% if LANGUAGE_CODE == 'ar' %}تجديد الاشتراك{% else %}Subscription Renewal{% endif %}</h3>
+        <p id="modalMessage" class="mb-6 text-gray-700"></p>
+        <div class="flex justify-end">
+            <button onclick="hideModal()" class="ml-2 px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+            </button>
+            <button onclick="confirmRenewal()" class="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700">
+                {% if LANGUAGE_CODE == 'ar' %}تأكيد التجديد{% else %}Confirm Renewal{% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Global variable to store service ID for confirmation
+    let pendingServiceId = null;
+
+    function showModal(message) {
+        document.getElementById('modalMessage').textContent = message;
+        document.getElementById('renewalModal').classList.remove('hidden');
+    }
+
+    function hideModal() {
+        document.getElementById('renewalModal').classList.add('hidden');
+    }
+
+    function confirmRenewal() {
+        if (pendingServiceId) {
+            // Submit the form again with confirmation
+            const formData = new FormData();
+            formData.append('service_id', pendingServiceId);
+            formData.append('quantity', 1);
+            formData.append('action', 'confirm_renewal');
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch("{% url 'add_service_to_cart' %}", {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = "{% url 'cart' %}";
+                } else {
+                    alert(data.message || 'حدث خطأ ما');
+                }
+                hideModal();
+            });
+        }
+    }
+
+    // Modify the form submission to handle AJAX
+    document.querySelector('form[action="{% url 'add_service_to_cart' %}"]')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const formData = new FormData(this);
+
+        fetch(this.action, {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.needs_confirmation) {
+                pendingServiceId = data.service_id;
+                showModal(data.message);
+            } else if (data.success) {
+                window.location.href = "{% url 'cart' %}";
+            } else {
+                alert(data.message || 'حدث خطأ ما');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('حدث خطأ أثناء معالجة طلبك');
+        });
+    });
+</script>
+{% endblock %}

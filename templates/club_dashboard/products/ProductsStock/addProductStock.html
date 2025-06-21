@@ -1,0 +1,454 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block links %}
+<link rel="stylesheet" href="{% static 'bootstrap-5.3.3/css/bootstrap.rtl.min.css' %}" integrity="sha384-dpuaG1suU0eT09tx5plTaGMLBsfDLzUCCUXOY2j/LSvXYuG6Bqs43ALlhIqAJVRb" crossorigin="anonymous">
+<script src="{% static 'bootstrap-5.3.3/js/bootstrap.bundle.min.js' %}" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s ease;
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #3B82F6; /* blue-500 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #1D4ED8; /* blue-700 */
+    }
+
+    /* Form Input Styling */
+    input, textarea, select {
+        border-color: #93C5FD !important; /* blue-300 */
+        border-radius: 0.5rem !important;
+        transition: all 0.2s ease !important;
+        padding: 0.75rem 1rem !important;
+        background-color: #fff;
+        color: #1E3A8A; /* blue-900 */
+    }
+
+    input:focus, textarea:focus, select:focus {
+        border-color: #3B82F6 !important; /* blue-500 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important; /* blue-500 with opacity */
+        outline: none !important;
+    }
+
+    /* Checkbox Styling */
+    input[type="checkbox"] {
+        width: 1.25rem;
+        height: 1.25rem;
+        accent-color: #3B82F6; /* blue-500 */
+        cursor: pointer;
+    }
+
+    /* Carousel Styling */
+    .carousel {
+        max-width: 300px;
+        margin: 1.5rem auto;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .carousel-item-content {
+        position: relative;
+        width: 200px;
+        margin: auto;
+        border: 2px solid #93C5FD; /* blue-300 */
+        border-radius: 8px;
+        padding: 5px;
+        background-color: white;
+    }
+
+    .carousel img {
+        object-fit: contain;
+        width: 100%;
+        max-height: 200px;
+        border-radius: 4px;
+    }
+
+    .carousel-item-content .remove-btn {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 30px;
+        height: 30px;
+        background: #ef4444; /* red-500 */
+        color: white;
+        border: 2px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .carousel-item-content .remove-btn:hover {
+        background: #dc2626; /* red-600 */
+        transform: scale(1.1);
+    }
+
+    .carousel-control-prev-icon, .carousel-control-next-icon {
+        background-color: #3B82F6; /* blue-500 */
+        border-radius: 50%;
+        padding: 12px;
+    }
+
+    /* Image Upload Area */
+    .image-upload-area {
+        border: 2px dashed #93C5FD;
+        border-radius: 0.75rem;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        background-color: #f8fafc;
+        margin-bottom: 1rem;
+    }
+
+    .image-upload-area:hover {
+        border-color: #3B82F6;
+        background-color: #eff6ff;
+    }
+
+    .image-upload-area.drag-over {
+        border-color: #1D4ED8;
+        background-color: #dbeafe;
+    }
+
+    /* Hide default file input */
+    .hidden-file-input {
+        display: none;
+    }
+
+    /* Empty state styling */
+    .empty-carousel {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 200px;
+        border: 2px dashed #93C5FD;
+        border-radius: 8px;
+        background-color: #f8fafc;
+        color: #6b7280;
+        text-align: center;
+        margin: 1.5rem auto;
+        max-width: 300px;
+    }
+</style>
+
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn">
+    <section class="container mx-auto px-4 pt-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-2 animate-fadeIn">
+            <i class="fas fa-box-open text-blue-600"></i>
+            {% if LANGUAGE_CODE == 'ar' %}إضافة مخزون للمنتج{% else %}Add Product Stock{% endif %}
+        </h1>
+
+        <form method="post" enctype="multipart/form-data" class="w-full p-6 bg-white rounded-lg shadow-md stat-card animate-fadeInUp">
+            {% csrf_token %}
+
+            <!-- Image Upload Section -->
+            <div class="mb-6 animate-fadeInUp" style="animation-delay: 0.1s;">
+                <label class="block text-sm font-medium text-blue-700 mb-3 flex items-center gap-2">
+                    <i class="fas fa-image text-blue-600"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}صور المنتج{% else %}Product Images{% endif %}
+                </label>
+
+                <!-- Drag & Drop Area -->
+                <div class="image-upload-area" id="image-upload-area">
+                    <div class="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                        <i class="fas fa-cloud-upload-alt text-blue-600 text-2xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium text-gray-700 mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %}اسحب وأفلت الصور هنا{% else %}Drag & drop images here{% endif %}
+                    </h3>
+                    <p class="text-gray-500 mb-4">
+                        {% if LANGUAGE_CODE == 'ar' %}أو انقر لاختيار الصور{% else %}or click to select images{% endif %}
+                    </p>
+                    <button type="button" class="btn-gradient bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-2 rounded-md flex items-center mx-auto" onclick="document.getElementById('image-upload').click()">
+                        <i class="fas fa-plus mr-2"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}اختيار الصور{% else %}Select Images{% endif %}
+                    </button>
+                </div>
+
+                <input type="file" id="image-upload" class="hidden-file-input" accept="image/*" multiple aria-label="{% if LANGUAGE_CODE == 'ar' %}اختيار صور المنتج{% else %}Select Product Images{% endif %}">
+            </div>
+
+            <!-- Image Carousel Display -->
+            <div id="carouselExampleIndicators" class="carousel slide carousel-dark">
+                <div class="carousel-inner" id="profile-imgs-box">
+                    <!-- Empty state -->
+                    <div class="empty-carousel" id="empty-state">
+                        <div>
+                            <i class="fas fa-images text-gray-400 text-3xl mb-2"></i>
+                            <p class="text-gray-500">
+                                {% if LANGUAGE_CODE == 'ar' %}لا توجد صور مرفوعة{% else %}No images uploaded{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev d-none" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev" aria-label="{% if LANGUAGE_CODE == 'ar' %}الصورة السابقة{% else %}Previous Image{% endif %}">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">{% if LANGUAGE_CODE == 'ar' %}السابق{% else %}Previous{% endif %}</span>
+                </button>
+                <button class="carousel-control-next d-none" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next" aria-label="{% if LANGUAGE_CODE == 'ar' %}الصورة التالية{% else %}Next Image{% endif %}">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">{% if LANGUAGE_CODE == 'ar' %}التالي{% else %}Next{% endif %}</span>
+                </button>
+            </div>
+
+            <!-- Form Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.2s;">
+                    <label for="product" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-tag text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}اسم المنتج{% else %}Product Name{% endif %}
+                    </label>
+                    {{form.title}}
+                </div>
+                <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.3s;">
+                    <label for="description" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-align-left text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Description{% endif %}
+                    </label>
+                    {{form.desc}}
+                </div>
+                <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.4s;">
+                    <label for="quantity" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-boxes text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Quantity{% endif %}
+                    </label>
+                    {{form.stock}}
+                </div>
+                <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.5s;">
+                    <label for="price" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-money-bill-wave text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}
+                    </label>
+                    {{form.price}}
+                </div>
+                <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.6s;">
+                    <label for="manufacturing_date" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-industry text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع{% else %}Manufacturing Date{% endif %}
+                    </label>
+                    {{form.manufacturing_date}}
+                </div>
+                <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.7s;">
+                    <label for="expiration_date" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-calendar-times text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}تاريخ انتهاء الصلاحية{% else %}Expiration Date{% endif %}
+                    </label>
+                    {{form.expiration_date}}
+                </div>
+                <div class="space-y-2 flex items-center gap-4 animate-fadeInUp" style="animation-delay: 0.8s;">
+                    {{form.is_enabled}}
+                    <label for="is_enabled" class="text-sm font-medium text-blue-700 flex items-center gap-2">
+                        <i class="fas fa-check-circle text-blue-600"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}متاح{% else %}Available{% endif %}
+                    </label>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="flex items-center justify-end gap-4 mt-8 animate-fadeInUp" style="animation-delay: 0.9s;">
+                <a href="{% url 'viewProducts' %}" class="btn-gradient px-6 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}">
+                    <i class="fas fa-times-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </a>
+                <button type="submit" class="btn-gradient px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:from-blue-600 hover:to-purple-700 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة المخزون{% else %}Add Stock{% endif %}">
+                    <i class="fas fa-plus-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إضافة المخزون{% else %}Add Stock{% endif %}
+                </button>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize counter for image IDs
+        let imgCounter = 0;
+
+        // Get DOM elements
+        const imageUploadArea = document.getElementById('image-upload-area');
+        const imageUploadInput = document.getElementById('image-upload');
+        const emptyState = document.getElementById('empty-state');
+
+        // Handle drag and drop functionality
+        imageUploadArea.addEventListener('dragover', handleDragOver);
+        imageUploadArea.addEventListener('dragleave', handleDragLeave);
+        imageUploadArea.addEventListener('drop', handleDrop);
+        imageUploadArea.addEventListener('click', () => imageUploadInput.click());
+
+        // Handle file input change
+        imageUploadInput.addEventListener('change', handleFileSelect);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            imageUploadArea.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            imageUploadArea.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            imageUploadArea.classList.remove('drag-over');
+
+            const files = e.dataTransfer.files;
+            processFiles(files);
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            processFiles(files);
+            // Clear the input to allow selecting the same file again
+            e.target.value = '';
+        }
+
+        function processFiles(files) {
+            Array.from(files).forEach(file => {
+                if (file.type.match('image.*')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        addImage(e.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        // Function to remove active class from carousel items
+        function removeCarouselActive() {
+            document.querySelectorAll('.carousel-item').forEach(element => {
+                element.classList.remove('active');
+            });
+        }
+
+        // Function to show/hide empty state
+        function updateEmptyState() {
+            const carouselItems = document.querySelectorAll('.carousel-item');
+            const carousel = document.getElementById('carouselExampleIndicators');
+            const prevBtn = carousel.querySelector('.carousel-control-prev');
+            const nextBtn = carousel.querySelector('.carousel-control-next');
+
+            if (carouselItems.length === 0) {
+                emptyState.style.display = 'flex';
+                prevBtn.classList.add('d-none');
+                nextBtn.classList.add('d-none');
+            } else {
+                emptyState.style.display = 'none';
+                if (carouselItems.length > 1) {
+                    prevBtn.classList.remove('d-none');
+                    nextBtn.classList.remove('d-none');
+                }
+            }
+        }
+
+        // Function to remove an image
+        function removeImage(id) {
+            const imageElement = document.querySelector('#' + id);
+            if (!imageElement) return;
+
+            const allItems = document.querySelectorAll('.carousel-item');
+            const currentIndex = Array.from(allItems).indexOf(imageElement);
+
+            // Remove active class from all items
+            removeCarouselActive();
+
+            // Remove the image element
+            imageElement.remove();
+
+            // Update carousel active state
+            const remainingItems = document.querySelectorAll('.carousel-item');
+            if (remainingItems.length > 0) {
+                if (currentIndex < remainingItems.length) {
+                    remainingItems[currentIndex].classList.add('active');
+                } else {
+                    remainingItems[remainingItems.length - 1].classList.add('active');
+                }
+            }
+
+            updateEmptyState();
+        }
+
+        // Function to add image to carousel
+        function addImage(imageData) {
+            imgCounter++;
+
+            // Hide empty state
+            emptyState.style.display = 'none';
+
+            // Remove active class from existing items
+            removeCarouselActive();
+
+            const htmlCode = `
+                <div class="carousel-item active" id="image-result-${imgCounter}">
+                    <div class="carousel-item-content">
+                        <img src="${imageData}" class="d-block w-100" alt="{% if LANGUAGE_CODE == 'ar' %}صورة المنتج{% else %}Product Image{% endif %}">
+                        <input type="hidden" name="profile_imgs" value="${imageData}" id="userprofile-avatar-${imgCounter}">
+                        <button type="button" class="remove-btn" onclick="removeImage('image-result-${imgCounter}')" aria-label="{% if LANGUAGE_CODE == 'ar' %}حذف الصورة{% else %}Remove Image{% endif %}">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('profile-imgs-box').insertAdjacentHTML('beforeend', htmlCode);
+            updateEmptyState();
+        }
+
+        // Make removeImage function globally accessible
+        window.removeImage = removeImage;
+
+        // Initialize empty state
+        updateEmptyState();
+    });
+</script>
+{% endblock %}

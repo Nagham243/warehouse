@@ -1,0 +1,463 @@
+{% extends "base_club_dashboard.html" %}
+{% load i18n %}
+
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Title and back button -->
+    <div class="flex justify-between items-center py-8 animate-fade-in">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'dashboard' %}" class="p-2 bg-gray-100 rounded-full text-gray-600 hover:bg-gray-200 transition-colors duration-200">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2 transform transition-all duration-500 opacity-0 animate-title">
+                <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.31-8.86c-1.77-.45-2.34-.94-2.34-1.67 0-.84.79-1.43 2.1-1.43 1.38 0 1.9.66 1.94 1.64h1.71c-.05-1.34-.87-2.57-2.49-2.97V5H10.9v1.69c-1.51.32-2.72 1.3-2.72 2.81 0 1.79 1.49 2.69 3.66 3.21 1.95.46 2.34 1.15 2.34 1.87 0 .53-.39 1.39-2.1 1.39-1.6 0-2.23-.72-2.32-1.64H8.04c.1 1.7 1.36 2.66 2.86 2.97V19h2.34v-1.67c1.52-.29 2.72-1.16 2.73-2.77-.01-2.2-1.9-2.96-3.66-3.42z"/>
+                    </svg>
+                </div>
+                {% if LANGUAGE_CODE == 'ar' %} تفاصيل المنازعة #{{ dispute.id }} {% else %} Dispute Details #{{ dispute.id }} {% endif %}
+            </h1>
+        </div>
+
+        <div class="flex space-x-2">
+            {% if can_approve %}
+            <button onclick="approveDispute()" class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors duration-200">
+                {% if LANGUAGE_CODE == 'ar' %} قبول {% else %} Approve {% endif %}
+            </button>
+            {% endif %}
+
+            {% if can_reject %}
+            <button onclick="rejectDispute()" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200">
+                {% if LANGUAGE_CODE == 'ar' %} رفض {% else %} Reject {% endif %}
+            </button>
+            {% endif %}
+
+            {% if can_resolve %}
+            <button onclick="resolveDispute()" class="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors duration-200">
+                {% if LANGUAGE_CODE == 'ar' %} حل {% else %} Resolve {% endif %}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+        <!-- Left Column - Dispute Details -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Dispute Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <div class="flex justify-between items-start mb-4">
+                    <div>
+                        <h2 class="text-xl font-semibold text-gray-800">{{ dispute.title }}</h2>
+                        <div class="flex items-center mt-1 space-x-2">
+              <span class="px-2 py-1 text-xs font-medium rounded-full
+                {% if dispute.status == 'pending' %}bg-amber-100 text-amber-800
+                {% elif dispute.status == 'approved' %}bg-green-100 text-green-800
+                {% elif dispute.status == 'rejected' %}bg-red-100 text-red-800
+                {% elif dispute.status == 'investigating' %}bg-blue-100 text-blue-800
+                {% elif dispute.status == 'resolved' %}bg-purple-100 text-purple-800{% endif %}">
+                {{ dispute.get_status_display }}
+              </span>
+                            <span class="px-2 py-1 text-xs font-medium rounded-full
+                {% if dispute.priority == 'low' %}bg-gray-100 text-gray-800
+                {% elif dispute.priority == 'medium' %}bg-blue-100 text-blue-800
+                {% elif dispute.priority == 'high' %}bg-amber-100 text-amber-800
+                {% elif dispute.priority == 'urgent' %}bg-red-100 text-red-800{% endif %}">
+                {{ dispute.get_priority_display }}
+              </span>
+                        </div>
+                    </div>
+                    <div class="text-sm text-gray-500">
+                        {% if LANGUAGE_CODE == 'ar' %} تم الإنشاء في {% else %} Created {% endif %} {{ dispute.created_at|date:"d M Y H:i" }}
+                    </div>
+                </div>
+
+                <div class="prose max-w-none text-gray-700 mb-6">
+                    <p>{{ dispute.description }}</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} نوع المنازعة {% else %} Dispute Type {% endif %}</h3>
+                        <p class="font-medium">{{ dispute.get_dispute_type_display }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} نوع الاسترداد {% else %} Refund Type {% endif %}</h3>
+                        <p class="font-medium">{{ dispute.get_refund_type_display }}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} المبلغ الأصلي {% else %} Original Amount {% endif %}</h3>
+                        <p class="font-medium">{{ dispute.original_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg">
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} المبلغ المطلوب {% else %} Requested Amount {% endif %}</h3>
+                        <p class="font-medium">{{ dispute.requested_refund_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                    </div>
+                </div>
+
+                {% if dispute.approved_refund_amount %}
+                <div class="bg-blue-50 p-4 rounded-lg mb-6">
+                    <h3 class="text-sm font-medium text-blue-700 mb-2">{% if LANGUAGE_CODE == 'ar' %} قرار الإدارة {% else %} Admin Decision {% endif %}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <h4 class="text-xs text-blue-600 mb-1">{% if LANGUAGE_CODE == 'ar' %} المبلغ المعتمد {% else %} Approved Amount {% endif %}</h4>
+                            <p class="font-bold text-blue-800">{{ dispute.approved_refund_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs text-blue-600 mb-1">{% if LANGUAGE_CODE == 'ar' %} نسبة العميل {% else %} Client Percentage {% endif %}</h4>
+                            <p class="font-bold text-blue-800">{{ dispute.client_percentage|floatformat:0 }}%</p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs text-blue-600 mb-1">{% if LANGUAGE_CODE == 'ar' %} نسبة البائع {% else %} Vendor Percentage {% endif %}</h4>
+                            <p class="font-bold text-blue-800">{{ dispute.vendor_percentage|floatformat:0 }}%</p>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if dispute.rejection_reason %}
+                <div class="bg-red-50 p-4 rounded-lg mb-6">
+                    <h3 class="text-sm font-medium text-red-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} سبب الرفض {% else %} Rejection Reason {% endif %}</h3>
+                    <p class="text-red-800">{{ dispute.rejection_reason }}</p>
+                </div>
+                {% endif %}
+
+                {% if dispute.resolution_notes %}
+                <div class="bg-green-50 p-4 rounded-lg mb-6">
+                    <h3 class="text-sm font-medium text-green-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} ملاحظات الحل {% else %} Resolution Notes {% endif %}</h3>
+                    <p class="text-green-800">{{ dispute.resolution_notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Order Details -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">{% if LANGUAGE_CODE == 'ar' %} تفاصيل الطلب {% else %} Order Details {% endif %}</h2>
+
+                {% if dispute.deal %}
+                <div class="mb-6">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{% if LANGUAGE_CODE == 'ar' %} رقم الطلب {% else %} Order ID {% endif %}</h3>
+                        <span class="font-medium">#{{ dispute.deal.id }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{% if LANGUAGE_CODE == 'ar' %} تاريخ الطلب {% else %} Order Date {% endif %}</h3>
+                        <span class="font-medium">{{ dispute.deal.created_at|date:"d M Y H:i" }}</span>
+                    </div>
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="text-sm font-medium text-gray-500">{% if LANGUAGE_CODE == 'ar' %} حالة الطلب {% else %} Order Status {% endif %}</h3>
+                        <span class="font-medium">{{ dispute.deal.get_status_display }}</span>
+                    </div>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %} المنتج/الخدمة {% else %} Item {% endif %}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %} الكمية {% else %} Qty {% endif %}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %} السعر {% else %} Price {% endif %}</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %} المجموع {% else %} Total {% endif %}</th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                        {% for item in order_items %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {% if item.product %}{{ item.product.title }}{% else %}{{ item.service.title }}{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ item.quantity }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ item.price|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ item.get_total|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-gray-500">{% if LANGUAGE_CODE == 'ar' %} لا توجد معلومات عن الطلب {% else %} No order information available {% endif %}</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right Column - Actions and Parties -->
+        <div class="space-y-6">
+            <!-- Parties Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">{% if LANGUAGE_CODE == 'ar' %} الأطراف المعنية {% else %} Involved Parties {% endif %}</h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} العميل {% else %} Client {% endif %}</h3>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-medium">{{ dispute.client.get_full_name|default:dispute.client.username }}</p>
+                                <p class="text-sm text-gray-500">{{ dispute.client.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} البائع {% else %} Vendor {% endif %}</h3>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-medium">{{ dispute.vendor.get_full_name|default:dispute.vendor.username }}</p>
+                                <p class="text-sm text-gray-500">{{ dispute.vendor.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if dispute.reviewed_by %}
+                    <div>
+                        <h3 class="text-sm font-medium text-gray-500 mb-1">{% if LANGUAGE_CODE == 'ar' %} تمت المراجعة بواسطة {% else %} Reviewed By {% endif %}</h3>
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="font-medium">{{ dispute.reviewed_by.get_full_name|default:dispute.reviewed_by.username }}</p>
+                                <p class="text-sm text-gray-500">{{ dispute.reviewed_by.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Actions Card -->
+            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4">{% if LANGUAGE_CODE == 'ar' %} الإجراءات {% else %} Actions {% endif %}</h2>
+
+                <div class="space-y-4">
+                    {% if can_approve %}
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <h3 class="text-sm font-medium text-blue-700 mb-2">{% if LANGUAGE_CODE == 'ar' %} قبول الاسترداد {% else %} Approve Refund {% endif %}</h3>
+                        <p class="text-sm text-blue-600 mb-3">{% if LANGUAGE_CODE == 'ar' %} حدد المبلغ المعتمد ونسب التوزيع {% else %} Set approved amount and distribution percentages {% endif %}</p>
+                        <form id="approveForm" method="post" action="{% url 'approve' dispute.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} المبلغ المعتمد {% else %} Approved Amount {% endif %}</label>
+                                <input type="number" name="approved_amount" value="{{ dispute.requested_refund_amount|floatformat:2 }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                       step="0.01" min="0" max="{{ dispute.requested_refund_amount }}">
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} نسبة العميل {% else %} Client % {% endif %}</label>
+                                    <input type="number" name="client_percentage" value="100"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           min="0" max="100">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} نسبة البائع {% else %} Vendor % {% endif %}</label>
+                                    <input type="number" name="vendor_percentage" value="0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                           min="0" max="100">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} ملاحظات {% else %} Notes {% endif %}</label>
+                                <textarea name="admin_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if can_reject %}
+                    <div class="p-4 bg-red-50 rounded-lg">
+                        <h3 class="text-sm font-medium text-red-700 mb-2">{% if LANGUAGE_CODE == 'ar' %} رفض الاسترداد {% else %} Reject Refund {% endif %}</h3>
+                        <p class="text-sm text-red-600 mb-3">{% if LANGUAGE_CODE == 'ar' %} حدد سبب الرفض {% else %} Provide reason for rejection {% endif %}</p>
+                        <form id="rejectForm" method="post" action="{% url 'reject' dispute.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} سبب الرفض {% else %} Reason {% endif %}</label>
+                                <textarea name="rejection_reason" rows="3" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} ملاحظات {% else %} Notes {% endif %}</label>
+                                <textarea name="admin_notes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+
+                    {% if can_resolve %}
+                    <div class="p-4 bg-purple-50 rounded-lg">
+                        <h3 class="text-sm font-medium text-purple-700 mb-2">{% if LANGUAGE_CODE == 'ar' %} حل المنازعة {% else %} Resolve Dispute {% endif %}</h3>
+                        <p class="text-sm text-purple-600 mb-3">{% if LANGUAGE_CODE == 'ar' %} قدم ملاحظات حول الحل {% else %} Provide resolution notes {% endif %}</p>
+                        <form id="resolveForm" method="post" action="{% url 'resolve' dispute.id %}">
+                            {% csrf_token %}
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{% if LANGUAGE_CODE == 'ar' %} ملاحظات الحل {% else %} Resolution Notes {% endif %}</label>
+                                <textarea name="resolution_notes" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modals -->
+<div id="approveModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">{% if LANGUAGE_CODE == 'ar' %} تأكيد قبول الاسترداد {% else %} Confirm Refund Approval {% endif %}</h3>
+        <p class="text-gray-600 mb-6">{% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد أنك تريد قبول هذا الاسترداد؟ {% else %} Are you sure you want to approve this refund? {% endif %}</p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="document.getElementById('approveModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+            </button>
+            <button onclick="document.getElementById('approveForm').submit()" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                {% if LANGUAGE_CODE == 'ar' %} تأكيد {% else %} Confirm {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="rejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">{% if LANGUAGE_CODE == 'ar' %} تأكيد رفض الاسترداد {% else %} Confirm Refund Rejection {% endif %}</h3>
+        <p class="text-gray-600 mb-6">{% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد أنك تريد رفض هذا الاسترداد؟ {% else %} Are you sure you want to reject this refund? {% endif %}</p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="document.getElementById('rejectModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+            </button>
+            <button onclick="document.getElementById('rejectForm').submit()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                {% if LANGUAGE_CODE == 'ar' %} تأكيد {% else %} Confirm {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<div id="resolveModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">{% if LANGUAGE_CODE == 'ar' %} تأكيد حل المنازعة {% else %} Confirm Dispute Resolution {% endif %}</h3>
+        <p class="text-gray-600 mb-6">{% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد أنك تريد حل هذه المنازعة؟ {% else %} Are you sure you want to resolve this dispute? {% endif %}</p>
+        <div class="flex justify-end space-x-3">
+            <button onclick="document.getElementById('resolveModal').classList.add('hidden')" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+            </button>
+            <button onclick="document.getElementById('resolveForm').submit()" class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700">
+                {% if LANGUAGE_CODE == 'ar' %} تأكيد {% else %} Confirm {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Animation effects */
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes titleIn {
+        from {
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .animate-title {
+        animation: titleIn 0.8s ease-out 0.3s forwards;
+    }
+
+    .animate-button {
+        animation: fadeIn 0.8s ease-out 0.4s forwards;
+    }
+
+    .animate-table {
+        animation: slideIn 0.8s ease-out 0.5s forwards;
+    }
+
+    .animate-row {
+        animation: fadeIn 0.6s ease-out forwards;
+    }
+</style>
+
+<script>
+    function approveDispute() {
+      document.getElementById('approveModal').classList.remove('hidden');
+    }
+
+    function rejectDispute() {
+      document.getElementById('rejectModal').classList.remove('hidden');
+    }
+
+    function resolveDispute() {
+      document.getElementById('resolveModal').classList.remove('hidden');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('#approveModal, #rejectModal, #resolveModal').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+          this.classList.add('hidden');
+        }
+      });
+    });
+
+    // Update vendor percentage when client percentage changes
+    document.querySelector('input[name="client_percentage"]')?.addEventListener('input', function() {
+      const vendorPercentage = document.querySelector('input[name="vendor_percentage"]');
+      vendorPercentage.value = 100 - parseInt(this.value || 0);
+    });
+
+    // Update client percentage when vendor percentage changes
+    document.querySelector('input[name="vendor_percentage"]')?.addEventListener('input', function() {
+      const clientPercentage = document.querySelector('input[name="client_percentage"]');
+      clientPercentage.value = 100 - parseInt(this.value || 0);
+    });
+</script>
+{% endblock %}

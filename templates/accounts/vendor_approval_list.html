@@ -1,0 +1,384 @@
+{% extends "base_club_dashboard.html" %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-rose-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden">
+    <!-- Title and main button -->
+    <div class="flex justify-between items-center py-8 animate-fade-in">
+        <h1 class="text-4xl font-bold text-rose-800 transform transition-all duration-500 opacity-0 animate-title">
+            {% if LANGUAGE_CODE == 'ar' %} طلبات التجار الجدد {% else %} New Vendor Applications {% endif %}
+        </h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'viewCoachs' %}" class="ml-2 bg-amber-500 text-white px-6 py-2 rounded-lg hover:bg-amber-600 transition-all duration-300 transform opacity-0 animate-button shadow-md hover:shadow-amber-300/40">
+                {% if LANGUAGE_CODE == 'ar' %} العودة إلى قائمة التجار {% else %} Back to Vendors List {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Status Filter -->
+    <div class="mb-4 opacity-0 animate-fade-in" style="animation-delay: 0.3s">
+        <div class="flex space-x-2 overflow-x-auto pb-2">
+            <button class="filter-btn px-4 py-2 rounded-full {% if not request.GET.status %}bg-rose-600 text-white{% else %}bg-white text-rose-800{% endif %} shadow-sm" data-status="">
+                {% if LANGUAGE_CODE == 'ar' %} الكل {% else %} All {% endif %}
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full {% if request.GET.status == 'pending' %}bg-amber-500 text-white{% else %}bg-white text-amber-800{% endif %} shadow-sm" data-status="pending">
+                {% if LANGUAGE_CODE == 'ar' %} قيد الانتظار {% else %} Pending {% endif %}
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full {% if request.GET.status == 'approved' %}bg-green-500 text-white{% else %}bg-white text-green-800{% endif %} shadow-sm" data-status="approved">
+                {% if LANGUAGE_CODE == 'ar' %} مقبول {% else %} Approved {% endif %}
+            </button>
+            <button class="filter-btn px-4 py-2 rounded-full {% if request.GET.status == 'rejected' %}bg-rose-700 text-white{% else %}bg-white text-rose-700{% endif %} shadow-sm" data-status="rejected">
+                {% if LANGUAGE_CODE == 'ar' %} مرفوض {% else %} Rejected {% endif %}
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-6 opacity-0 animate-fade-in" style="animation-delay: 0.4s">
+        <div class="relative max-w-md">
+            <div class="absolute inset-y-0 {% if LANGUAGE_CODE == 'ar' %}left-0 pl-3{% else %}right-0 pr-3{% endif %} flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <input
+                    type="text"
+                    id="vendorSearch"
+                    class="bg-white/90 border border-rose-200 text-amber-900 text-sm rounded-lg focus:ring-rose-500 focus:border-rose-500 block w-full {% if LANGUAGE_CODE == 'ar' %}pl-10 pr-4{% else %}pr-10 pl-4{% endif %} py-2.5"
+                    placeholder="{% if LANGUAGE_CODE == 'ar' %}ابحث بالاسم، الهاتف، النشاط...{% else %}Search by name, phone, activity...{% endif %}"
+                    onkeyup="searchVendors()"
+            >
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden transition-all duration-500 opacity-0 animate-table transform translate-y-5 hover:shadow-xl">
+        <table class="w-full text-sm text-right text-amber-900" id="vendorsTable">
+            <thead class="text-xs text-rose-800 uppercase bg-amber-100/80">
+            <tr>
+                <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %} الاسم {% else %} Name {% endif %}</th>
+                <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %} النشاط التجاري {% else %} Business {% endif %}</th>
+                <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %} الحالة {% else %} Status {% endif %}</th>
+                <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %} تاريخ الطلب {% else %} Request Date {% endif %}</th>
+                <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %} الإجراءات {% else %} Actions {% endif %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for vendor in pending_vendors %}
+            <tr class="bg-white/80 border-b border-rose-100 hover:bg-rose-50/60 transition-all duration-200 opacity-0 animate-row" style="animation-delay: {{ forloop.counter|add:2 }}00ms">
+                <td class="px-6 py-4 font-medium text-rose-900 searchable">
+                    <div class="flex items-center">
+                        {% if vendor.profile_image_base64 %}
+                        <img src="data:image/png;base64,{{ vendor.profile_image_base64 }}" class="w-8 h-8 rounded-full object-cover mr-3" alt="{{ vendor.full_name }}">
+                        {% else %}
+                        <div class="w-8 h-8 rounded-full bg-rose-100 flex items-center justify-center mr-3">
+                            <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        <div>
+                            {{ vendor.full_name }}
+                            <div class="text-xs text-amber-600">{{ vendor.get_activity_type_display }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td class="px-6 py-4 searchable">
+                    {{ vendor.business_name }}
+                    <div class="text-xs text-gray-500 mt-1">{{ vendor.city }} - {{ vendor.district }}</div>
+                </td>
+                <td class="px-6 py-4">
+                    {% if vendor.approval_status == 'pending' %}
+                    <span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">{% if LANGUAGE_CODE == 'ar' %} قيد الانتظار {% else %} Pending {% endif %}</span>
+                    {% elif vendor.approval_status == 'approved' %}
+                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">{% if LANGUAGE_CODE == 'ar' %} مقبول {% else %} Approved {% endif %}</span>
+                    {% else %}
+                    <span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-full text-xs">{% if LANGUAGE_CODE == 'ar' %} مرفوض {% else %} Rejected {% endif %}</span>
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    {{ vendor.created_at|date:"Y/m/d" }}
+                    <div class="text-xs text-gray-500">{{ vendor.created_at|timesince }} {% if LANGUAGE_CODE == 'ar' %} مضت {% else %} ago {% endif %}</div>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="flex space-x-2">
+                        <a href="{% url 'vendor_approval_detail' vendor.id %}" class="font-medium text-blue-600 hover:text-blue-800 transition-all duration-200 px-3 py-1 bg-blue-50 rounded-md ml-2">
+                            {% if LANGUAGE_CODE == 'ar' %} عرض التفاصيل {% else %} View Details {% endif %}
+                        </a>
+                        {% if vendor.approval_status == 'pending' %}
+                        <button onclick="openActionModal('{{ vendor.id }}')" class="font-medium text-rose-600 hover:text-rose-800 transition-all duration-200 px-3 py-1 bg-rose-50 rounded-md">
+                            {% if LANGUAGE_CODE == 'ar' %} إجراء {% else %} Action {% endif %}
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr class="bg-white/80 border-b border-rose-100 opacity-0 animate-fade-in" style="animation-delay: 300ms">
+                <td colspan="6" class="px-6 py-4 text-center text-amber-600/80">
+                    {% if LANGUAGE_CODE == 'ar' %} 🎉 لا توجد طلبات جديدة بانتظار الموافقة {% else %} 🎉 No pending vendor applications {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- View Modal -->
+{% for vendor in pending_vendors %}
+<div id="view-modal-{{ vendor.id }}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-rose-800">
+                {% if LANGUAGE_CODE == 'ar' %} تفاصيل التاجر {% else %} Vendor Details {% endif %}
+            </h3>
+            <button onclick="closeModal('view-modal-{{ vendor.id }}')" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <!-- Column 1 -->
+            <div>
+                <div class="flex items-center mb-4">
+                    {% if vendor.profile_image_base64 %}
+                    <img src="data:image/png;base64,{{ vendor.profile_image_base64 }}" class="w-16 h-16 rounded-full object-cover mr-4" alt="{{ vendor.full_name }}">
+                    {% else %}
+                    <div class="w-16 h-16 rounded-full bg-rose-100 flex items-center justify-center mr-4">
+                        <svg class="w-8 h-8 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h4 class="font-bold text-lg">{{ vendor.full_name }}</h4>
+                        <span class="text-sm text-amber-600">{{ vendor.business_name }}</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex">
+                        <span class="font-medium text-amber-900 w-28">{% if LANGUAGE_CODE == 'ar' %} النشاط: {% else %} Activity: {% endif %}</span>
+                        <span>{{ vendor.get_activity_type_display }}</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-medium text-amber-900 w-28">{% if LANGUAGE_CODE == 'ar' %} الهاتف: {% else %} Phone: {% endif %}</span>
+                        <span>{{ vendor.phone }}</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-medium text-amber-900 w-28">{% if LANGUAGE_CODE == 'ar' %} البريد: {% else %} Email: {% endif %}</span>
+                        <span>{{ vendor.email }}</span>
+                    </div>
+                    <div class="flex">
+                        <span class="font-medium text-amber-900 w-28">{% if LANGUAGE_CODE == 'ar' %} الموقع: {% else %} Location: {% endif %}</span>
+                        <span>{{ vendor.city }} - {{ vendor.district }} - {{ vendor.street }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2 -->
+            <div>
+                <h4 class="font-bold text-lg mb-2">{% if LANGUAGE_CODE == 'ar' %} وصف الخدمة {% else %} Service Description {% endif %}</h4>
+                <div class="bg-rose-50 p-4 rounded-lg h-40 overflow-y-auto">
+                    {{ vendor.description|default:"لا يوجد وصف"|linebreaks }}
+                </div>
+
+                {% if vendor.approval_status != 'pending' %}
+                <div class="mt-4 p-3 rounded-lg {% if vendor.approval_status == 'approved' %}bg-green-50 text-green-800{% else %}bg-rose-50 text-rose-800{% endif %}">
+                    <div class="font-bold">
+                        {% if vendor.approval_status == 'approved' %}
+                        {% if LANGUAGE_CODE == 'ar' %} تمت الموافقة {% else %} Approved {% endif %}
+                        {% else %}
+                        {% if LANGUAGE_CODE == 'ar' %} تم الرفض {% else %} Rejected {% endif %}
+                        {% endif %}
+                    </div>
+                    <div class="text-sm mt-1">
+                        {{ vendor.approved_at|date:"Y/m/d" }} {% if LANGUAGE_CODE == 'ar' %} بواسطة {% else %} by {% endif %} {{ vendor.approved_by.get_full_name|default:vendor.approved_by.username }}
+                    </div>
+                    {% if vendor.approval_notes %}
+                    <div class="mt-2 text-sm">
+                        <span class="font-medium">{% if LANGUAGE_CODE == 'ar' %} ملاحظات: {% else %} Notes: {% endif %}</span>
+                        {{ vendor.approval_notes }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="flex justify-end">
+            <button onclick="closeModal('view-modal-{{ vendor.id }}')" class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition">
+                {% if LANGUAGE_CODE == 'ar' %} إغلاق {% else %} Close {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Action Modal (for pending vendors) -->
+{% for vendor in pending_vendors %}
+{% if vendor.approval_status == 'pending' %}
+<div id="action-modal-{{ vendor.id }}" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg p-6 w-full max-w-md">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold text-rose-800">
+                {% if LANGUAGE_CODE == 'ar' %} إجراء على الطلب {% else %} Take Action {% endif %}
+            </h3>
+            <button onclick="closeModal('action-modal-{{ vendor.id }}')" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <form method="post" action="{% url 'vendor_approval_action' vendor.id %}">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label class="block font-medium text-amber-900 mb-2">{% if LANGUAGE_CODE == 'ar' %} الإجراء: {% else %} Action: {% endif %}</label>
+                <div class="grid grid-cols-2 gap-3">
+                    <label class="cursor-pointer">
+                        <input type="radio" name="action" value="approve" class="peer hidden" required>
+                        <div class="p-3 border-2 border-green-200 rounded-lg peer-checked:border-green-500 peer-checked:bg-green-50 transition">
+                            <div class="font-medium text-green-800">{% if LANGUAGE_CODE == 'ar' %} موافقة {% else %} Approve {% endif %}</div>
+                            <div class="text-xs text-green-600 mt-1">{% if LANGUAGE_CODE == 'ar' %} سيتم إنشاء حساب للتاجر {% else %} Will create vendor account {% endif %}</div>
+                        </div>
+                    </label>
+                    <label class="cursor-pointer">
+                        <input type="radio" name="action" value="reject" class="peer hidden">
+                        <div class="p-3 border-2 border-rose-200 rounded-lg peer-checked:border-rose-500 peer-checked:bg-rose-50 transition">
+                            <div class="font-medium text-rose-800">{% if LANGUAGE_CODE == 'ar' %} رفض {% else %} Reject {% endif %}</div>
+                            <div class="text-xs text-rose-600 mt-1">{% if LANGUAGE_CODE == 'ar' %} لن يتم إنشاء حساب {% else %} No account will be created {% endif %}</div>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="notes-{{ vendor.id }}" class="block font-medium text-amber-900 mb-2">{% if LANGUAGE_CODE == 'ar' %} ملاحظات: {% else %} Notes: {% endif %}</label>
+                <textarea id="notes-{{ vendor.id }}" name="notes" rows="3" class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500" placeholder="{% if LANGUAGE_CODE == 'ar' %} ملاحظات إضافية (اختياري) {% else %} Additional notes (optional) {% endif %}"></textarea>
+            </div>
+
+            <div class="flex justify-end space-x-2">
+                <button type="button" onclick="closeModal('action-modal-{{ vendor.id }}')" class="px-4 py-2 border border-rose-300 text-rose-700 rounded-md hover:bg-rose-50 transition">
+                    {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+                </button>
+                <button type="submit" class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition">
+                    {% if LANGUAGE_CODE == 'ar' %} تأكيد الإجراء {% else %} Confirm Action {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+
+<style>
+    /* Animation effects */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes titleIn {
+      from {
+        opacity: 0;
+        transform: translateX(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.8s ease-out forwards;
+    }
+
+    .animate-title {
+      animation: titleIn 0.8s ease-out 0.3s forwards;
+    }
+
+    .animate-button {
+      animation: fadeIn 0.8s ease-out 0.4s forwards;
+    }
+
+    .animate-table {
+      animation: slideIn 0.8s ease-out 0.5s forwards;
+    }
+
+    .animate-row {
+      animation: fadeIn 0.6s ease-out forwards;
+    }
+</style>
+
+<script>
+    function searchVendors() {
+      const input = document.getElementById('vendorSearch');
+      const filter = input.value.toUpperCase();
+      const table = document.getElementById('vendorsTable');
+      const tr = table.getElementsByTagName('tr');
+
+      for (let i = 1; i < tr.length; i++) {
+        const tds = tr[i].getElementsByClassName('searchable');
+        let found = false;
+
+        for (let j = 0; j < tds.length; j++) {
+          const td = tds[j];
+          if (td) {
+            const txtValue = td.textContent || td.innerText;
+            if (txtValue.toUpperCase().indexOf(filter) > -1) {
+              found = true;
+              break;
+            }
+          }
+        }
+
+        if (found) {
+          tr[i].style.display = "";
+        } else {
+          tr[i].style.display = "none";
+        }
+      }
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.remove('hidden');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+
+    function openActionModal(vendorId) {
+      document.getElementById(`action-modal-${vendorId}`).classList.remove('hidden');
+    }
+
+    // Status filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const status = this.dataset.status;
+        const url = new URL(window.location.href);
+
+        if (status) {
+          url.searchParams.set('status', status);
+        } else {
+          url.searchParams.delete('status');
+        }
+
+        window.location.href = url.toString();
+      });
+    });
+</script>
+{% endblock %}

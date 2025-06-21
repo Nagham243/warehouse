@@ -1,0 +1,829 @@
+{% extends "base_receptionist_dashboard.html" %}
+{% load static %}
+{% block content %}
+<section class="bg-gradient-to-br from-rose-50 to-amber-50 w-full min-h-screen py-8 px-4 md:px-8 ">
+    <div class="{% if LANGUAGE_CODE == 'ar' %}xl:mr-64{% else %}xl:ml-64{% endif %} p-4">
+        <!-- Header with title -->
+        <div class="flex justify-center mb-8">
+            <h1 class="text-2xl font-bold text-primary flex items-center rtl:flex-row-reverse">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 ml-2 text-rose-600" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}حجز موعد جديد{% else %}Book New Appointment{% endif %}
+            </h1>
+        </div>
+
+        <div class="form-container max-w-3xl mx-auto">
+            <div class="form-header">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-success"></span>
+                        <span>{% if LANGUAGE_CODE == 'ar' %}موعد قصير (≤ 30 دقيقة){% else %}Short appointment (≤ 30 minutes){% endif %}</span>
+                    </div>
+                    <div class="text-sm flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-warning"></span>
+                        <span>{% if LANGUAGE_CODE == 'ar' %}موعد متوسط (≤ 90 دقيقة){% else %}Medium appointment (≤ 90 minutes){% endif %}</span>
+                    </div>
+                    <div class="text-sm flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-danger"></span>
+                        <span>{% if LANGUAGE_CODE == 'ar' %}موعد طويل (> 90 دقيقة){% else %}Long appointment (> 90 minutes){% endif %}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6">
+                <div class="time-slots-container mb-6">
+                    {% for hour in hours %}
+                    <div class="time-slot {% if hour.available %}{% else %}disabled{% endif %}" data-time="{{ hour.time }}">
+                        {{ hour.display }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <form method="post" id="booking-form" class="space-y-6">
+                    {% csrf_token %}
+                    {{ service_formset.management_form }}
+                    <input type="hidden" id="id_time" name="time" value="" required>
+                    <input type="hidden" name="date" value="{{ selected_date|date:'Y-m-d' }}">
+
+                    <!-- Duration Info -->
+                    <div class="info-card mb-6">
+                        <div class="text-primary text-sm flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}المدة الإجمالية: <span id="total-duration" class="font-bold">0</span> دقيقة
+                            (<span id="duration-category" class="font-bold">-</span>){% else %}Total duration: <span id="total-duration" class="font-bold">0</span> minutes
+                            (<span id="duration-category" class="font-bold">-</span>){% endif %}
+                        </div>
+                    </div>
+
+                    <!-- First: Service Selection -->
+                    <div class="mb-6">
+                        <div class="flex justify-between items-center mb-3">
+                            <button type="button" id="add-service" class="add-service-btn">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
+                                </svg>
+                                {% if LANGUAGE_CODE == 'ar' %}إضافة خدمة{% else %}Add Service{% endif %}
+                            </button>
+                            <label class="block text-gray-700 font-bold text-right">{% if LANGUAGE_CODE == 'ar' %}الخدمات{% else %}Services{% endif %} <span class="text-red-500">*</span></label>
+                        </div>
+
+                        <div id="service-forms">
+                            {% for service_form in service_formset %}
+                            <div class="service-row">
+                                {{ service_form.duration }}
+                                <label class="block text-gray-700 font-medium mb-2 text-right" for="{{ service_form.service.id_for_label }}">
+                                    {% if forloop.counter == 1 %}
+                                    {% if LANGUAGE_CODE == 'ar' %}الخدمة الأساسية{% else %}Primary Service{% endif %} <span class="text-red-500">*</span>
+                                    {% else %}
+                                    {% if LANGUAGE_CODE == 'ar' %}خدمة إضافية {{ forloop.counter }}{% else %}Additional Service {{ forloop.counter }}{% endif %}
+                                    {% endif %}
+                                </label>
+                                <div class="relative">
+                                    {{ service_form.service }}
+                                    {% if forloop.first %}
+                                    <div class="error-message hidden text-red-500 text-sm mt-1" id="service-error">{% if LANGUAGE_CODE == 'ar' %}هذا الحقل مطلوب{% else %}This field is required{% endif %}</div>
+                                    {% endif %}
+                                </div>
+                                {% if service_form.service.errors %}
+                                <p class="text-red-500 text-sm mt-1">{{ service_form.service.errors }}</p>
+                                {% endif %}
+
+                                <!-- Coach selection for this service -->
+                                <div class="coach-selection mt-3">
+                                    <label class="block text-gray-700 font-medium mb-2 text-right" for="{{ service_form.coach.id_for_label }}">
+                                        {% if LANGUAGE_CODE == 'ar' %}اختر المدرب{% else %}Select Employee{% endif %} <span class="text-red-500">*</span>
+                                    </label>
+                                    <div class="relative">
+                                        {{ service_form.coach }}
+                                        <div class="coach-loading hidden text-gray-500 text-sm mt-1">{% if LANGUAGE_CODE == 'ar' %}جاري تحميل المدربين...{% else %}Loading employees...{% endif %}</div>
+                                        <div class="coach-error hidden text-red-500 text-sm mt-1">{% if LANGUAGE_CODE == 'ar' %}هذا الحقل مطلوب{% else %}This field is required{% endif %}</div>
+                                    </div>
+                                    {% if service_form.coach.errors %}
+                                    <p class="text-red-500 text-sm mt-1">{{ service_form.coach.errors }}</p>
+                                    {% endif %}
+                                </div>
+
+                                {% if not forloop.first %}
+                                <span class="remove-service">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                    </svg>
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Third: Client Information -->
+<!--                    <div class="mb-6">-->
+<!--                        <label class="block text-gray-700 font-bold mb-2 text-right" for="{{ booking_form.student.id_for_label }}">-->
+<!--                            {{ booking_form.student.label }} <span class="text-red-500">*</span>-->
+<!--                        </label>-->
+<!--                        <div class="relative">-->
+<!--                            {{ booking_form.student }}-->
+<!--                            <div class="error-message hidden text-red-500 text-sm mt-1" id="student-error">{% if LANGUAGE_CODE == 'ar' %}هذا الحقل مطلوب{% else %}This field is required{% endif %}</div>-->
+<!--                        </div>-->
+<!--                        {% if booking_form.student.errors %}-->
+<!--                        <p class="text-red-500 text-sm mt-1">{{ booking_form.student.errors }}</p>-->
+<!--                        {% endif %}-->
+<!--                    </div>-->
+
+                    <!-- Notes field -->
+                    <div class="mb-6">
+                        <label class="block text-gray-700 font-bold mb-2 text-right" for="{{ booking_form.notes.id_for_label }}">
+                            {{ booking_form.notes.label }}
+                        </label>
+                        <div class="relative">
+                            {{ booking_form.notes }}
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-center mt-8">
+                        <button type="submit" id="submit-btn" class="submit-btn">
+                            <span class="flex items-center">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 ml-2" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                                {% if LANGUAGE_CODE == 'ar' %}تأكيد الحجز{% else %}Confirm Booking{% endif %}
+                            </span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- Appointments for the day -->
+        <div class="form-container max-w-3xl mx-auto mt-8">
+            <div class="form-header bg-gradient-to-r from-rose-600 to-amber-400 p-3 rounded-t-lg">
+                <h2 class="text-xl font-bold text-white text-right">{% if LANGUAGE_CODE == 'ar' %}مواعيد اليوم{% else %}Today's Appointments{% endif %}</h2>
+            </div>
+
+            <div class="p-6 bg-rose-50 rounded-b-lg">
+                {% if appointments %}
+                <div class="space-y-4">
+                    {% for appointment in appointments %}
+                    <div class="appointment-block bg-white rounded-lg shadow-sm border-r-4 p-4
+                        {% if appointment.total_duration <= 30 %}border-green-400{% elif appointment.total_duration <= 90 %}border-amber-400{% else %}border-red-400{% endif %}">
+                        <div class="flex flex-row-reverse justify-between items-center">
+                            <!-- Client and employee info (right side) -->
+                            <div class="text-right">
+                                <div class="font-bold text-gray-800">{{ appointment.client_name }}</div>
+                                <div class="text-sm text-gray-500">{{ appointment.employee_name }}</div>
+                            </div>
+
+                            <!-- Time and duration info (left side) -->
+                            <div class="text-left">
+                                <div>
+                                    <span dir="ltr" class="inline-block">{{ appointment.start_time|date:"g:i A" }} - {{ appointment.end_time|date:"g:i A" }}</span>
+                                </div>
+                                <div class="mt-1">
+                            <span class="px-2 py-1 rounded-full text-xs
+                                {% if appointment.total_duration <= 30 %}bg-green-100 text-green-800{% elif appointment.total_duration <= 90 %}bg-amber-100 text-amber-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                <span class="ml-1">{{ appointment.total_duration }}</span>
+                                <span>{% if LANGUAGE_CODE == 'ar' %}دقيقة{% else %}minutes{% endif %}</span>
+                            </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-4 text-center text-gray-500 bg-white rounded-lg shadow-sm">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}لا توجد مواعيد محجوزة لهذا اليوم{% else %}No appointments booked for today{% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    /* Modern color scheme with rose/pink theme */
+    :root {
+        --primary: #F43F5E;
+        --primary-light: #FDA4AF;
+        --primary-dark: #E11D48;
+        --secondary: #F59E0B;
+        --gray-light: #FFF1F2;
+        --gray-medium: #FCE7F3;
+        --gray-dark: #9D174D;
+        --success: #10B981;
+        --warning: #F59E0B;
+        --danger: #EF4444;
+        --white: #FFFFFF;
+    }
+
+    .form-container {
+        background: var(--white);
+        border-radius: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(244, 63, 94, 0.1), 0 4px 6px -2px rgba(244, 63, 94, 0.05);
+        overflow: hidden;
+    }
+
+    .form-header {
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        color: var(--white);
+        padding: 1.25rem;
+        border-radius: 1rem 1rem 0 0;
+    }
+
+    .service-row {
+        position: relative;
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: var(--gray-light);
+        border: 1px solid var(--gray-medium);
+        transition: all 0.3s ease;
+    }
+
+    .service-row:hover {
+        box-shadow: 0 4px 6px rgba(244, 63, 94, 0.05);
+        border-color: var(--primary-light);
+        transform: translateY(-2px);
+    }
+
+    .remove-service {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        cursor: pointer;
+        color: var(--danger);
+        z-index: 10;
+        transition: all 0.2s ease;
+    }
+
+    .remove-service:hover {
+        transform: scale(1.1);
+    }
+
+    .add-service-btn {
+        background: linear-gradient(to right, var(--primary-light), var(--secondary));
+        color: var(--white);
+        border-radius: 9999px;
+        padding: 0.5rem 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.1), 0 2px 4px -1px rgba(244, 63, 94, 0.06);
+    }
+
+    .add-service-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(244, 63, 94, 0.1), 0 4px 6px -2px rgba(244, 63, 94, 0.05);
+    }
+
+    .duration-tag {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 0.75rem;
+        background-color: rgba(244, 63, 94, 0.1);
+        color: var(--primary);
+        padding: 0.25rem 0.5rem;
+        border-radius: 9999px;
+    }
+
+    /* Time slot styles */
+    .time-slots-container {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+    }
+
+    .time-slot {
+        padding: 0.75rem;
+        text-align: center;
+        border-radius: 0.5rem;
+        border: 1px solid var(--gray-medium);
+        background-color: var(--white);
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .time-slot:hover {
+        background-color: var(--gray-light);
+        border-color: var(--primary-light);
+    }
+
+    .time-slot.selected {
+        background: linear-gradient(135deg, var(--primary-light), var(--primary));
+        color: var(--white);
+        border-color: var(--primary);
+        box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.2);
+    }
+
+    .time-slot.disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        background-color: var(--gray-medium);
+    }
+
+    /* Info cards */
+    .info-card {
+        background: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
+        backdrop-filter: blur(10px);
+        border-radius: 0.75rem;
+        border-left: 4px solid var(--primary);
+        box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.1);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Appointment blocks */
+    .appointment-block {
+        position: relative;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(244, 63, 94, 0.1);
+    }
+
+    .appointment-block:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 6px rgba(244, 63, 94, 0.1);
+    }
+
+    .appointment-block.short {
+        border-left: 4px solid var(--success);
+    }
+
+    .appointment-block.medium {
+        border-left: 4px solid var(--warning);
+    }
+
+    .appointment-block.long {
+        border-left: 4px solid var(--danger);
+    }
+
+    /* Submit button */
+    .submit-btn {
+        background: linear-gradient(to right, var(--primary), var(--secondary));
+        color: var(--white);
+        border-radius: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(244, 63, 94, 0.1), 0 2px 4px -1px rgba(244, 63, 94, 0.06);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 15px -3px rgba(244, 63, 94, 0.1), 0 4px 6px -2px rgba(244, 63, 94, 0.05);
+    }
+
+    /* Date picker */
+    .date-picker {
+        border: 1px solid var(--gray-medium);
+        border-radius: 0.5rem;
+        padding: 0.5rem 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .date-picker:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.3);
+    }
+
+    /* Form validation styles */
+    .error {
+        border-color: var(--danger) !important;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2) !important;
+    }
+
+    .error-message {
+        color: var(--danger);
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: var(--gray-light);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: var(--primary-light);
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--primary);
+    }
+
+    /* Coach selection dropdown enhancement */
+    .coach-selection select {
+        background-color: #fdecef;
+        border-color: #fecdd3;
+    }
+
+    .coach-selection select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(244, 63, 94, 0.2);
+    }
+
+    .coach-selection select:disabled {
+        background-color: #f5f5f5;
+        color: #a0aec0;
+        cursor: not-allowed;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initial total duration update
+        updateTotalDuration();
+
+        // Set up the Service -> Coach relationship
+        document.querySelectorAll('[id^="id_services-"][id$="-service"]').forEach(select => {
+            select.addEventListener('change', function() {
+                loadCoachesForService(this);
+                updateServiceDetails(this);
+                validateField(this);
+            });
+        });
+
+        // Add service button
+        document.getElementById('add-service').addEventListener('click', function() {
+            const totalForms = document.querySelector('[name="services-TOTAL_FORMS"]');
+            const formCount = parseInt(totalForms.value);
+
+            // Clone the first form
+            const formTemplate = document.querySelector('.service-row').cloneNode(true);
+
+            // Update IDs
+            const inputs = formTemplate.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name').replace('-0-', `-${formCount}-`);
+                const id = input.getAttribute('id').replace('-0-', `-${formCount}-`);
+
+                input.setAttribute('name', name);
+                input.setAttribute('id', id);
+
+                // Clear values for new form
+                if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                } else {
+                    input.value = '';
+                }
+            });
+
+            // Update labels if any
+            const labels = formTemplate.querySelectorAll('label');
+            labels.forEach(label => {
+                if (label.getAttribute('for')) {
+                    const forAttr = label.getAttribute('for').replace('-0-', `-${formCount}-`);
+                    label.setAttribute('for', forAttr);
+                }
+            });
+
+            // Add remove button for additional forms
+            if (formCount > 0) {
+                const removeBtn = document.createElement('span');
+                removeBtn.className = 'remove-service';
+                removeBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>';
+                removeBtn.addEventListener('click', function() {
+                    this.parentNode.remove();
+                    updateFormIndices();
+                    updateTotalDuration();
+                });
+                formTemplate.appendChild(removeBtn);
+            }
+
+            // Append the new form
+            document.getElementById('service-forms').appendChild(formTemplate);
+
+            // Update form count
+            totalForms.value = formCount + 1;
+
+            // Set up event handlers for the new select elements
+            const newServiceSelect = formTemplate.querySelector('select[id$="-service"]');
+            if (newServiceSelect) {
+                newServiceSelect.addEventListener('change', function() {
+                    loadCoachesForService(this);
+                    updateServiceDetails(this);
+                    validateField(this);
+                });
+            }
+
+            const newCoachSelect = formTemplate.querySelector('select[id$="-coach"]');
+            if (newCoachSelect) {
+                newCoachSelect.addEventListener('change', function() {
+                    validateField(this);
+                });
+            }
+        });
+
+        // Time slot selection
+        document.querySelectorAll('.time-slot').forEach(slot => {
+            slot.addEventListener('click', function() {
+                if (this.classList.contains('disabled')) return;
+
+                // Remove selection from all slots
+                document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected'));
+
+                // Select this slot
+                this.classList.add('selected');
+
+                // Update hidden time input
+                document.getElementById('id_time').value = this.dataset.time;
+            });
+        });
+
+        // Set up validation for student field
+        const studentField = document.getElementById('{{ booking_form.student.id_for_label }}');
+        if (studentField) {
+            studentField.addEventListener('change', function() {
+                validateField(this);
+            });
+            studentField.addEventListener('blur', function() {
+                validateField(this);
+            });
+        }
+
+        // Form submission validation
+        const bookingForm = document.getElementById('booking-form');
+        if (bookingForm) {
+            bookingForm.addEventListener('submit', function(event) {
+                let isValid = true;
+
+                // Validate student field
+                if (studentField && !validateField(studentField)) {
+                    isValid = false;
+                }
+
+                // Validate each service and coach pair
+                const serviceRows = document.querySelectorAll('.service-row');
+                serviceRows.forEach((row, index) => {
+                    const serviceField = row.querySelector(`select[id$="-service"]`);
+                    const coachField = row.querySelector(`select[id$="-coach"]`);
+
+                    // Only validate the first row (required) or rows with selected services
+                    if ((index === 0 || (serviceField && serviceField.value)) &&
+                        !validateField(serviceField)) {
+                        isValid = false;
+                    }
+
+                    // If service is selected, coach must also be selected
+                    if (serviceField && serviceField.value && coachField &&
+                        !validateField(coachField)) {
+                        isValid = false;
+                    }
+                });
+
+                if (!isValid) {
+                    event.preventDefault();
+                }
+            });
+        }
+
+        // Date selection - if present
+        const datePicker = document.getElementById('date-picker');
+        if (datePicker) {
+            datePicker.addEventListener('change', function() {
+                document.getElementById('booking-form').submit();
+            });
+        }
+
+        // Add remove service handler for initial services
+        document.querySelectorAll('.remove-service').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.parentNode.remove();
+                updateFormIndices();
+                updateTotalDuration();
+            });
+        });
+    });
+
+    function validateField(field) {
+        const errorId = field.id.includes('student') ? 'student-error' :
+                        field.id.includes('coach') ? 'coach-error' :
+                        field.id.includes('service') ? 'service-error' : null;
+
+        const errorElement = field.closest('.service-row')?.querySelector('.error-message') ||
+                             document.getElementById(errorId);
+
+        if (!errorElement) return true;
+
+        if (!field.value) {
+            field.classList.add('error');
+            errorElement.classList.remove('hidden');
+            return false;
+        } else {
+            field.classList.remove('error');
+            errorElement.classList.add('hidden');
+            return true;
+        }
+    }
+
+    function updateFormIndices() {
+        const totalForms = document.querySelector('[name="services-TOTAL_FORMS"]');
+        const formRows = document.querySelectorAll('.service-row');
+
+        formRows.forEach((row, index) => {
+            const inputs = row.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                const name = input.getAttribute('name').replace(/services-\d+-/, `services-${index}-`);
+                const id = input.getAttribute('id').replace(/id_services-\d+-/, `id_services-${index}-`);
+
+                input.setAttribute('name', name);
+                input.setAttribute('id', id);
+            });
+
+            const labels = row.querySelectorAll('label');
+            labels.forEach(label => {
+                if (label.getAttribute('for')) {
+                    const forAttr = label.getAttribute('for').replace(/id_services-\d+-/, `id_services-${index}-`);
+                    label.setAttribute('for', forAttr);
+                }
+            });
+        });
+
+        totalForms.value = formRows.length;
+    }
+
+    function updateTotalDuration() {
+        const durationFields = document.querySelectorAll('[id^="id_services-"][id$="-duration"]');
+        let totalDuration = 0;
+
+        durationFields.forEach(field => {
+            const duration = parseInt(field.value) || 0;
+            totalDuration += duration;
+        });
+
+        const totalDurationElement = document.getElementById('total-duration');
+        if (totalDurationElement) {
+            totalDurationElement.textContent = totalDuration;
+        }
+
+        // Highlight duration category based on total time
+        const durationCategoryElement = document.getElementById('duration-category');
+        if (durationCategoryElement) {
+            let category = '';
+            let color = '';
+
+            if (totalDuration <= 30) {
+                category = '{% if LANGUAGE_CODE == "ar" %}قصير{% else %}Short{% endif %}';
+                color = 'text-green-600';
+            } else if (totalDuration <= 90) {
+                category = '{% if LANGUAGE_CODE == "ar" %}متوسط{% else %}Medium{% endif %}';
+                color = 'text-amber-600';
+            } else {
+                category = '{% if LANGUAGE_CODE == "ar" %}طويل{% else %}Long{% endif %}';
+                color = 'text-red-600';
+            }
+
+            durationCategoryElement.textContent = category;
+            durationCategoryElement.className = color + ' font-bold';
+        }
+
+        return totalDuration;
+    }
+
+    function loadCoachesForService(serviceSelect) {
+        const serviceId = serviceSelect.value;
+        if (!serviceId) return;
+
+        // Get the form prefix from the service select ID
+        const formPrefix = serviceSelect.id.match(/id_services-(\d+)-service/)[1];
+
+        // Find the corresponding coach select field
+        const coachSelect = document.getElementById(`id_services-${formPrefix}-coach`);
+        if (!coachSelect) return;
+
+        // Find loading and error elements
+        const loadingElement = coachSelect.closest('.coach-selection').querySelector('.coach-loading');
+        const errorElement = coachSelect.closest('.coach-selection').querySelector('.coach-error');
+
+        // Show loading indicator
+        if (loadingElement) {
+            loadingElement.classList.remove('hidden');
+        }
+
+        // Disable coach select while loading
+        coachSelect.disabled = true;
+
+        // Corrected URL path based on your urls.py
+        fetch(`/receptionist_dashboard/salon/service-info/${serviceId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Service not found');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Clear existing options except the first empty option
+                while (coachSelect.options.length > 1) {
+                    coachSelect.remove(1);
+                }
+
+                // Add new options based on the coaches data
+                if (data.coaches && data.coaches.length > 0) {
+                    data.coaches.forEach(coach => {
+                        const option = new Option(coach.name, coach.id);
+                        coachSelect.add(option);
+                    });
+                    coachSelect.disabled = false;
+                } else {
+                    // No coaches available
+                    const option = new Option('{% if LANGUAGE_CODE == "ar" %}لا يوجد موظفين لهذه الخدمة{% else %}No employees for this service{% endif %}', '');
+                    coachSelect.add(option);
+                    coachSelect.disabled = true;
+                }
+
+                // Update duration field
+                const durationField = document.getElementById(`id_services-${formPrefix}-duration`);
+                if (durationField && data.duration) {
+                    durationField.value = data.duration;
+                }
+
+                // Update total duration
+                updateTotalDuration();
+            })
+            .catch(error => {
+                console.error('Error loading coaches:', error);
+                coachSelect.disabled = false;
+
+                // Add an error option
+                while (coachSelect.options.length > 1) {
+                    coachSelect.remove(1);
+                }
+                const option = new Option('{% if LANGUAGE_CODE == "ar" %}خطأ في تحميل الموظفين{% else %}Error loading employees{% endif %}', '');
+                coachSelect.add(option);
+            })
+            .finally(() => {
+                // Hide loading indicator
+                if (loadingElement) {
+                    loadingElement.classList.add('hidden');
+                }
+            });
+    }
+
+    function updateServiceDetails(serviceSelect) {
+        const serviceId = serviceSelect.value;
+        if (!serviceId) return;
+
+        // Get the form prefix from the service select ID
+        const formPrefix = serviceSelect.id.match(/id_services-(\d+)-service/)[1];
+
+        // Find the duration field
+        const durationField = document.getElementById(`id_services-${formPrefix}-duration`);
+
+        // Find the service row
+        const serviceRow = serviceSelect.closest('.service-row');
+
+        // Check if there's already a duration tag
+        let durationTag = serviceRow.querySelector('.duration-tag');
+
+        // Corrected URL path based on your urls.py
+        fetch(`/receptionist_dashboard/salon/service-info/${serviceId}/`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Service not found');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update duration field
+                if (durationField && data.duration) {
+                    durationField.value = data.duration;
+                }
+
+                // Create or update duration tag
+                if (!durationTag) {
+                    durationTag = document.createElement('span');
+                    durationTag.className = 'duration-tag';
+                    serviceRow.appendChild(durationTag);
+                }
+
+                durationTag.textContent = `${data.duration} {% if LANGUAGE_CODE == "ar" %}دقيقة{% else %}min{% endif %}`;
+
+                // Update total duration
+                updateTotalDuration();
+            })
+            .catch(error => {
+                console.error('Error updating service details:', error);
+            });
+    }
+</script>
+{% endblock %}

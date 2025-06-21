@@ -1,0 +1,133 @@
+{% extends 'base_club_dashboard.html' %}
+{% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+    <section class="container mx-auto px-4 pt-8">
+        <h1 class="text-3xl font-bold text-rose-800 mb-8 flex items-center transition-all duration-300 hover:translate-x-1">
+            <span>{% if LANGUAGE_CODE == 'ar' %}تعديل بيانات موظف الاستقبال{% else %}Edit Receptionist Information{% endif %}</span>
+            <span class="ml-2">✏️</span>
+        </h1>
+
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-rose-100 transition-all duration-300 hover:shadow-2xl">
+            <form method="post" class="w-full p-6 space-y-6">
+                {% csrf_token %}
+                <input type="hidden" readonly name="id" value="id" />
+
+                <div class="transition-all duration-200 hover:translate-x-1">
+                    <label for="username" class="block text-sm font-medium text-rose-700 mb-1 flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}اسم الموظف{% else %}Employee Username{% endif %}</span>
+                        <span class="ml-1">🔑</span>
+                    </label>
+                    <input
+                            type="text"
+                            id="username"
+                            name="username"
+                            value="{{username}}"
+                            required
+                            placeholder="{% if LANGUAGE_CODE == 'ar' %}اسم موظف الاستقبال{% else %}Receptionist username{% endif %}"
+                            class="w-full px-3 py-2 border border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all duration-200"
+                    />
+                </div>
+
+                <div class="transition-all duration-200 hover:translate-x-1">
+                    <label for="email" class="block text-sm font-medium text-rose-700 mb-1 flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}</span>
+                        <span class="ml-1">✉️</span>
+                    </label>
+                    <div class="input-wrapper">
+                        {{form.email}}
+                    </div>
+                </div>
+
+                <div class="transition-all duration-200 hover:translate-x-1">
+                    <label for="full_name" class="block text-sm font-medium text-rose-700 mb-1 flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</span>
+                        <span class="ml-1">👤</span>
+                    </label>
+                    <div class="input-wrapper">
+                        {{form.full_name}}
+                    </div>
+                </div>
+
+                <div class="transition-all duration-200 hover:translate-x-1">
+                    <label for="phone" class="block text-sm font-medium text-rose-700 mb-1 flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}</span>
+                        <span class="ml-1">📱</span>
+                    </label>
+                    <div class="input-wrapper">
+                        {{form.phone}}
+                    </div>
+                </div>
+
+                <div class="transition-all duration-200 hover:translate-x-1">
+                    <label for="password" class="block text-sm font-medium text-rose-700 mb-1 flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}كلمة المرور{% else %}Password{% endif %}</span>
+                        <span class="ml-1">🔒</span>
+                    </label>
+                    <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="{% if LANGUAGE_CODE == 'ar' %}كلمة المرور{% else %}Password{% endif %}"
+                            class="w-full px-3 py-2 border border-rose-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-rose-400 focus:border-rose-400 transition-all duration-200"
+                    />
+                    <p class="text-xs text-rose-600 mt-1 italic">
+                        {% if LANGUAGE_CODE == 'ar' %}اترك هذا الحقل فارغًا إذا لم ترغب في تغيير كلمة المرور{% else %}Leave this field empty if you don't want to change the password{% endif %}
+                    </p>
+                </div>
+
+                <div class="flex items-center justify-end mt-8 space-x-4">
+                    <a href="{% url 'viewReceptionists' %}" class="px-5 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-all duration-300 transform hover:scale-105 flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}</span>
+                        <span class="ml-1">❌</span>
+                    </a>
+                    <button type="submit" class="px-5 py-2 bg-rose-500 text-white rounded-lg hover:bg-rose-600 transition-all duration-300 transform hover:scale-105 shadow-md flex items-center">
+                        <span>{% if LANGUAGE_CODE == 'ar' %}حفظ التعديلات{% else %}Save Changes{% endif %}</span>
+                        <span class="ml-1">💾</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Style all form inputs
+      const inputFields = document.querySelectorAll('input:not([type="hidden"]), textarea, select');
+      inputFields.forEach(field => {
+        field.classList.add('w-full', 'px-3', 'py-2', 'border', 'border-rose-200', 'rounded-lg', 'focus:outline-none', 'focus:ring-2', 'focus:ring-rose-400', 'focus:border-rose-400', 'transition-all', 'duration-200');
+      });
+
+      // Add subtle hover effect to form sections
+      const formSections = document.querySelectorAll('form > div:not(:last-child)');
+      formSections.forEach(section => {
+        section.addEventListener('mouseenter', function() {
+          this.classList.add('bg-rose-50');
+          this.style.borderRadius = '0.5rem';
+          this.style.padding = '0.5rem';
+        });
+        section.addEventListener('mouseleave', function() {
+          this.classList.remove('bg-rose-50');
+          this.style.padding = '0';
+        });
+      });
+
+      // Add animation to form submission
+      const form = document.querySelector('form');
+      form.addEventListener('submit', function() {
+        const submitButton = this.querySelector('button[type="submit"]');
+        submitButton.classList.add('animate-pulse');
+      });
+
+      // Add highlight effect on input focus
+      inputFields.forEach(field => {
+        field.addEventListener('focus', function() {
+          this.closest('div').classList.add('bg-rose-50');
+        });
+        field.addEventListener('blur', function() {
+          this.closest('div').classList.remove('bg-rose-50');
+        });
+      });
+    });
+</script>
+{% endblock %}

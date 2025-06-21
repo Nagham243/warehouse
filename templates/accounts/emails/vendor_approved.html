@@ -1,0 +1,20 @@
+{% extends "email_base.html" %}
+
+{% block content %}
+<p>Dear {{ vendor.full_name }},</p>
+
+<p>We are pleased to inform you that your vendor application for <strong>{{ vendor.business_name }}</strong> has been approved!</p>
+
+<p>Your account details:</p>
+<ul>
+    <li>Email: {{ user.email }}</li>
+    <li>Temporary Password: 1234</li>
+</ul>
+
+<p>Please log in at <a href="{{ login_url }}">{{ login_url }}</a> using your email and the temporary password above.</p>
+
+<p>For security reasons, we recommend changing your password after your first login.</p>
+
+<p>Best regards,<br>
+    The Club Team</p>
+{% endblock %}

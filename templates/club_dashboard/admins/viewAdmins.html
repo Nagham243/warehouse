@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>الإداريين</h2>
+<a href="{% url 'addAdmin' %}" class="btn btn-primary">إضافة إداري</a>
+<table class="table">
+    <thead>
+        <tr>
+            <th>اسم المستخدم</th>
+            <th>البريد الإلكتروني</th>
+            <th>إجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for admin in admin_userprofile %}
+        <tr>
+            <td>{{ admin.user.username }}</td>
+            <td>{{ admin.user.email }}</td>
+            <td>
+                <a href="{% url 'editAdmin' admin.id %}" class="btn btn-warning ml-2">تعديل</a>
+                <a href="{% url 'deleteAdmin' admin.id %}" class="btn btn-danger" onclick="return confirm('هل أنت متأكد؟')">حذف</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" class="text-center">لا يوجد إداريين</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

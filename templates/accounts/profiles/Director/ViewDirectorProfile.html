@@ -1,0 +1,155 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Reuse animations from edit page */
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-stagger > * {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #3b82f6; /* blue-500 */
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #2563eb; /* blue-600 */
+    }
+</style>
+
+<div class="animated-bg bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen flex items-center">
+    <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+        <div class="absolute top-0 {% if LANGUAGE_CODE == 'ar' %}left-4{% else %}right-4{% endif %} mt-4">
+            <div class="flex items-center space-x-1 px-3 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 border border-blue-100">
+                <a href="{% url 'set_language_redirect' 'en' %}?next={{ request.path }}" class="{% if LANGUAGE_CODE == 'en' %}text-blue-600 font-medium{% else %}text-gray-500 hover:text-blue-600 transition-colors{% endif %} text-sm px-2">EN</a>
+                <div class="text-blue-400 font-bold">|</div>
+                <a href="{% url 'set_language_redirect' 'ar' %}?next={{ request.path }}" class="{% if LANGUAGE_CODE == 'ar' %}text-blue-600 font-medium{% else %}text-gray-500 hover:text-blue-600 transition-colors{% endif %} text-sm px-2">AR</a>
+            </div>
+        </div>
+
+        <div class="stat-card bg-white shadow-2xl rounded-xl overflow-hidden max-w-4xl mx-auto border border-gray-100 animate-[fadeInUp_0.8s_ease-out]">
+            <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-blue-500 to-blue-600">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 relative group">
+                        <img
+                            class="h-32 w-32 rounded-full border-4 border-blue-200 shadow-md transition-all duration-300 group-hover:shadow-blue-200"
+                            src="{{ userprofile.profile_image_base64|default:'https://via.placeholder.com/128' }}"
+                            alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي لمدير المنصة{% else %}Salon Director Profile Image{% endif %}"
+                        />
+                        <div class="absolute inset-0 rounded-full bg-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                    </div>
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}mr-6{% else %}ml-6{% endif %}">
+                        <h1 class="text-3xl font-bold text-white">{{director.full_name}} <span class="text-blue-200">👑</span></h1>
+                        <p class="text-xl text-blue-100">
+                            {% if LANGUAGE_CODE == 'ar' %}مدير المنصة{% else %}Director of{% endif %} {{director.club.name}} <span class="text-blue-200">✨</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-blue-600 flex items-center animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
+                    <span class="mr-2">💫</span>
+                    {% if LANGUAGE_CODE == 'ar' %}نبذة عن مدير المنصة{% else %}About the Salon Director{% endif %}
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500 px-2 py-3 bg-blue-50 bg-opacity-50 rounded-lg border border-blue-100 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    {{director.about}}
+                </p>
+            </div>
+            <div class="border-t border-gray-100 animate-stagger">
+                <dl>
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 bg-opacity-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 animate-[fadeInUp_0.6s_ease-out_0.4s_both]">
+                        <dt class="text-sm font-medium text-blue-600 flex items-center">
+                            <span class="mr-2">🎭</span>
+                            {% if LANGUAGE_CODE == 'ar' %}المنصب{% else %}Position{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% if LANGUAGE_CODE == 'ar' %}مدير المنصة{% else %}Salon Director{% endif %}
+                        </dd>
+                    </div>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 hover:bg-blue-50 transition-colors duration-200 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                        <dt class="text-sm font-medium text-blue-600 flex items-center">
+                            <span class="mr-2">📧</span>
+                            {% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{userprofile.user.email}}
+                        </dd>
+                    </div>
+                    <div class="bg-gradient-to-r from-blue-50 to-purple-50 bg-opacity-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 animate-[fadeInUp_0.6s_ease-out_0.6s_both]">
+                        <dt class="text-sm font-medium text-blue-600 flex items-center">
+                            <span class="mr-2">📱</span>
+                            {% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{director.phone}}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+            <div class="px-6 py-4 bg-gray-50 sm:px-10 {% if LANGUAGE_CODE == 'ar' %}flex justify-end flex-row-reverse{% else %}flex justify-start{% endif %} animate-[fadeInUp_0.6s_ease-out_0.7s_both]">
+                <a
+                    href="{% url 'edit_director_profile' %}"
+                    class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-all duration-300"
+                >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.379-8.379-2.828-2.828z"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}تعديل الحساب{% else %}Edit Account{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% load i18n %}
+
+{% block content %}
+<div class="language-container">
+    <h2>
+        {% if LANGUAGE_CODE == 'ar' %}
+        اختر اللغة
+        {% else %}
+        Choose Language
+        {% endif %}
+    </h2>
+
+    <div class="language-buttons">
+        <!-- Button Style Language Switcher -->
+        <div class="btn-group" role="group" aria-label="Language Switcher">
+            <a href="{% url 'set_language_redirect' 'en' %}?next={{ request.path }}"
+               class="btn {% if LANGUAGE_CODE == 'en' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                English
+            </a>
+            <a href="{% url 'set_language_redirect' 'ar' %}?next={{ request.path }}"
+               class="btn {% if LANGUAGE_CODE == 'ar' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                العربية
+            </a>
+        </div>
+
+        <!-- Current language indicator -->
+        <p class="mt-3">
+            {% if LANGUAGE_CODE == 'ar' %}
+            اللغة الحالية: العربية
+            {% else %}
+            Current language: English
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endblock %}

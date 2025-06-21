@@ -1,0 +1,35 @@
+{% load static %}
+{% load i18n %}
+<!DOCTYPE html>
+<html {% if LANGUAGE_CODE == 'ar' %}dir="rtl"{% else %}dir="ltr"{% endif %}>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% if LANGUAGE_CODE == 'ar' %}
+        الرئيسية
+        {% else %}
+        Home
+        {% endif %}</title>
+    <link
+            href="https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&display=swap"
+            rel="stylesheet"
+    />
+    <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+            integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+            crossorigin="anonymous"
+            referrerpolicy="no-referrer"
+    />
+    <style>
+        body {
+          font-family: "Cairo", sans-serif;
+        }
+    </style>
+</head>
+
+<body {% if LANGUAGE_CODE == 'ar' %}dir="rtl" lang="ar"{% else %}dir="ltr" lang="en"{% endif %}>
+{% include 'parts/receptionist_dashboard/navbar.html' %} {% block content %} {% endblock %}
+<script src="https://cdn.tailwindcss.com"></script>
+</body>
+</html>

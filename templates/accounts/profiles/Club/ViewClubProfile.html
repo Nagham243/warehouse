@@ -1,0 +1,740 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Reuse styles from the dashboard */
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-stagger > * {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    /* Dialog animation */
+    dialog {
+        opacity: 0;
+        transform: translateY(-20px);
+        transition: opacity 0.3s, transform 0.3s;
+    }
+    dialog[open] {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #3b82f6; /* blue-500 */
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #2563eb; /* blue-600 */
+    }
+    /* Toggle switch styling */
+    input:checked ~ .dot {
+        transform: translateX(100%);
+    }
+    input:checked ~ .block {
+        background-color: #3b82f6; /* blue-500 */
+    }
+    .dashboard-toggle-card {
+    border: none;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(240, 147, 251, 0.3);
+  }
+
+  .toggle-button {
+    background: rgba(255, 255, 255, 0.2);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
+    padding: 10px 20px;
+    color: black;
+    font-weight: bold;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .toggle-button:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  .toggle-button.active {
+    background: rgba(255, 255, 255, 0.9);
+    color: #f5576c;
+  }
+
+  .status-indicator {
+    display: inline-block;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    margin-left: 10px;
+  }
+
+  .status-visible {
+    background: rgba(34, 197, 94, 0.2);
+    color: black;
+  }
+
+  .status-hidden {
+    background: rgba(239, 68, 68, 0.2);
+    color: black;
+  }
+</style>
+
+<div class="animated-bg bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen flex items-center">
+    <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+        <div class="stat-card bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100 animate-[fadeInUp_0.8s_ease-out] mb-6">
+            <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-blue-500 to-blue-600">
+                <div class="flex items-center {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% else %}flex-row{% endif %}">
+                    <div class="flex-shrink-0 relative group">
+                        <img
+                            class="h-32 w-32 rounded-full border-4 border-white shadow-md transition-all duration-300 group-hover:shadow-blue-200"
+                            src="data:image/jpeg;base64,{{ club.club_profile_image_base64|safe }}"
+                            alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي للمنصة{% else %}Club Profile Image{% endif %}"
+                        />
+                        <div class="absolute inset-0 rounded-full bg-blue-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                    </div>
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}mr-6 text-right{% else %}ml-6 text-left{% endif %}">
+                        <h1 class="text-3xl font-bold text-white">{{ club.name }} <span class="text-blue-200">✨</span></h1>
+                        <p class="text-xl text-blue-100">{{ club.desc }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-4 py-5 sm:px-6 animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
+                <h3 class="text-lg font-medium text-gray-800 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    نبذة عن المنصة
+                    {% else %}
+                    About the Salon
+                    {% endif %}
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500 px-2 py-3 bg-gray-50 rounded-lg border border-gray-100">{{ club.about }}</p>
+            </div>
+
+            <div class="px-6 py-4 bg-gray-50 sm:px-10 flex justify-end gap-2 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %} animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                <button
+                    id="settingsButton"
+                    class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300"
+                >
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    الإعدادات
+                    {% else %}
+                    Settings
+                    {% endif %}
+                </button>
+                <a
+                    href="{% url 'EditClubProfile' club.id %}"
+                    class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300"
+                >
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.379-8.379-2.828-2.828z"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    تعديل الحساب
+                    {% else %}
+                    Edit Profile
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+        <div class="dashboard-toggle-card  bg-white ">
+            <h3 style="color: black; margin-bottom: 15px; display: flex; align-items: center;">
+                <span style="font-size: 24px; margin-right: 10px;">🎛️</span>
+                {% if LANGUAGE_CODE == 'ar' %}إعدادات لوحة التحكم{% else %}Dashboard Settings{% endif %}
+                <span id="status-indicator" class="status-indicator">
+      {% if dashboard_settings.show_employee_client_counts %}
+        <span class="status-visible">{% if LANGUAGE_CODE == 'ar' %}👁️ مرئية{% else %}👁️ Visible{% endif %}</span>
+      {% else %}
+        <span class="status-hidden">{% if LANGUAGE_CODE == 'ar' %}🙈 مخفية{% else %}🙈 Hidden{% endif %}</span>
+      {% endif %}
+    </span>
+            </h3>
+
+            <p style="color: black; margin-bottom: 15px;">
+                {% if LANGUAGE_CODE == 'ar' %}
+                تحكم في ظهور بطاقات عدد الموظفين والعملاء في لوحة تحكم العميل.
+                {% else %}
+                Control the visibility of employee and client count cards on the Player dashboard.
+                {% endif %}
+            </p>
+
+            <button
+                    id="toggle-counts-btn"
+                    class="toggle-button {% if dashboard_settings.show_employee_client_counts %}active{% endif %}"
+                    onclick="toggleDashboardCounts()"
+            >
+    <span id="button-text">
+      {% if dashboard_settings.show_employee_client_counts %}
+        {% if LANGUAGE_CODE == 'ar' %}🙈 إخفاء البطاقات{% else %}🙈 Hide Count Cards{% endif %}
+      {% else %}
+         {% if LANGUAGE_CODE == 'ar' %}👁️ عرض البطاقات{% else %}👁️ Show Count Cards{% endif %}
+      {% endif %}
+    </span>
+            </button>
+        </div>
+        <div class="dashboard-toggle-card bg-white">
+            <h3 style="color: black; margin-bottom: 15px; display: flex; align-items: center;">
+                <span style="font-size: 24px; margin-right: 10px;">📝</span>
+                {% if LANGUAGE_CODE == 'ar' %}تعديل الوصف{% else %}Edit Descriptions{% endif %}
+            </h3>
+
+            <form method="POST" action="{% url 'UpdateClubDescriptions' club.id %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label for="productsDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}وصف المنتجات{% else %}Products Description{% endif %}
+                    </label>
+                    <textarea id="productsDescription" name="productsDescription" rows="3"
+                              class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md">{{ club.productsDescription }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label for="articlesDescription" class="block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}وصف المقالات{% else %}Articles Description{% endif %}
+                    </label>
+                    <textarea id="articlesDescription" name="articlesDescription" rows="3"
+                              class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md">{{ club.articlesDescription }}</textarea>
+                </div>
+
+                <button type="submit"
+                        class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300">
+                    {% if LANGUAGE_CODE == 'ar' %}💾 حفظ التعديلات{% else %}💾 Save Changes{% endif %}
+                </button>
+            </form>
+        </div>
+
+        <!-- Add this after the existing sections in your template -->
+        <div class="dashboard-toggle-card bg-white">
+            <h3 style="color: black; margin-bottom: 15px; display: flex; align-items: center;">
+                <span style="font-size: 24px; margin-right: 10px;">🏦</span>
+                {% if LANGUAGE_CODE == 'ar' %}معلومات الحساب البنكي{% else %}Bank Account Information{% endif %}
+            </h3>
+
+            <form method="POST" action="{% url 'ViewClubProfile' club.id %}">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="bank_name" class="block text-sm font-medium text-gray-700 mb-1">
+                            {% if LANGUAGE_CODE == 'ar' %}اسم البنك{% else %}Bank Name{% endif %}
+                        </label>
+                        <input type="text" id="bank_name" name="bank_name" value="{{ club.bank_name|default:'' }}"
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2">
+                    </div>
+
+                    <div>
+                        <label for="account_name" class="block text-sm font-medium text-gray-700 mb-1">
+                            {% if LANGUAGE_CODE == 'ar' %}اسم الحساب{% else %}Account Name{% endif %}
+                        </label>
+                        <input type="text" id="account_name" name="account_name" value="{{ club.account_name|default:'' }}"
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2">
+                    </div>
+
+                    <div>
+                        <label for="account_number" class="block text-sm font-medium text-gray-700 mb-1">
+                            {% if LANGUAGE_CODE == 'ar' %}رقم الحساب{% else %}Account Number{% endif %}
+                        </label>
+                        <input type="text" id="account_number" name="account_number" value="{{ club.account_number|default:'' }}"
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2">
+                    </div>
+
+                    <div>
+                        <label for="iban" class="block text-sm font-medium text-gray-700 mb-1">
+                            {% if LANGUAGE_CODE == 'ar' %}رقم الآيبان{% else %}IBAN{% endif %}
+                        </label>
+                        <input type="text" id="iban" name="iban" value="{{ club.iban|default:'' }}"
+                               class="shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2">
+                    </div>
+
+                    <div>
+                        <label for="swift_code" class=" hidden block text-sm font-medium text-gray-700 mb-1">
+                            {% if LANGUAGE_CODE == 'ar' %}كود السويفت{% else %}SWIFT Code{% endif %}
+                        </label>
+                        <input type="text" id="swift_code" name="swift_code" value="{{ club.swift_code|default:'' }}"
+                               class=" hidden shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2">
+                    </div>
+
+                    <div>
+                        <label for="bank_country" class="hidden block text-sm font-medium text-gray-700 mb-1">
+                            {% if LANGUAGE_CODE == 'ar' %}بلد البنك{% else %}Bank Country{% endif %}
+                        </label>
+                        <input type="text" id="bank_country" name="bank_country" value="{{ club.bank_country|default:'' }}"
+                               class="hidden shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md p-2">
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label for="bank_address" class="hidden block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}عنوان البنك{% else %}Bank Address{% endif %}
+                    </label>
+                    <textarea id="bank_address" name="bank_address" rows="2"
+                              class="hidden shadow-sm focus:ring-blue-500 focus:border-blue-500 block w-full sm:text-sm border border-gray-300 rounded-md">{{ club.bank_address|default:'' }}</textarea>
+                </div>
+
+                <button type="submit"
+                        class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300">
+                    {% if LANGUAGE_CODE == 'ar' %}💾 حفظ المعلومات البنكية{% else %}💾 Save Bank Information{% endif %}
+                </button>
+            </form>
+        </div>
+        <div class="dashboard-toggle-card bg-white">
+            <h3 style="color: black; margin-bottom: 15px; display: flex; align-items: center;">
+                <span style="font-size: 24px; margin-right: 10px;">💎</span>
+                {% if LANGUAGE_CODE == 'ar' %}باقة الاشتراك الحالية{% else %}Current Subscription Plan{% endif %}
+            </h3>
+
+            {% if current_plan %}
+            <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200 mb-4">
+                <div class="flex justify-between items-start {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %}">
+                        <h4 class="text-xl font-bold text-gray-800 mb-2">{{ current_plan.name }}</h4>
+                        <p class="text-2xl font-bold text-blue-600 mb-3">{{ current_plan.price }}</p>
+
+                        {% if current_plan.features %}
+                        <ul class="{% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %} space-y-2">
+                            {% for feature in current_plan.features %}
+                            <li class="flex items-center {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %} text-gray-700">
+                                <svg class="w-4 h-4 text-green-500 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                {{ feature }}
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+                    </div>
+
+                    {% if current_plan.id == 1 %}
+                    <!-- If on free plan, show upgrade button -->
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}ml-4{% else %}mr-4{% endif %}">
+                <span class="inline-block px-3 py-1 text-sm font-medium text-green-800 bg-green-100 rounded-full mb-2">
+                    {% if LANGUAGE_CODE == 'ar' %}مجاني{% else %}Free{% endif %}
+                </span>
+                        <button onclick="showUpgradeOptions()" class="btn-gradient bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}ترقية الباقة{% else %}Upgrade Plan{% endif %}
+                        </button>
+                    </div>
+                    {% else %}
+                    <!-- If on paid plan, show current status -->
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}ml-4{% else %}mr-4{% endif %}">
+                <span class="inline-block px-3 py-1 text-sm font-medium text-blue-800 bg-blue-100 rounded-full mb-2">
+                    {% if LANGUAGE_CODE == 'ar' %}نشط{% else %}Active{% endif %}
+                </span>
+                        <button onclick="showUpgradeOptions()" class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}تغيير الباقة{% else %}Change Plan{% endif %}
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Upgrade Options Modal - Scrollable Version -->
+        <dialog id="upgradeDialog" class="rounded-2xl p-0 w-11/12 md:w-2/3 lg:w-1/2 max-w-4xl bg-white shadow-2xl animate-[fadeInUp_0.4s_ease-out] overflow-hidden flex flex-col max-h-[90vh]">
+            <!-- Header Section (Fixed) -->
+            <div class="p-8 pb-0 flex-shrink-0">
+                <div class="flex justify-between items-start mb-8">
+                    <h2 class="text-3xl font-bold text-gray-900 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}اختر باقة الاشتراك{% else %}Choose Your Plan{% endif %}
+                    </h2>
+                    <button id="closeUpgradeDialog" class="text-gray-400 hover:text-gray-500 transition-colors">
+                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scrollable Content Section -->
+            <div class="px-8 py-2 overflow-y-auto flex-grow">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {% for plan in pricing %}
+                    <div class="relative flex flex-col h-full border {% if plan.id == current_plan.id %}border-blue-500 shadow-blue-100{% else %}border-gray-200 hover:border-gray-300{% endif %} rounded-xl p-6 transition-all duration-200 hover:shadow-md mb-5">
+                        {% if plan.id == current_plan.id %}
+                        <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                    <span class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold shadow-md">
+                        {% if LANGUAGE_CODE == 'ar' %}الباقة الحالية{% else %}Current Plan{% endif %}
+                    </span>
+                        </div>
+                        {% endif %}
+
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">{{ plan.name }}</h3>
+                        <p class="text-4xl font-extrabold text-gray-900 mb-6">
+                            {{ plan.price }}
+                        </p>
+
+                        {% if plan.features %}
+                        <ul class="flex-grow space-y-3 mb-8">
+                            {% for feature in plan.features %}
+                            <li class="flex items-start text-gray-700">
+                                <svg class="flex-shrink-0 w-5 h-5 text-green-500 mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                                <span>{{ feature }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        {% endif %}
+
+                        {% if plan.id != current_plan.id %}
+                        <a href="{% url 'director_checkout' plan.id %}"
+                           class="mt-auto w-full btn-gradient bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-4 py-3 rounded-lg font-medium flex items-center justify-center gap-2 transition-all duration-200 shadow-sm hover:shadow-md">
+                            {% if plan.id > current_plan.id %}
+                            {% if LANGUAGE_CODE == 'ar' %}ترقية إلى هذه الباقة{% else %}Upgrade to This Plan{% endif %}
+                            {% else %}
+                            {% if LANGUAGE_CODE == 'ar' %}التبديل إلى هذه الباقة{% else %}Switch to This Plan{% endif %}
+                            {% endif %}
+                        </a>
+                        {% else %}
+                        <button disabled class="mt-auto w-full bg-gray-100 text-gray-400 px-4 py-3 rounded-lg font-medium cursor-not-allowed">
+                            {% if LANGUAGE_CODE == 'ar' %}الباقة الحالية{% else %}Current Plan{% endif %}
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Footer Section (Fixed) -->
+            <div class="bg-gray-50 px-8 py-4 border-t border-gray-200 flex justify-end flex-shrink-0">
+                <button
+                        type="button"
+                        id="closeUpgradeDialogBottom"
+                        class="text-gray-600 hover:text-gray-800 bg-white border border-gray-300 hover:border-gray-400 px-5 py-2 rounded-lg font-medium flex items-center gap-2 transition-all duration-200"
+                >
+                    {% if LANGUAGE_CODE == 'ar' %}إغلاق{% else %}Close{% endif %}
+                </button>
+            </div>
+        </dialog>
+
+    </div>
+
+
+
+</div>
+
+<!-- Dialog for club settings -->
+<dialog id="settingsDialog" class="stat-card rounded-xl px-6 pt-6 w-11/12 md:w-1/3 bg-white border-2 border-gray-200 shadow-xl animate-[fadeInUp_0.6s_ease-out]">
+    <h2 class="text-2xl font-bold mb-4 text-gray-800 flex items-center">
+        <svg class="w-6 h-6 mr-2 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        {% if LANGUAGE_CODE == 'ar' %}
+        إعدادات النادي
+        {% else %}
+        Club Settings
+        {% endif %}
+    </h2>
+    <form method="post" class="py-6 animate-stagger">
+        {% csrf_token %}
+        <div class="mb-6 animate-[fadeInUp_0.6s_ease-out_0.1s_both]">
+            <label
+                for="allowBookings1"
+                class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+            >
+                <div class="relative">
+                    <input
+                        type="checkbox"
+                        id="allowBookings1"
+                        name="allowBookings1"
+                        class="sr-only"
+                    />
+                    <div class="block bg-gray-300 w-14 h-8 rounded-full"></div>
+                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                </div>
+                <div class="ml-3 font-semibold text-lg text-gray-700">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    السماح بالحجوزات 1
+                    {% else %}
+                    Allow Bookings 1
+                    {% endif %}
+                </div>
+            </label>
+        </div>
+        <div class="mb-6 animate-[fadeInUp_0.6s_ease-out_0.2s_both]">
+            <label
+                for="allowBookings2"
+                class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+            >
+                <div class="relative">
+                    <input
+                        type="checkbox"
+                        id="allowBookings2"
+                        name="allowBookings2"
+                        class="sr-only"
+                    />
+                    <div class="block bg-gray-300 w-14 h-8 rounded-full"></div>
+                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                </div>
+                <div class="ml-3 font-semibold text-lg text-gray-700">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    السماح بالحجوزات 2
+                    {% else %}
+                    Allow Bookings 2
+                    {% endif %}
+                </div>
+            </label>
+        </div>
+        <div class="mb-6 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+            <label
+                for="allowBookings3"
+                class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+            >
+                <div class="relative">
+                    <input
+                        type="checkbox"
+                        id="allowBookings3"
+                        name="allowBookings3"
+                        class="sr-only"
+                    />
+                    <div class="block bg-gray-300 w-14 h-8 rounded-full"></div>
+                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                </div>
+                <div class="ml-3 font-semibold text-lg text-gray-700">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    السماح بالحجوزات 3
+                    {% else %}
+                    Allow Bookings 3
+                    {% endif %}
+                </div>
+            </label>
+        </div>
+        <div class="mb-6 animate-[fadeInUp_0.6s_ease-out_0.4s_both]">
+            <label
+                for="allowBookings4"
+                class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors duration-200"
+            >
+                <div class="relative">
+                    <input
+                        type="checkbox"
+                        id="allowBookings4"
+                        name="allowBookings4"
+                        class="sr-only"
+                    />
+                    <div class="block bg-gray-300 w-14 h-8 rounded-full"></div>
+                    <div class="dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition"></div>
+                </div>
+                <div class="ml-3 font-semibold text-lg text-gray-700">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    السماح بالحجوزات 4
+                    {% else %}
+                    Allow Bookings 4
+                    {% endif %}
+                </div>
+            </label>
+        </div>
+        <div class="flex justify-end {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %} gap-2 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+            <button
+                type="button"
+                id="closeDialogButton"
+                class="btn-gradient bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300"
+            >
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}
+                إغلاق
+                {% else %}
+                Close
+                {% endif %}
+            </button>
+            <button
+                type="submit"
+                class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300"
+            >
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}
+                حفظ التغييرات
+                {% else %}
+                Save Changes
+                {% endif %}
+            </button>
+        </div>
+    </form>
+</dialog>
+
+<script>
+    function showUpgradeOptions() {
+    document.getElementById("upgradeDialog").showModal();
+}
+
+document.getElementById("closeUpgradeDialog").onclick = function() {
+    document.getElementById("upgradeDialog").close();
+};
+
+// Close dialog when clicking outside
+document.getElementById("upgradeDialog").addEventListener('click', function(e) {
+    if (e.target === this) {
+        this.close();
+    }
+});
+
+
+    document.getElementById("settingsButton").onclick = function() {
+        document.getElementById("settingsDialog").showModal();
+    };
+    document.getElementById("closeDialogButton").onclick = function() {
+        document.getElementById("settingsDialog").close();
+    };
+
+    async function toggleDashboardCounts() {
+  const button = document.getElementById('toggle-counts-btn');
+  const buttonText = document.getElementById('button-text');
+  const statusIndicator = document.getElementById('status-indicator');
+
+  // Disable button during request
+  button.disabled = true;
+  buttonText.innerHTML = '⏳ Updating...';
+
+  try {
+    const response = await fetch('{% url "toggle_dashboard_counts" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',
+        'Accept': 'application/json'
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      // Update button state
+      if (data.status) {
+        button.classList.add('active');
+        buttonText.innerHTML = '🙈 Hide Count Cards';
+        statusIndicator.innerHTML = '<span class="status-visible">👁️ Visible</span>';
+      } else {
+        button.classList.remove('active');
+        buttonText.innerHTML = '👁️ Show Count Cards';
+        statusIndicator.innerHTML = '<span class="status-hidden">🙈 Hidden</span>';
+      }
+
+      // Show success message
+      showMessage(data.message, 'success');
+    } else {
+      showMessage('Failed to update settings', 'error');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showMessage('An error occurred while updating settings', 'error');
+  } finally {
+    button.disabled = false;
+  }
+}
+
+function showMessage(message, type) {
+  // Create and show Django-style message
+  const messagesContainer = document.querySelector('.messagelist') || createMessagesContainer();
+  const messageDiv = document.createElement('li');
+  messageDiv.className = `${type}`;
+  messageDiv.textContent = message;
+  messagesContainer.appendChild(messageDiv);
+
+  // Auto-remove after 5 seconds
+  setTimeout(() => {
+    messageDiv.remove();
+  }, 5000);
+}
+
+function createMessagesContainer() {
+  const container = document.createElement('ul');
+  container.className = 'messagelist';
+  document.querySelector('#content').insertBefore(container, document.querySelector('#content').firstChild);
+  return container;
+}
+
+    // Ensure both close buttons work the same way
+    document.getElementById('closeUpgradeDialogBottom').addEventListener('click', function() {
+        document.getElementById('upgradeDialog').close();
+    });
+    document.getElementById('closeUpgradeDialog').addEventListener('click', function() {
+        document.getElementById('upgradeDialog').close();
+    });
+
+    // Validate IBAN format on form submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const ibanInput = document.getElementById('iban');
+    const ibanValue = ibanInput.value.trim();
+
+    // Check if IBAN starts with SA followed by numbers
+    if (ibanValue && !/^SA\d{2}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}\s*\d{4}$/.test(ibanValue)) {
+        e.preventDefault(); // Prevent form submission
+        alert('{% if LANGUAGE_CODE == "ar" %}يجب أن يبدأ رقم الآيبان بـ SA متبوعة بالأرقام (مثال: SA03 8000 0000 6080 1016 7519){% else %}IBAN must start with SA followed by numbers (e.g., SA03 8000 0000 6080 1016 7519){% endif %}');
+        ibanInput.focus();
+    }
+});
+</script>
+{% endblock %}

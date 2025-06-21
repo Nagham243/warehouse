@@ -1,0 +1,269 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Reuse styles from the dashboard */
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-stagger > * {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #3b82f6; /* blue-500 */
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #2563eb; /* blue-600 */
+    }
+    /* Input focus styles */
+    input:focus, textarea:focus, select:focus {
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        transform: translateY(-1px);
+    }
+    /* Form section hover effect */
+    .form-section:hover {
+        background-color: #f3f4f6 !important; /* gray-100 */
+        transition: background-color 0.3s ease;
+    }
+</style>
+
+<div class="animated-bg bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen flex items-center justify-center">
+    <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+        <div class="stat-card bg-white shadow-2xl rounded-xl overflow-hidden max-w-4xl mx-auto border border-gray-100 animate-[fadeInUp_0.8s_ease-out]">
+            <form method="post" enctype="multipart/form-data" class="space-y-8">
+                {% csrf_token %}
+                <div class="px-6 py-8 sm:px-10 bg-gradient-to-r from-blue-500 to-blue-600">
+                    <h2 class="text-3xl font-extrabold text-white mb-8 text-center flex items-center justify-center">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.379-8.379-2.828-2.828z"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        تعديل الملف الشخصي للمنصة
+                        {% else %}
+                        Edit Salon Profile
+                        {% endif %}
+                        <span class="ml-2 text-blue-200">✨</span>
+                    </h2>
+                    <div
+                            class="flex flex-col lg:flex-row items-start space-y-8 lg:space-y-0 lg:space-x-8 lg:rtl:space-x-reverse"
+                    >
+                        <div class="flex-shrink-0 w-full lg:w-auto">
+                            <label for="club_profile_image_base64" class="block text-sm font-medium text-blue-100 mb-2">
+                                {% if LANGUAGE_CODE == 'ar' %}
+                                صورة الملف الشخصي
+                                {% else %}
+                                Profile Image
+                                {% endif %}
+                            </label>
+                            <div class="relative">
+                                <img
+                                    id="profileImagePreview"
+                                    class="h-40 w-40 rounded-full border-4 border-blue-200 mx-auto lg:mx-0 shadow-md transition-all duration-300 group-hover:shadow-blue-200"
+                                    src="data:image/jpeg;base64,{{ club.club_profile_image_base64|default:'' }}"
+                                    alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي للمنصة{% else %}Salon Profile Image{% endif %}"
+                                />
+                                <input
+                                        type="file"
+                                        id="club_profile_image_base64"
+                                        name="club_profile_image_base64"
+                                        accept="image/*"
+                                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                        onchange="previewImage(this)"
+                                />
+                                <div
+                                        class="absolute bottom-0 right-0 bg-blue-600 rounded-full p-2 text-white transition duration-300 hover:bg-blue-700 transform hover:scale-110"
+                                >
+                                    <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            class="h-6 w-6"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                    >
+                                        <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                                        />
+                                        <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                                        />
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex-grow space-y-6 w-full animate-stagger">
+                            <div class="animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                                <label for="name" class="block text-sm font-medium text-blue-100 mb-1 flex items-center">
+                                    <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h-2m-2 0h-5m-1-2l3-3m0 0l3 3m-3-3v6"/>
+                                    </svg>
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    اسم المنصة
+                                    {% else %}
+                                    Salon Name
+                                    {% endif %}
+                                </label>
+                                {{ form.name }}
+                            </div>
+                            <div class="animate-[fadeInUp_0.6s_ease-out_0.4s_both]">
+                                <label for="desc" class="block text-sm font-medium text-blue-100 mb-1 flex items-center">
+                                    <svg class="w-5 h-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    وصف قصير
+                                    {% else %}
+                                    Short Description
+                                    {% endif %}
+                                </label>
+                                {{ form.desc }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 sm:px-10 form-section animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+                    <label for="about" class="block text-sm font-medium text-gray-800 mb-1 flex items-center">
+                        <svg class="w-5 h-5 mr-1 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        نبذة عن المنصة
+                        {% else %}
+                        About the Salon
+                        {% endif %}
+                    </label>
+                    {{ form.about }}
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 sm:px-10 form-section animate-[fadeInUp_0.6s_ease-out_0.6s_both]">
+                    <label for="city" class="block text-sm font-medium text-gray-800 mb-1 flex items-center">
+                        <svg class="w-5 h-5 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        المدينة
+                        {% else %}
+                        City
+                        {% endif %}
+                    </label>
+                    {{ form.city }}
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 sm:px-10 form-section animate-[fadeInUp_0.6s_ease-out_0.7s_both]">
+                    <label for="district" class="block text-sm font-medium text-gray-800 mb-2 flex items-center">
+                        <svg class="w-5 h-5 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447-2.724A1 1 0 0021 13.382V2.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 13l-6-3"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        الحي
+                        {% else %}
+                        District
+                        {% endif %}
+                    </label>
+                    {{ form.district }}
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 sm:px-10 form-section animate-[fadeInUp_0.6s_ease-out_0.8s_both]">
+                    <label for="street" class="block text-sm font-medium text-gray-800 mb-2 flex items-center">
+                        <svg class="w-5 h-5 mr-1 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447-2.724A1 1 0 0021 13.382V2.618a1 1 0 00-1.447-.894L15 4m0 13V4m0 13l-6-3"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        الشارع
+                        {% else %}
+                        Street
+                        {% endif %}
+                    </label>
+                    {{ form.street }}
+                </div>
+
+                <div class="px-6 py-4 bg-gray-50 sm:px-10 flex justify-end {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %} animate-[fadeInUp_0.6s_ease-out_0.9s_both]">
+                    <button
+                        type="submit"
+                        class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-all duration-300"
+                    >
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        حفظ التغييرات
+                        {% else %}
+                        Save Changes
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profileImagePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

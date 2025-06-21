@@ -1,0 +1,17 @@
+/* language_switcher.css */
+.language-container {
+    padding: 20px;
+    margin: 20px 0;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+}
+
+.language-buttons {
+    margin-top: 15px;
+}
+
+.btn-group .btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    transition: all 0.3s ease;
+}

@@ -1,0 +1,364 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+{% csrf_token %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+
+    <!-- Title and main buttons -->
+    <div class="flex justify-between items-center py-8 animate-fade-in">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2 transform transition-all duration-500 opacity-0 animate-title">
+            <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+                </svg>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %} إدارة الفئات {% else %} Category Management {% endif %}
+        </h1>
+        <div class="flex space-x-2">
+            <a href="{% url 'add_category' %}" class="ml-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform opacity-0 animate-button shadow-md hover:shadow-blue-300/40">
+                {% if LANGUAGE_CODE == 'ar' %} إضافة فئة جديدة {% else %} Add New Category {% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8 opacity-0 animate-fade-in" style="animation-delay: 0.2s">
+        <!-- Total Categories -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-blue-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} إجمالي الفئات {% else %} Total Categories {% endif %}</h3>
+                <div class="bg-blue-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H5m14 14H5m14-7H5"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.total_categories }}</p>
+        </div>
+
+        <!-- Active Categories -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-green-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} فئات نشطة {% else %} Active Categories {% endif %}</h3>
+                <div class="bg-green-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.active_categories }}</p>
+        </div>
+
+        <!-- Total Subcategories -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-purple-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} إجمالي الفئات الفرعية {% else %} Total Subcategories {% endif %}</h3>
+                <div class="bg-purple-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.total_subcategories }}</p>
+        </div>
+
+        <!-- Active Subcategories -->
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-amber-500">
+            <div class="flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">{% if LANGUAGE_CODE == 'ar' %} فئات فرعية نشطة {% else %} Active Subcategories {% endif %}</h3>
+                <div class="bg-amber-100/50 p-2 rounded-full">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-3xl font-bold text-gray-800 mt-2">{{ stats.active_subcategories }}</p>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="mb-6 opacity-0 animate-fade-in" style="animation-delay: 0.4s">
+        <form method="GET" class="flex gap-4 items-end">
+            <div class="relative flex-1 max-w-md">
+                <div class="absolute inset-y-0 {% if LANGUAGE_CODE == 'ar' %}right-0 pr-3{% else %}left-0 pl-3{% endif %} flex items-center pointer-events-none">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </div>
+                <input
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        class="bg-white/90 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full {% if LANGUAGE_CODE == 'ar' %}pr-10 pl-3{% else %}pl-10 pr-3{% endif %} py-2.5"
+                        placeholder="{% if LANGUAGE_CODE == 'ar' %}البحث في الفئات والفئات الفرعية...{% else %}Search categories and subcategories...{% endif %}"
+                />
+            </div>
+            <button
+                    type="submit"
+                    class="bg-blue-500 text-white px-4 py-2.5 rounded-lg hover:bg-blue-600 transition-colors duration-300"
+            >
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </button>
+            {% if search_query %}
+            <a
+                    href="{% url 'category_list' %}"
+                    class="bg-gray-500 text-white px-4 py-2.5 rounded-lg hover:bg-gray-600 transition-colors duration-300"
+            >
+                {% if LANGUAGE_CODE == 'ar' %} مسح {% else %} Clear {% endif %}
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Categories with Subcategories -->
+    <div class="opacity-0 animate-fade-in" style="animation-delay: 0.5s">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {% for category in categories %}
+            <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden">
+                <div class="relative">
+                    {% if category.image %}
+                    <img src="{{ category.image.url }}" alt="{{ category.name }}" class="w-full h-48 object-cover">
+                    {% else %}
+                    <div class="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
+                        <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H5m14 14H5m14-7H5"/>
+                        </svg>
+                    </div>
+                    {% endif %}
+                    <div class="absolute top-2 right-2">
+                        <span class="px-2 py-1 text-xs rounded-full {% if category.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if category.is_active %}
+                                {% if LANGUAGE_CODE == 'ar' %} نشط {% else %} Active {% endif %}
+                            {% else %}
+                                {% if LANGUAGE_CODE == 'ar' %} غير نشط {% else %} Inactive {% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="p-4">
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-semibold text-lg text-gray-800">{{ category.name }}</h3>
+                            <p class="text-gray-600 text-sm">{{ category.description|default:"No description available" }}</p>
+                        </div>
+                        <div class="flex space-x-2">
+                            <a href="{% url 'category_detail' category.id %}" class="ml-1 bg-blue-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-blue-600 transition-colors duration-300">
+                                {% if LANGUAGE_CODE == 'ar' %} عرض {% else %} View {% endif %}
+                            </a>
+                            <a href="{% url 'edit_category' category.id %}" class="bg-green-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-600 transition-colors duration-300">
+                                {% if LANGUAGE_CODE == 'ar' %} تعديل {% else %} Edit {% endif %}
+                            </a>
+                            <button
+                                    onclick="toggleStatus('category', {{ category.id }}, {{ category.is_active|yesno:'true,false' }})"
+                                    class="{% if category.is_active %}bg-orange-500 hover:bg-orange-600{% else %}bg-emerald-500 hover:bg-emerald-600{% endif %} text-white px-3 py-1 rounded-lg text-sm transition-colors duration-300"
+                            >
+                                {% if category.is_active %}
+                                {% if LANGUAGE_CODE == 'ar' %} إبطال {% else %} Disable {% endif %}
+                                {% else %}
+                                {% if LANGUAGE_CODE == 'ar' %} تفعيل {% else %} Enable {% endif %}
+                                {% endif %}
+                            </button>
+                            <a href="{% url 'delete_category' category.id %}" class="bg-red-500 text-white px-3 py-1 rounded-lg text-sm hover:bg-red-600 transition-colors duration-300">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Subcategories section -->
+                    <div class="mt-4 border-t border-gray-200 pt-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <h4 class="font-medium text-gray-800">
+                                {% if LANGUAGE_CODE == 'ar' %} الفئات الفرعية {% else %} Subcategories {% endif %}
+                                <span class="text-sm text-gray-500">({{ category.subcategory_count }})</span>
+                            </h4>
+                            <a href="{% url 'add_subcategory' %}?category={{ category.id }}" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-lg text-sm hover:from-green-600 hover:to-green-700 transition-all duration-300">
+                                {% if LANGUAGE_CODE == 'ar' %} إضافة فئة فرعية {% else %} Add Subcategory {% endif %}
+                            </a>
+                        </div>
+
+                        {% if category.subcategories.all %}
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {% for subcategory in category.subcategories.all %}
+                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-colors duration-300">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h5 class="font-medium text-gray-800">{{ subcategory.name }}</h5>
+                                        <p class="text-xs text-gray-500 line-clamp-1">{{ subcategory.description|default:"" }}</p>
+                                    </div>
+                                    <span class="px-1.5 py-0.5 text-xs rounded-full {% if subcategory.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                        {% if subcategory.is_active %}
+                                            {% if LANGUAGE_CODE == 'ar' %} نشط {% else %} Active {% endif %}
+                                        {% else %}
+                                            {% if LANGUAGE_CODE == 'ar' %} غير نشط {% else %} Inactive {% endif %}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="flex justify-end space-x-1 mt-2">
+                                    <a href="{% url 'edit_subcategory' subcategory.id %}" class="ml-2 text-blue-500 hover:text-blue-700 text-sm">
+                                        {% if LANGUAGE_CODE == 'ar' %} تعديل {% else %} Edit {% endif %}
+                                    </a>
+                                    <button
+                                            onclick="toggleStatus('subcategory', {{ subcategory.id }}, {{ subcategory.is_active|yesno:'true,false' }})"
+                                            class="text-sm {% if subcategory.is_active %}text-orange-500 hover:text-orange-700{% else %}text-emerald-500 hover:text-emerald-700{% endif %}"
+                                    >
+                                        {% if subcategory.is_active %}
+                                        {% if LANGUAGE_CODE == 'ar' %} إبطال {% else %} Disable {% endif %}
+                                        {% else %}
+                                        {% if LANGUAGE_CODE == 'ar' %} تفعيل {% else %} Enable {% endif %}
+                                        {% endif %}
+                                    </button>
+                                    <a href="{% url 'delete_subcategory' subcategory.id %}" class="text-red-500 hover:text-red-700 text-sm">
+                                        {% if LANGUAGE_CODE == 'ar' %} حذف {% else %} Delete {% endif %}
+                                    </a>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <div class="bg-gray-50 rounded-lg p-4 text-center">
+                            <p class="text-gray-500 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %} لا توجد فئات فرعية لهذه الفئة {% else %} No subcategories for this category {% endif %}
+                            </p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14-7H5m14 14H5m14-7H5"/>
+                </svg>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">
+                    {% if search_query %}
+                    {% if LANGUAGE_CODE == 'ar' %} لا توجد فئات مطابقة {% else %} No matching categories {% endif %}
+                    {% else %}
+                    {% if LANGUAGE_CODE == 'ar' %} لا توجد فئات {% else %} No categories found {% endif %}
+                    {% endif %}
+                </h3>
+                <p class="text-gray-500">
+                    {% if search_query %}
+                    {% if LANGUAGE_CODE == 'ar' %} جرب البحث بكلمات مختلفة {% else %} Try searching with different keywords {% endif %}
+                    {% else %}
+                    {% if LANGUAGE_CODE == 'ar' %} ابدأ بإضافة فئة جديدة {% else %} Start by adding a new category {% endif %}
+                    {% endif %}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Categories Pagination -->
+        {% if categories.has_other_pages %}
+        <div class="flex justify-center mt-8">
+            <nav class="flex items-center space-x-2">
+                {% if categories.has_previous %}
+                <a href="?category_page={{ categories.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
+                    {% if LANGUAGE_CODE == 'ar' %} السابق {% else %} Previous {% endif %}
+                </a>
+                {% endif %}
+
+                {% for num in categories.paginator.page_range %}
+                {% if num == categories.number %}
+                <span class="px-3 py-2 bg-blue-500 text-white rounded-lg">{{ num }}</span>
+                {% else %}
+                <a href="?category_page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">{{ num }}</a>
+                {% endif %}
+                {% endfor %}
+
+                {% if categories.has_next %}
+                <a href="?category_page={{ categories.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-300">
+                    {% if LANGUAGE_CODE == 'ar' %} التالي {% else %} Next {% endif %}
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes title {
+      from { opacity: 0; transform: translateX(-20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes button {
+      from { opacity: 0; transform: translateX(20px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .animate-fade-in {
+      animation: fade-in 0.6s ease-out forwards;
+    }
+
+    .animate-title {
+      animation: title 0.8s ease-out 0.2s forwards;
+    }
+
+    .animate-button {
+      animation: button 0.8s ease-out 0.4s forwards;
+    }
+
+    .line-clamp-1 {
+      display: -webkit-box;
+      -webkit-line-clamp: 1;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .line-clamp-2 {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+</style>
+
+<script>
+    // Toggle status functionality
+    function toggleStatus(type, id, currentStatus) {
+        const url = `/club_dashboard/${type === 'category' ? 'categories' : 'subcategories'}/${id}/toggle-status/`;
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const statusText = currentStatus ? 'disable' : 'enable';
+
+        if (confirm(`Are you sure you want to ${statusText} this ${type}?`)) {
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while updating the status. Please check console for details.');
+            });
+        }
+    }
+</script>
+
+{% endblock %}

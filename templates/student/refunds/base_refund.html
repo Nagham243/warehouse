@@ -1,0 +1,50 @@
+{% extends "base_student_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-rose-50 to-amber-50">
+    <!-- Banner with Refunds Header -->
+    <div class="relative h-56 bg-gradient-to-r from-rose-600 to-pink-600 overflow-hidden">
+        <div class="absolute inset-0 bg-black opacity-50"></div>
+        <div class="absolute bottom-0 left-0 right-0 text-center text-white pb-8 animate-[fadeInUp_0.6s_ease-out]">
+            <h1 class="text-4xl font-extrabold mb-2">
+                {% if LANGUAGE_CODE == 'ar' %}
+                ✨ إدارة المطالبات والمنازعات
+                {% else %}
+                ✨ Refunds & Disputes
+                {% endif %}
+            </h1>
+            <p class="text-xl">
+                {% if LANGUAGE_CODE == 'ar' %}
+                إدارة مطالبات الاسترداد وحل المنازعات
+                {% else %}
+                Manage refund requests and dispute resolution
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <section class="container mx-auto px-4 pt-8 pb-16">
+        {% block refund_content %}{% endblock %}
+    </section>
+</div>
+
+<style>
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+    @keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+</style>
+{% endblock %}

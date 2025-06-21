@@ -1,0 +1,289 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+{% block title %}
+{% if LANGUAGE_CODE == 'ar' %}
+✨ تفاصيل الموعد
+{% else %}
+✨ Appointment Details
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<style>
+    /* Reusing animations and styles from the dashboard */
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    .animate-fadeIn {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    .animate-fadeInRight {
+        animation: fadeInRight 0.5s ease-out forwards;
+        opacity: 0;
+    }
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeInRight {
+        from { opacity: 0; transform: translateX(20px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    /* Custom styles for appointment details */
+    .appointment-card {
+        background-color: #FFFFFF;
+        border-radius: 1rem;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        border: 1px solid #E5E7EB;
+        animation: fadeInDown 0.8s ease-out;
+    }
+    .appointment-header {
+        background: linear-gradient(to right, #3B82F6, #9333EA);
+        color: #FFFFFF;
+        padding: 1.5rem;
+        text-align: center;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+    }
+    .appointment-section {
+        padding: 1.25rem;
+        border-bottom: 1px solid #E5E7EB;
+        transition: background-color 0.2s ease;
+        animation: fadeIn 0.8s ease-out both;
+    }
+    .appointment-section:hover {
+        background-color: #F9FAFB;
+    }
+    .section-title {
+        color: #3B82F6;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+    .info-label {
+        font-weight: 500;
+        color: #3B82F6;
+        opacity: 0.8;
+    }
+    .info-value {
+        color: #4B5563;
+    }
+    .appointment-type-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+        border-radius: 9999px;
+        background-color: rgba(255, 255, 255, 0.2);
+        margin-top: 0.75rem;
+    }
+    .type-dot {
+        width: 0.75rem;
+        height: 0.75rem;
+        border-radius: 9999px;
+    }
+    .type-short { background-color: #10B981; }
+    .type-medium { background-color: #F59E0B; }
+    .type-long { background-color: #EF4444; }
+</style>
+
+<section class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animated-bg bg-gradient-to-br from-blue-50 to-purple-50 w-full min-h-screen py-12 px-4 md:px-8">
+    <div class="max-w-2xl mx-auto p-6">
+        <div class="appointment-card stat-card">
+            <div class="appointment-header">
+                <h1 class="text-2xl font-bold">
+                    {% if LANGUAGE_CODE == 'ar' %}✨ تفاصيل الموعد{% else %}✨ Appointment Details{% endif %}
+                </h1>
+                <div class="appointment-type-indicator animate-[fadeIn_0.6s_ease-out_0.2s_both]">
+                    {% with total_duration=total_duration %}
+                    {% if total_duration <= 30 %}
+                    <span class="type-dot type-short"></span>
+                    <span>
+                        {% if LANGUAGE_CODE == 'ar' %}⏱️ موعد قصير ({{ total_duration }} دقيقة){% else %}⏱️ Short Appointment ({{ total_duration }} mins){% endif %}
+                    </span>
+                    {% elif total_duration <= 90 %}
+                    <span class="type-dot type-medium"></span>
+                    <span>
+                        {% if LANGUAGE_CODE == 'ar' %}⏱️ موعد متوسط ({{ total_duration }} دقيقة){% else %}⏱️ Medium Appointment ({{ total_duration }} mins){% endif %}
+                    </span>
+                    {% else %}
+                    <span class="type-dot type-long"></span>
+                    <span>
+                        {% if LANGUAGE_CODE == 'ar' %}⏱️ موعد طويل ({{ total_duration }} دقيقة){% else %}⏱️ Long Appointment ({{ total_duration }} mins){% endif %}
+                    </span>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+
+            <div class="appointment-section" style="animation-delay: 0.1s;">
+                <h2 class="section-title">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}معلومات الموعد{% else %}Appointment Information{% endif %}
+                </h2>
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}اليوم:{% else %}Day:{% endif %}</span>
+                    <span class="info-value">{{ appointment.day }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}الوقت:{% else %}Time:{% endif %}</span>
+                    <span class="info-value" dir="ltr">{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</span>
+                </div>
+            </div>
+
+            <!-- NEW: Booking Creator Section -->
+            <div class="appointment-section" style="animation-delay: 0.2s;">
+                <h2 class="section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}معلومات الحجز{% else %}Booking Information{% endif %}
+                </h2>
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}تم الحجز بواسطة:{% else %}Booked by:{% endif %}</span>
+                    <div class="flex items-center gap-2">
+                        {% if created_by_type == 'coach' %}
+                        <span class="creator-badge creator-coach">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z" />
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}مدرب{% else %}Coach{% endif %}
+                        </span>
+                        {% elif created_by_type == 'receptionist' %}
+                        <span class="creator-badge creator-receptionist">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clip-rule="evenodd" />
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}موظف استقبال{% else %}Receptionist{% endif %}
+                        </span>
+                        {% else %}
+                        <span class="creator-badge" style="background-color: #F3F4F6; color: #6B7280;">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}Unknown{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}اسم من قام بالحجز:{% else %}Creator Name:{% endif %}</span>
+                    <span class="info-value">{{ created_by_name }}</span>
+                </div>
+            </div>
+
+            <div class="appointment-section" style="animation-delay: 0.2s;">
+                <h2 class="section-title">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M6 6V5a3 3 0 013-3h2a3 3 0 013 3v1h2a2 2 0 012 2v3.57A22.952 22.952 0 0110 13a22.95 22.95 0 01-8-1.43V8a2 2 0 012-2h2zm2-1a1 1 0 011-1h2a1 1 0 011 1v1H8V5zm1 5a1 1 0 011-1h.01a1 1 0 110 2H10a1 1 0 01-1-1z" clip-rule="evenodd" />
+                        <path d="M2 13.692V16a2 2 0 002 2h12a2 2 0 002-2v-2.308A24.974 24.974 0 0110 15c-2.796 0-5.487-.46-8-1.308z" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}معلومات الخدمة{% else %}Service Information{% endif %}
+                </h2>
+                {% if booking_services %}
+                {% for bs in booking_services %}
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}نوع الخدمة:{% else %}Service Type:{% endif %}</span>
+                    <span class="info-value">{{ bs.service.title }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}مدة الخدمة:{% else %}Service Duration:{% endif %}</span>
+                    <span class="info-value">
+                        {% if LANGUAGE_CODE == 'ar' %}{{ bs.service.duration }} دقيقة{% else %}{{ bs.service.duration }} minutes{% endif %}
+                    </span>
+                </div>
+                {% if request.user.userprofile.director_profile %}
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}السعر:{% else %}Price:{% endif %}</span>
+                    <span class="info-value">
+                        {% if LANGUAGE_CODE == 'ar' %}{{ bs.service.price }} ريال{% else %}{{ bs.service.price }} SAR{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% else %}
+                <div class="info-row">
+                    <span class="info-value">
+                        {% if LANGUAGE_CODE == 'ar' %}لا توجد خدمات مرتبطة بهذا الحجز{% else %}No services associated with this booking{% endif %}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="appointment-section" style="animation-delay: 0.3s;">
+                <h2 class="section-title">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}معلومات المدرب{% else %}Employee Information{% endif %}
+                </h2>
+                <div class="info-row">
+                    <span class="info-label">{% if LANGUAGE_CODE == 'ar' %}اسم المدرب:{% else %}Employee Name:{% endif %}</span>
+                    <span class="info-value">{{ employee }}</span>
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-4 p-6 animate-[fadeInUp_0.6s_ease-out_0.4s_both]">
+                <a href="{% url 'director_cancel_appointment' appointment_id=appointment.id %}" class="btn-gradient bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2" onclick="return confirm('{% if LANGUAGE_CODE == 'ar' %}هل أنت متأكد من إلغاء هذا الحجز؟{% else %}Are you sure you want to cancel this appointment?{% endif %}');">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}إلغاء الحجز{% else %}Cancel Appointment{% endif %}
+                </a>
+                <a href="{% url 'club_salon_appointments' %}" class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-300 flex items-center gap-2">
+                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}رجوع{% else %}Back{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

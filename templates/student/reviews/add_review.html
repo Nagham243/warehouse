@@ -1,0 +1,92 @@
+{% extends "base_student_dashboard.html" %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen animate-gradient-slow">
+  <div class="container mx-auto px-4 py-8 mb-24">
+    <div class="text-center mb-12 transform transition-all duration-500 hover:scale-105">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-rose-800">
+        {% if LANGUAGE_CODE == 'ar' %}
+        إضافة تقييم ✨
+        {% else %}
+        Add a Review ✨
+        {% endif %}
+      </h1>
+      <p class="text-xl text-rose-600 max-w-2xl mx-auto">
+        {% if LANGUAGE_CODE == 'ar' %}
+        قم بإضافة تقييمك لأحد المدربين في النادي 💖
+        {% else %}
+        Submit your review for one of the salon employees 💖
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="max-w-lg mx-auto bg-white p-8 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 border border-rose-100">
+      <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Dropdown to Select a Coach -->
+        <div class="mb-6 transition-all duration-300 hover:translate-y-1">
+          <label class="block text-rose-700 font-medium mb-2">
+            {% if LANGUAGE_CODE == 'ar' %}
+            اختر المدرب
+            {% else %}
+            Select Employee
+            {% endif %}
+          </label>
+          <select name="coach_id" class="w-full p-3 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-rose-300 outline-none transition">
+            <option value="">
+              {% if LANGUAGE_CODE == 'ar' %}
+              -- اختر مدربا --
+              {% else %}
+              -- Select an employee --
+              {% endif %}
+            </option>
+            {% for coach in coaches %}
+            <option value="{{ coach.id }}">{{ coach.full_name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Rating Input -->
+        <div class="mb-6 transition-all duration-300 hover:translate-y-1">
+          <label class="block text-rose-700 font-medium mb-2">
+            {% if LANGUAGE_CODE == 'ar' %}
+            التقييم ⭐
+            {% else %}
+            Rating ⭐
+            {% endif %}
+          </label>
+          <div class="rating-input">
+            {{ form.rating }}
+          </div>
+        </div>
+
+        <!-- Comment Input -->
+        <div class="mb-6 transition-all duration-300 hover:translate-y-1">
+          <label class="block text-rose-700 font-medium mb-2">
+            {% if LANGUAGE_CODE == 'ar' %}
+            التعليق 💭
+            {% else %}
+            Comment 💭
+            {% endif %}
+          </label>
+          <textarea
+                  name="{{ form.comment.name }}"
+                  class="w-full p-3 border border-rose-200 rounded-xl focus:ring-2 focus:ring-rose-300 focus:border-rose-300 outline-none transition"
+                  rows="4"
+                  placeholder="{% if LANGUAGE_CODE == 'ar' %}اكتب تعليقك هنا...{% else %}Write your comment here...{% endif %}"
+          >{{ form.comment.value|default:'' }}</textarea>
+        </div>
+
+        <button type="submit" class="w-full bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-3 rounded-xl hover:from-rose-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 font-medium shadow-md">
+          {% if LANGUAGE_CODE == 'ar' %}
+          إرسال التقييم ✓
+          {% else %}
+          Submit Review ✓
+          {% endif %}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

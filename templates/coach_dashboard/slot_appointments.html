@@ -1,0 +1,160 @@
+{% extends 'base_coach_dashboard.html' %}
+{% load static %}
+
+{% block title %}{% if LANGUAGE_CODE == 'ar' %}
+✨ مواعيد الفترة - {{ day }} {{ time_slot }}
+{% else %}
+✨ Slot Appointments - {{ day }} {{ time_slot }}
+{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+      }
+      to {
+          opacity: 1;
+      }
+  }
+
+  @keyframes fadeInDown {
+      from {
+          opacity: 0;
+          transform: translateY(-20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInUp {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInRight {
+      from {
+          opacity: 0;
+          transform: translateX(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateX(0);
+      }
+  }
+</style>
+<section class="bg-gradient-to-br from-rose-50 to-amber-50 w-full min-h-screen py-12 px-4 md:px-8 ">
+  <div class="{% if LANGUAGE_CODE == 'ar' %}xl:mr-64{% else %}xl:ml-64{% endif %} p-6">
+    <div class="container mx-auto px-4 py-8">
+      <div class="bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-lg overflow-hidden border border-rose-100 animate-[fadeInDown_0.8s_ease-out]">
+        <div class="bg-gradient-to-r from-rose-600 to-pink-600 text-white px-6 py-4 rounded-t-lg">
+          <div class="flex items-center justify-between">
+            <h1 class="text-xl font-bold">
+              {% if LANGUAGE_CODE == 'ar' %}
+              📅 مواعيد يوم {{ day }} - {{ time_slot }}
+              {% else %}
+              📅 Appointments for {{ day }} - {{ time_slot }}
+              {% endif %}
+            </h1>
+            <a href="{% url 'coach_salon_appointments' %}" class="bg-white text-rose-600 px-4 py-2 rounded-md hover:bg-rose-100 transition duration-200">
+              {% if LANGUAGE_CODE == 'ar' %}
+              ↩️ العودة للجدول
+              {% else %}
+              ↩️ Back to Schedule
+              {% endif %}
+            </a>
+          </div>
+        </div>
+
+        <div class="p-6">
+          {% if appointments %}
+          <div class="mb-6 animate-[fadeIn_0.8s_ease-out_0.1s_both]">
+            <h2 class="text-lg font-semibold mb-4 text-rose-400/80">
+              {% if LANGUAGE_CODE == 'ar' %}
+              👥 عدد المواعيد في هذه الفترة: {{ appointments|length }}
+              {% else %}
+              👥 Number of appointments in this slot: {{ appointments|length }}
+              {% endif %}
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {% for appointment in appointments %}
+              <div class="border border-rose-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-[fadeInRight_0.5s_ease-out_{{ forloop.counter|add:0.2 }}s_both]">
+                <div class="bg-rose-50 text-rose-700/80 px-4 py-2 font-semibold flex justify-between items-center">
+                  <span>{{ appointment.student_name }}</span>
+                  <span class="text-sm">{{ appointment.start_time }} - {{ appointment.end_time }}</span>
+                </div>
+                <div class="p-4">
+                  <div class="mb-3">
+                    <span class="font-semibold text-rose-400/80">{% if LANGUAGE_CODE == 'ar' %}
+                                             الخدمات:
+                                          {% else %}
+                                             Services:
+                                          {% endif %}</span>
+                    <span class="text-gray-600">{{ appointment.services }}</span>
+                  </div>
+                  <div class="mb-3">
+                    <span class="font-semibold text-rose-400/80">{% if LANGUAGE_CODE == 'ar' %}
+                                             المدرب:
+                                          {% else %}
+                                             Coach:
+                                          {% endif %}</span>
+                    <span class="text-gray-600">{{ appointment.employee }}</span>
+                  </div>
+
+
+                  <div class="flex justify-end mt-4">
+                    <a href="{% url 'coach_appointment_details' appointment.id %}" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-4 py-2 rounded-md ml-2 transition duration-200">
+                      {% if LANGUAGE_CODE == 'ar' %}
+                      🔍 التفاصيل
+                      {% else %}
+                      🔍 Details
+                      {% endif %}
+                    </a>
+                    <!--                    <a href="{% url 'coach_cancel_appointment' appointment.id %}" class="bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded-md transition duration-200" onclick="return confirm('{% if LANGUAGE_CODE == 'ar' %}هل أنت متأكد من إلغاء هذا الحجز؟{% else %}Are you sure you want to cancel this appointment?{% endif %}');">-->
+                    <!--                      {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}-->
+                    <!--                    </a>-->
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% else %}
+          <div class="py-8 text-center">
+            <div class="mb-4 text-gray-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-700">
+              {% if LANGUAGE_CODE == 'ar' %}لا توجد مواعيد في هذه الفترة{% else %}No appointments in this period{% endif %}
+            </h2>
+            <!--            <p class="text-gray-500 mt-2">{% if LANGUAGE_CODE == 'ar' %}يمكنك حجز موعد جديد من خلال الضغط على الزر أدناه{% else %}You can book a new appointment by clicking the button below{% endif %}</p>-->
+            <!--            <div class="mt-6">-->
+            <!--              <a href="{% url 'select_appointment_day' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md transition duration-200">-->
+            <!--                {% if LANGUAGE_CODE == 'ar' %}حجز موعد جديد{% else %}Book a new appointment{% endif %}-->
+            <!--              </a>-->
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Any additional JavaScript can be added here if needed
+</script>
+{% endblock %}

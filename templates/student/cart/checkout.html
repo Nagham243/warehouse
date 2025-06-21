@@ -1,0 +1,221 @@
+{% extends "base_student_dashboard.html" %} {% load students_tags %} {% load static %}
+{% block content %}
+
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen py-8">
+    <div class="max-w-5xl mx-auto px-4">
+        <!-- Breadcrumbs -->
+        <div class="flex items-center mb-6 text-gray-600">
+            <a href="{% url 'studentIndex' %}" class="hover:text-rose-600">{% if LANGUAGE_CODE == 'ar' %}الرئيسية{% else %}Home{% endif %}</a>
+            <span class="mx-2">/</span>
+            <a href="{% url 'cart' %}" class="hover:text-rose-600">{% if LANGUAGE_CODE == 'ar' %}سلة التسوق{% else %}Cart{% endif %}</a>
+            <span class="mx-2">/</span>
+            <span class="text-rose-600">{% if LANGUAGE_CODE == 'ar' %}الدفع{% else %}Checkout{% endif %}</span>
+        </div>
+
+        <h1 class="text-3xl font-bold text-rose-800 mb-8 text-right">{% if LANGUAGE_CODE == 'ar' %}إتمام الطلب{% else %}Place Order{% endif %}</h1>
+
+        <div class="flex flex-col lg:flex-row gap-6">
+            <!-- Checkout Form -->
+            <div class="lg:w-2/3">
+                <div class="bg-white rounded-lg shadow-md p-6 mb-24 border border-rose-100 hover:shadow-lg transition-shadow duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-right text-rose-700">{% if LANGUAGE_CODE == 'ar' %}معلومات العميل{% else %}Customer Information{% endif %}</h2>
+
+                    <form id="checkout-form" action="{% url 'place_order' %}" method="POST" class="space-y-4">
+                        {% csrf_token %}
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="first_name" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}الاسم الأول{% else %}First Name{% endif %}</label>
+                                <input type="text" value="{{student.full_name}}" id="first_name" name="first_name" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+
+                            <div>
+                                <label for="last_name" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}الاسم الأخير{% else %}Last Name{% endif %}</label>
+                                <input type="text" id="last_name" name="last_name" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+
+                            <div>
+                                <label for="email" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</label>
+                                <input type="email" value="{{user.user.email}}" id="email" name="email" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+
+                            <div>
+                                <label for="phone" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}</label>
+                                <input type="tel" value="{{student.phone}}" id="phone" name="phone" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="address" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}العنوان{% else %}Address{% endif %}</label>
+                            <input type="text" id="address" name="address" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="city" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}المدينة{% else %}City{% endif %}</label>
+                                <input type="text" id="city" name="city" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+
+                            <div>
+                                <label for="region" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}المنطقة{% else %}Region{% endif %}</label>
+                                <input type="text" id="region" name="region" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+
+                            <div>
+                                <label for="postal_code" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}الرمز البريدي{% else %}Postal Code{% endif %}</label>
+                                <input type="text" id="postal_code" name="postal_code" required class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="notes" class="block text-gray-700 text-right mb-1">{% if LANGUAGE_CODE == 'ar' %}ملاحظات (اختياري){% else %}Notes (optional){% endif %}</label>
+                            <textarea id="notes" name="notes" rows="3" class="w-full px-3 py-2 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-500 text-right"></textarea>
+                        </div>
+
+                        <div class="bg-white rounded-lg shadow-md p-6 mb-8 border border-rose-100 hover:shadow-lg transition-shadow duration-300">
+                            <h2 class="text-xl font-semibold mb-4 text-right text-rose-700">{% if LANGUAGE_CODE == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</h2>
+
+                            <div class="space-y-4">
+                                <div class="border border-rose-200 rounded-md p-4 flex items-center justify-between hover:bg-rose-50 transition-colors duration-300">
+                                    <div class="flex items-center">
+                                        <i class="far fa-credit-card text-rose-600 text-xl ml-2"></i>
+                                        <span>{% if LANGUAGE_CODE == 'ar' %}بطاقة ائتمان{% else %}Credit Card{% endif %}</span>
+                                    </div>
+                                    <input type="radio" name="payment_method" value="credit_card" checked class="form-radio text-rose-600">
+                                </div>
+
+                                <div class="border border-rose-200 rounded-md p-4 flex items-center justify-between hover:bg-rose-50 transition-colors duration-300">
+                                    <div class="flex items-center">
+                                        <i class="fas fa-university text-rose-600 text-xl ml-2"></i>
+                                        <span>{% if LANGUAGE_CODE == 'ar' %}تحويل بنكي{% else %}Cash on Delivery{% endif %}</span>
+                                    </div>
+                                    <input type="radio" name="payment_method" value="cash_on_delivery" class="form-radio text-rose-600">
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="lg:w-1/3 mb-24">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-24 border border-rose-100 hover:shadow-lg transition-shadow duration-300">
+                    <h2 class="text-xl font-semibold mb-4 text-right text-rose-700">{% if LANGUAGE_CODE == 'ar' %}ملخص الطلب{% else %}Order Summary{% endif %} ✨</h2>
+
+                    <div class="space-y-4">
+                        <!-- Products Summary -->
+                        {% if product_items %}
+                        <div class="mb-4">
+                            <h3 class="font-medium text-gray-700 mb-2 text-right">{% if LANGUAGE_CODE == 'ar' %}المنتجات{% else %}Products{% endif %} ({{ product_items|length }}) 🛍️</h3>
+
+                            <div class="space-y-2 max-h-56 overflow-y-auto">
+                                {% for item in product_items %}
+                                <div class="flex justify-between items-center text-sm py-2 border-b border-rose-100 last:border-0">
+                                    <span class="font-semibold text-rose-700">{{ item.quantity }} x {{ item.product.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                                    <span class="text-right">{{ item.product.title|truncatechars:30 }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Services Summary -->
+                        {% if service_items %}
+                        <div class="mb-4">
+                            <h3 class="font-medium text-gray-700 mb-2 text-right">{% if LANGUAGE_CODE == 'ar' %}الخدمات{% else %}Services{% endif %} ({{ service_items|length }}) ✅</h3>
+
+                            <div class="space-y-2 max-h-56 overflow-y-auto">
+                                {% for item in service_items %}
+                                <div class="flex justify-between items-start text-sm py-3 border-b border-rose-100 last:border-0">
+                                    <!-- Price Display with Discount -->
+                                    <div class="flex flex-col items-start">
+                                        {% if item.service.discounted_price and item.service.discounted_price != item.service.price %}
+                                        <!-- Discounted Price -->
+                                        <div class="flex items-center">
+                        <span class="font-bold text-base text-green-600">
+                            {{ item.quantity }} x {{ item.service.discounted_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                        </span>
+                                            <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2 animate-pulse">
+                            {% if LANGUAGE_CODE == 'ar' %}خصم{% else %}SALE{% endif %}
+                        </span>
+                                        </div>
+                                        <!-- Original Price -->
+                                        <div class="flex items-center mt-1">
+                        <span class="text-xs text-gray-500 line-through">
+                            {{ item.quantity }} x {{ item.service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                        </span>
+                                            <span class="text-xs text-green-600 font-medium bg-green-50 px-2 py-1 rounded ml-2">
+                            {% if LANGUAGE_CODE == 'ar' %}توفير{% else %}Save{% endif %}
+                            {% widthratio item.service.price|sub:item.service.discounted_price item.quantity 1 as total_savings %}
+                            {{ total_savings }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                        </span>
+                                        </div>
+                                        {% else %}
+                                        <!-- Regular Price -->
+                                        <span class="font-bold text-base text-rose-700">
+                        {{ item.quantity }} x {{ item.service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                    </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Service Title -->
+                                    <div class="text-right flex-1 ml-4">
+                                        <span class="font-medium">{{ item.service.title|truncatechars:30 }}</span>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Price Summary -->
+                        <div class="border-t border-rose-100 pt-4 space-y-2">
+                            {% if product_items %}
+                            <div class="flex justify-between">
+                                <span>{% if LANGUAGE_CODE == 'ar' %}إجمالي المنتجات:{% else %}Product Total:{% endif %}</span>
+                                <span class="text-rose-700">{{ product_total }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            </div>
+                            {% endif %}
+
+                            {% if service_items %}
+                            <div class="flex justify-between">
+                                <span>{% if LANGUAGE_CODE == 'ar' %}إجمالي الخدمات:{% else %}Service Total:{% endif %}</span>
+                                <span class="text-rose-700">{{ service_total }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            </div>
+                            {% endif %}
+
+                            <div class="flex justify-between">
+                                <span>{% if LANGUAGE_CODE == 'ar' %}الضريبة (15%):{% else %}Tax (15%):{% endif %}</span>
+                                <span class="text-rose-700">{{ total_price|multiply:0.15|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            </div>
+
+                            <div class="flex justify-between border-t border-rose-100 pt-2 mt-2">
+                                <span class="font-bold text-lg">{% if LANGUAGE_CODE == 'ar' %}الإجمالي:{% else %}Total:{% endif %}</span>
+                                <span class="font-bold text-lg text-rose-600">{{ total_price|multiply:1.15|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <button
+                                type="submit"
+                                form="checkout-form"
+                                class="block w-full bg-rose-600 text-white text-center py-3 rounded-md hover:bg-rose-700 transition-colors font-semibold transform hover:scale-105 transition-transform duration-300"
+                        >
+                            {% if LANGUAGE_CODE == 'ar' %}إتمام الطلب{% else %}Place Order{% endif %} 💖
+                        </button>
+
+                        <a
+                                href="{% url 'cart' %}"
+                                class="block w-full text-center py-3 text-rose-600 mt-3 hover:text-rose-800"
+                        >
+                            {% if LANGUAGE_CODE == 'ar' %}العودة إلى السلة{% else %}Back to Cart{% endif %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

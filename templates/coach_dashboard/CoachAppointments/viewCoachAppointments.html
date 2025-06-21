@@ -1,0 +1,120 @@
+{% extends 'base_coach_dashboard.html' %} {% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-pink-50 to-amber-50 w-full px-4 md:px-8 min-h-screen pb-12">
+  <div class="flex justify-between items-center py-8">
+    <h1 class="text-4xl font-bold text-pink-800 mr-4">{% if LANGUAGE_CODE == 'ar' %}مواعيد المدرب{% else %}Coach Appointments{% endif %}</h1>
+    <!--    <a-->
+    <!--      href="/coach_dashboard/addCoachAppointments"-->
+    <!--      class="bg-gradient-to-r from-pink-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white px-6 py-2 rounded-lg transition duration-300"-->
+    <!--    >-->
+    <!--      {% if LANGUAGE_CODE == 'ar' %}إضافة موعد{% else %}Add Appointment{% endif %}-->
+    <!--    </a>-->
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden mr-4">
+    <table class="w-full text-sm text-right text-gray-500">
+      <thead class="text-xs text-gray-700 uppercase bg-pink-50">
+      <tr>
+        <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}اليوم{% else %}Day{% endif %}</th>
+        <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}تاريخ البدء{% else %}Start Time{% endif %}</th>
+        <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}تاريخ الانتهاء{% else %}End Time{% endif %}</th>
+        <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}الخدمات{% else %}Services{% endif %}</th>
+        <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}اللاعبون المشتركون{% else %}Services{% endif %}</th>
+        <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}سجل الحضور{% else %}Attendance{% endif %}</th>
+      </tr>
+      </thead>
+      <tbody>
+      {% for appointment in CoachAppointments %}
+      <tr class="bg-white border-b hover:bg-pink-50">
+        <td class="px-6 py-4">
+          {{ appointment.day }}
+        </td>
+        <td class="px-6 py-4">
+          {{ appointment.start_time|time:"h:i A" }}
+        </td>
+        <td class="px-6 py-4">
+          {{ appointment.end_time|time:"h:i A" }}
+        </td>
+        <td class="px-6 py-4">
+          {% for service in appointment.booking.services.all %}
+          {{ service.service.title }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+          <span class="text-gray-400">{% if LANGUAGE_CODE == 'ar' %}لا توجد خدمات{% else %}No services{% endif %}</span>
+          {% endfor %}
+        </td>
+        <td>
+          <button onclick="openStudentModal()" class="text-pink-600 hover:underline mr-6">{% if LANGUAGE_CODE == 'ar' %}عرض اللاعبين{% else %}View Students{% endif %}</button>
+        </td>
+        <td class="px-6 py-4">
+          <a href="{% url 'attendanceTable' appointment.booking.id appointment.day appointment.start_time|time:'H:i' appointment.end_time|time:'H:i' %}"
+             class="bg-gradient-to-r from-pink-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white rounded-lg transition duration-300 text-sm px-2 py-2 flex items-center">
+            <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}سجل الحضور{% else %}Attendance{% endif %}
+          </a>
+        </td>
+
+        <!--          <td class="px-6 py-4">-->
+        <!--            <a href="{% url 'editCoachAppointments' appointment.id %}" class="font-medium text-pink-600 hover:underline mr-2"-->
+        <!--              >{% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}</a-->
+        <!--            >-->
+        <!--            <a href="{% url 'deleteCoachAppointments' appointment.id %}" class="font-medium text-red-600 hover:underline">{% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}</a>-->
+        <!--          </td>-->
+      </tr>
+      {% empty %}
+      <tr class="bg-white border-b">
+        <td colspan="4" class="px-6 py-4 text-center text-gray-500">
+          {% if LANGUAGE_CODE == 'ar' %}لا توجد مواعيد حالياً{% else %}No appointments currently{% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+
+      </tbody>
+
+    </table>
+    <!-- Modal -->
+    <div id="studentListModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white rounded-xl shadow-lg p-6 max-w-md w-full">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+          <h3 class="text-xl font-semibold text-gray-800">
+            {% if LANGUAGE_CODE == 'ar' %}الطلاب الذين حجزوا الخدمة{% else %}Booked Students{% endif %}
+          </h3>
+          <button onclick="closeStudentModal()" class="text-gray-400 hover:text-red-500 text-2xl">&times;</button>
+        </div>
+        <ul class="space-y-3 max-h-80 overflow-y-auto">
+          {% for student in students %}
+          <li class="p-3 bg-gray-100 rounded-lg">
+            👤 <strong>{{ student.username }}</strong> —
+            <a href="mailto:{{ student.email }}" class="text-blue-600 hover:underline">{{ student.email }}</a>
+          </li>
+          {% empty %}
+          <li class="text-gray-500">{% if LANGUAGE_CODE == 'ar' %}لا يوجد طلاب{% else %}No students{% endif %}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function openStudentModal() {
+    document.getElementById("studentListModal").classList.remove("hidden");
+    document.getElementById("studentListModal").classList.add("flex");
+  }
+
+  function closeStudentModal() {
+    document.getElementById("studentListModal").classList.add("hidden");
+    document.getElementById("studentListModal").classList.remove("flex");
+  }
+
+  // Optional: Close on background click
+  window.addEventListener("click", function (event) {
+    const modal = document.getElementById("studentListModal");
+    if (event.target === modal) {
+      closeStudentModal();
+    }
+  });
+</script>
+
+{% endblock %}

@@ -1,0 +1,106 @@
+{% extends 'base_student_dashboard.html' %} {% load static %} {% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen flex items-center mb-16 animate__animated animate__fadeIn">
+  <div class="container mx-auto px-4 mb-16 sm:px-6 lg:px-8">
+<!--    <div class="absolute top-0 {% if LANGUAGE_CODE == 'ar' %}left-4{% else %}right-4{% endif %} mt-4"> <div class="flex items-center space-x-1 px-3 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100"> <a href="{% url 'set_language_redirect' 'en' %}?next={{ request.path }}" class="{% if LANGUAGE_CODE == 'en' %}text-rose-600 font-medium{% else %}text-gray-500 hover:text-pink-600 transition-colors{% endif %} text-sm px-2">EN</a> <div class="text-amber-400 font-bold">|</div> <a href="{% url 'set_language_redirect' 'ar' %}?next={{ request.path }}" class="{% if LANGUAGE_CODE == 'ar' %}text-rose-600 font-medium{% else %}text-gray-500 hover:text-pink-600 transition-colors{% endif %} text-sm px-2">AR</a> </div> </div>-->
+
+    <div class="bg-white shadow-xl rounded-lg overflow-hidden border-l-4 border-rose-400 animate__animated animate__fadeInUp">
+      <div class="px-4 py-5 sm:px-6">
+        <div class="flex items-center">
+          <div class="flex-shrink-0">
+            <img
+                    class="h-32 w-32 rounded-full border-4 border-rose-200 shadow-md hover-scale"
+                    src="{{ userprofile.profile_image_base64|default:'https://via.placeholder.com/128' }}"
+                    alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي للاعب{% else %}Customer profile picture{% endif %}"
+            />
+          </div>
+          <div class="mr-6">
+            <h1 class="text-3xl font-bold text-rose-800">✨ {{ student.full_name }}</h1>
+            <p class="text-xl text-gray-600">{% if LANGUAGE_CODE == 'ar' %}
+              لاعب في نادى  {{ student.club.name }}
+              {% else %}
+              Member at {{ student.club.name }}
+              {% endif %}</p>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-rose-700">
+          <span class="inline-block mr-2">👤</span>
+          {% if LANGUAGE_CODE == 'ar' %}نبذة عن الللاعب{% else %}About the Client{% endif %}
+        </h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">{{ student.about }}</p>
+      </div>
+      <div class="border-t border-pink-100">
+        <dl>
+          <div
+                  class="bg-pink-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 hover:bg-pink-100 transition-colors duration-300"
+          >
+            <dt class="text-sm font-medium text-rose-600">
+              <span class="inline-block mr-1">🎂</span>
+              {% if LANGUAGE_CODE == 'ar' %}العمر{% else %}Age{% endif %}
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{ student.age }} {% if LANGUAGE_CODE == 'ar' %}سنة{% else %}years{% endif %}
+            </dd>
+          </div>
+          <div
+                  class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 hover:bg-pink-50 transition-colors duration-300"
+          >
+            <dt class="text-sm font-medium text-rose-600">
+              <span class="inline-block mr-1">📧</span>
+              {% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{ userprofile.user.email }}
+            </dd>
+          </div>
+          <div
+                  class="bg-pink-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 hover:bg-pink-100 transition-colors duration-300"
+          >
+            <dt class="text-sm font-medium text-rose-600">
+              <span class="inline-block mr-1">📱</span>
+              {% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{ student.phone }}
+            </dd>
+          </div>
+          <div
+                  class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 hover:bg-pink-50 transition-colors duration-300"
+          >
+            <dt class="text-sm font-medium text-rose-600">
+              <span class="inline-block mr-1">💇‍♀️</span>
+              {% if LANGUAGE_CODE == 'ar' %}النادي{% else %}Salon{% endif %}
+            </dt>
+            <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+              {{ student.club.name }}
+            </dd>
+          </div>
+        </dl>
+      </div>
+      <div class="px-6 py-4 bg-pink-50 sm:px-10 flex justify-end">
+        <a
+                href="{% url 'edit_student_profile' %}"
+                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition duration-300 ease-in-out animate__animated animate__pulse animate__infinite animate__slower"
+        >
+          <span class="inline-block mr-1">✏️</span>
+          {% if LANGUAGE_CODE == 'ar' %}تعديل الحساب{% else %}Edit Profile{% endif %}
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add some animations -->
+<style>
+  @keyframes gentle-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.03); }
+      100% { transform: scale(1); }
+  }
+
+  .hover-scale:hover {
+      animation: gentle-pulse 1.5s infinite;
+  }
+</style>
+{% endblock %}

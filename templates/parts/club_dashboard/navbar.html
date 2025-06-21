@@ -1,0 +1,304 @@
+{% load static %}
+{% load messenger_tags %}
+{% block content %}
+<style>
+  .bell-container {
+    position: relative;
+    display: inline-block;
+  }
+
+  .bell-icon {
+    width: 32px;
+    height: 32px;
+    fill: none;
+    stroke: #fbbf24;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.1));
+    transition: all 0.3s ease;
+  }
+
+  .bell-container:hover .bell-icon {
+    transform: scale(1.1);
+    stroke: #f59e0b;
+  }
+
+  .bell-container:hover .bell-clapper {
+    animation: ring 0.5s ease-in-out;
+    transform-origin: top center;
+  }
+
+  .notification-badge {
+    position: absolute;
+    top: -4px;
+    {% if LANGUAGE_CODE == 'ar' %}right{% else %}right{% endif %}: -4px;
+    background-color: #ef4444;
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    height: 18px;
+    min-width: 18px;
+    padding: 0 4px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  @keyframes ring {
+    0% { transform: rotate(0); }
+    20% { transform: rotate(8deg); }
+    40% { transform: rotate(-8deg); }
+    60% { transform: rotate(4deg); }
+    80% { transform: rotate(-4deg); }
+    100% { transform: rotate(0); }
+  }
+</style>
+<!-- Mobile menu button - Position based on language -->
+<button class="fixed {% if LANGUAGE_CODE == 'ar' %}right-0{% else %}left-0{% endif %} top-0 z-50 m-4 text-indigo-800 transition-transform duration-200 ease-in-out hover:scale-110 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 xl:hidden" onclick="toggleSidebar()">
+  <span id="menuIcon" class="h-6 w-6">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+    </svg>
+  </span>
+  <span id="closeIcon" class="h-6 w-6 hidden">
+    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+    </svg>
+  </span>
+</button>
+
+<!-- Sidebar - Position based on language -->
+<div id="sidebar" class="fixed inset-y-0 {% if LANGUAGE_CODE == 'ar' %}right-0{% else %}left-0{% endif %} z-40 flex w-64 flex-col justify-between rounded-{% if LANGUAGE_CODE == 'ar' %}l{% else %}r{% endif %}-lg bg-white transition-transform duration-300 ease-in-out {% if LANGUAGE_CODE == 'ar' %}translate-x-full{% else %}-translate-x-full{% endif %} xl:translate-x-0">
+
+  <!-- Logo & Notification -->
+  <div class="py-6 border-b border-gray-100 relative flex flex-col items-center">
+    <!-- Club Logo -->
+    <img class="h-16 w-16 rounded-full" src="data:image/jpeg;base64,{{ club.club_profile_image_base64|safe }}" alt="{% if LANGUAGE_CODE == 'ar' %}شعار الصالون{% else %}Club Logo{% endif %}">
+
+    <!-- Space between Logo & Icon -->
+    <div class="h-4"></div>
+
+    <!-- Notification Bell -->
+    <div class="bell-container">
+      <a href="{% url 'viewClubNotifications' %}">
+        <svg class="bell-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+          <path class="bell-clapper" d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+        </svg>
+
+        {% if unread_count > 0 %}
+        <div class="notification-badge">
+          {{ unread_count }}
+        </div>
+        {% endif %}
+      </a>
+    </div>
+
+    <div class="h-6"></div>
+  </div>
+
+  <!-- Scrollable Navigation Links -->
+  <div class="flex-1 overflow-y-auto px-4 mt-6 space-y-3 custom-scrollbar">
+    <nav class="flex flex-col space-y-3">
+      <a href="{% if user.userprofile.account_type == '2' %}{% url 'club_dashboard_index' %}{% elif user.userprofile.account_type == '6' %}{% url 'administrator_dashboard_index' %}{% endif %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}الرئيسية{% else %}Home{% endif %}
+        </span>
+      </a>
+
+      <a href="{% url 'category_list' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}الفئات{% else %}Categories{% endif %}
+        </span>
+      </a>
+
+      <a href="{% url 'manage_products' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}إدارة المنتجات{% else %}Categories{% endif %}
+        </span>
+      </a>
+
+      <a href="{% url 'manage_services' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}إدارة الخدمات{% else %}Categories{% endif %}
+        </span>
+      </a>
+
+      <a href="{% url 'commission_list' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}إدارة العمولات و التسعير{% else %}Categories{% endif %}
+        </span>
+      </a>
+
+      <a href="{% url 'dashboard' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}إدارة النزاعات{% else %}Categories{% endif %}
+        </span>
+      </a>
+
+      <a href="{% url 'club_orders' %}" class="flex items-center p-2 text-gray-600 rounded-lg hover:bg-gray-100 group relative">
+        <span class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+          <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+            {% if LANGUAGE_CODE == 'ar' %}الطلبات{% else %}Orders{% endif %}
+          </span>
+        </span>
+
+        <!-- Pending Orders Badge -->
+        {% with pending_orders_count=pending_orders_count|default:0 %}
+        {% if pending_orders_count > 0 %}
+        <span class="inline-flex items-center justify-center w-5 h-5 {% if LANGUAGE_CODE == 'ar' %}mr-2{% else %}ml-2{% endif %} text-xs font-semibold text-white bg-red-500 rounded-full">
+          {{ pending_orders_count }}
+        </span>
+        {% endif %}
+        {% endwith %}
+      </a>
+
+<!--      <a href="/club_dashboard/viewStudents" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}اللاعبين{% else %}Clients{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+<!--      <a href="{% url 'viewDirectors'  %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}الموظفين{% else %}Receptionists{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+<!--      <a href="{% url 'club_salon_appointments' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}مواعيد النادي{% else %}Salon Appointments{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+      <a href="{% url 'viewArticles' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}الأخبار{% else %}News{% endif %}
+        </span>
+      </a>
+
+<!--      <a href="{% url 'viewProducts' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}المنتجات{% else %}Products{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+<!--      <a href="/club_dashboard/viewServices" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}العروض و الخدمات{% else %}Offers & Services{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+<!--      <a href="{% url 'reviews_list' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}التقييمات{% else %}Reviews{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+<!--      <a href="{% url 'viewClubNotifications' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">-->
+<!--        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">-->
+<!--          {% if LANGUAGE_CODE == 'ar' %}الإشعارات{% else %}Notifications{% endif %}-->
+<!--        </span>-->
+<!--      </a>-->
+
+      {% get_user_club request.user.id as stu_club %}
+      <a href="{% url 'messageRoom' stu_club.id %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}الدردشة الجماعية{% else %}Group Chat{% endif %}
+        </span>
+      </a>
+      {% if request.user.userprofile.director_profile %}
+      <a href="{% url 'Profile' request.user.userprofile.director_profile.club.id %}?is_club=1" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}ملف المنصة{% else %}Salon Profile{% endif %}
+        </span>
+      </a>
+        {% endif %}
+
+      {% if request.user.userprofile.director_profile %}
+      <a href="{% url 'view_director_profile' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}الملف الشخصي {% else %}Personal Profile and language{% endif %}
+        </span>
+      </a>
+      {% endif %}
+
+      {% if request.user.userprofile.administrator_profile %}
+      <a href="{% url 'view_administrator_profile' %}" class="group flex items-center rounded-md px-4 py-3 text-sm font-medium text-black hover:bg-indigo-100 hover:text-indigo-800">
+        <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+          {% if LANGUAGE_CODE == 'ar' %}الملف الشخصي {% else %}Personal Profile and language{% endif %}
+        </span>
+      </a>
+      {% endif %}
+
+    </nav>
+  </div>
+
+  <!-- Logout Button -->
+  <div class="mt-auto p-6">
+    <a href="{% url 'signout' %}" class="text-red-500 hover:text-red-700 transition-all block text-center">
+      <span class="transition-transform duration-200 ease-in-out {% if LANGUAGE_CODE == 'ar' %}group-hover:translate-x-1{% else %}group-hover:-translate-x-1{% endif %}">
+        {% if LANGUAGE_CODE == 'ar' %}تسجيل خروج{% else %}Sign Out{% endif %}
+      </span>
+    </a>
+  </div>
+
+</div>
+
+<!-- Custom Scrollbar Style -->
+<style>
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #cbd5e0;
+    border-radius: 3px;
+  }
+
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+  }
+</style>
+
+<!-- Sidebar Toggle Script -->
+<script>
+  function toggleSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    const menuIcon = document.getElementById("menuIcon");
+    const closeIcon = document.getElementById("closeIcon");
+
+    // Get the current language
+    const isArabic = document.documentElement.dir === "rtl";
+
+    if ((isArabic && sidebar.classList.contains("translate-x-full")) ||
+        (!isArabic && sidebar.classList.contains("-translate-x-full"))) {
+      // Show sidebar
+      if (isArabic) {
+        sidebar.classList.remove("translate-x-full");
+      } else {
+        sidebar.classList.remove("-translate-x-full");
+      }
+      menuIcon.classList.add("hidden");
+      closeIcon.classList.remove("hidden");
+    } else {
+      // Hide sidebar
+      if (isArabic) {
+        sidebar.classList.add("translate-x-full");
+      } else {
+        sidebar.classList.add("-translate-x-full");
+      }
+      menuIcon.classList.remove("hidden");
+      closeIcon.classList.add("hidden");
+    }
+  }
+</script>
+
+{% endblock %}

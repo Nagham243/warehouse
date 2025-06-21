@@ -1,0 +1,486 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s ease;
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Card Effects */
+    .stat-card:hover {
+        background-color: #eff6ff !important; /* blue-50 */
+        transition: background-color 0.2s ease;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #3B82F6; /* blue-500 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #1D4ED8; /* blue-700 */
+    }
+
+    /* Form Input Styling */
+    select, input, textarea {
+        border-color: #93C5FD !important; /* blue-300 */
+        border-radius: 0.5rem !important;
+        transition: all 0.2s ease !important;
+        padding: 0.75rem 1rem !important;
+        background-color: #fff;
+        color: #1E3A8A; /* blue-900 */
+        font-size: 0.9rem;
+    }
+
+    select:focus, input:focus, textarea:focus {
+        border-color: #3B82F6 !important; /* blue-500 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important; /* blue-500 with opacity */
+        outline: none !important;
+    }
+
+    /* Error styling */
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0.25rem 0 0 0;
+    }
+
+    .errorlist li {
+        color: #ef4444;
+        font-size: 0.75rem;
+        background-color: #fef2f2;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        border-left: 3px solid #ef4444;
+        margin-bottom: 0.25rem;
+    }
+
+    /* Success message styling */
+    .success-message {
+        background-color: #d1fae5;
+        border-color: #10b981;
+        color: #065f46;
+    }
+
+    /* Info styling for edit mode */
+    .edit-info {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-left: 4px solid #f59e0b;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .edit-info .icon {
+        color: #d97706;
+    }
+
+    /* Current shipment info card */
+    .current-shipment-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        border-left: 4px solid #3b82f6;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn">
+    <section class="container mx-auto px-4 pt-8 pb-16">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8 animate-fadeIn">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-{% if is_edit %}edit{% else %}truck{% endif %} text-blue-600"></i>
+                    {% if is_edit %}
+                    {% if LANGUAGE_CODE == 'ar' %}تعديل الشحنة{% else %}Edit Shipment{% endif %}
+                    {% else %}
+                    {% if LANGUAGE_CODE == 'ar' %}إضافة شحنة جديدة{% else %}Add New Shipment{% endif %}
+                    {% endif %}
+                </h1>
+                {% if product %}
+                <p class="text-lg text-blue-600 mt-1">{{ product.title }}</p>
+                {% endif %}
+            </div>
+            <div class="flex space-x-3 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %}">
+                {% if is_edit and shipment %}
+                <a href="{% url 'view_product_shipments' shipment.product.id %}" class="btn-gradient px-4 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 flex items-center gap-2" aria-label="{% if LANGUAGE_CODE == 'ar' %}العودة لشحنات المنتج{% else %}Back to Product Shipments{% endif %}">
+                    <i class="fas fa-arrow-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}العودة لشحنات المنتج{% else %}Back to Shipments{% endif %}
+                </a>
+                {% endif %}
+                <a href="{% url 'viewProducts' %}" class="btn-gradient px-4 py-2 bg-gray-100 text-gray-800 rounded-md hover:bg-gray-200 flex items-center gap-2" aria-label="{% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}">
+                    <i class="fas fa-box"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}المنتجات{% else %}Products{% endif %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Edit Mode Information -->
+        {% if is_edit %}
+        <div class="edit-info animate-fadeInUp">
+            <div class="flex items-center gap-3">
+                <i class="fas fa-info-circle icon text-xl"></i>
+                <div>
+                    <h3 class="font-semibold text-amber-800">
+                        {% if LANGUAGE_CODE == 'ar' %}تعديل شحنة موجودة{% else %}Editing Existing Shipment{% endif %}
+                    </h3>
+                    <p class="text-amber-700 text-sm">
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        تم إنشاء هذه الشحنة في {{ shipment.created_at|date:"Y-m-d H:i" }}
+                        {% else %}
+                        This shipment was created on {{ shipment.created_at|date:"Y-m-d H:i" }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Current Shipment Info -->
+        <div class="current-shipment-info animate-fadeInUp" style="animation-delay: 0.1s;">
+            <div class="flex items-start gap-3">
+                <i class="fas fa-shipping-fast text-blue-600 text-xl mt-1"></i>
+                <div class="flex-1">
+                    <h3 class="font-semibold text-blue-800 mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %}معلومات الشحنة الحالية{% else %}Current Shipment Information{% endif %}
+                    </h3>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                        <div>
+                            <span class="text-blue-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}الكمية:{% else %}Quantity:{% endif %}
+                            </span>
+                            <span class="text-blue-800">{{ shipment.quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}</span>
+                        </div>
+                        <div>
+                            <span class="text-blue-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع:{% else %}Manufacturing:{% endif %}
+                            </span>
+                            <span class="text-blue-800">{{ shipment.manufacturing_date|default:"—" }}</span>
+                        </div>
+                        <div>
+                            <span class="text-blue-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ الانتهاء:{% else %}Expiration:{% endif %}
+                            </span>
+                            <span class="text-blue-800">{{ shipment.expiration_date|default:"—" }}</span>
+                        </div>
+                        <div>
+                            <span class="text-blue-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}الحالة:{% else %}Status:{% endif %}
+                            </span>
+                            {% if shipment.is_expired %}
+                            <span class="text-red-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}منتهي الصلاحية{% else %}Expired{% endif %}
+                            </span>
+                            {% elif shipment.is_expiring_soon %}
+                            <span class="text-yellow-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}ينتهي قريباً{% else %}Expiring Soon{% endif %}
+                            </span>
+                            {% else %}
+                            <span class="text-green-600 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}سليم{% else %}Valid{% endif %}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-100 stat-card animate-fadeInUp" style="animation-delay: {% if is_edit %}0.2s{% else %}0.1s{% endif %};">
+            <div class="p-8">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Form Errors Display -->
+                    {% if form.non_field_errors %}
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <div class="flex items-center gap-2 text-red-700">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span class="font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}يرجى تصحيح الأخطاء التالية:{% else %}Please correct the following errors:{% endif %}
+                            </span>
+                        </div>
+                        <ul class="mt-2 text-sm text-red-600">
+                            {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    {% endif %}
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Product Selection -->
+                        <div class="col-span-2 space-y-2 animate-fadeInUp" style="animation-delay: {% if is_edit %}0.3s{% else %}0.2s{% endif %};">
+                            <label for="{{ form.product.id_for_label }}" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-box text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}المنتج{% else %}Product{% endif %}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.product }}
+                            {% if form.product.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.product.errors %}
+                                <li><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                        </div>
+
+                        <!-- Quantity -->
+                        <div class="space-y-2 animate-fadeInUp" style="animation-delay: {% if is_edit %}0.4s{% else %}0.3s{% endif %};">
+                            <label for="{{ form.quantity.id_for_label }}" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-boxes text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Quantity{% endif %}
+                                <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.quantity }}
+                            {% if form.quantity.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.quantity.errors %}
+                                <li><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}أدخل عدد الوحدات في هذه الشحنة{% else %}Enter the number of units in this shipment{% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Manufacturing Date -->
+                        <div class="space-y-2 animate-fadeInUp" style="animation-delay: {% if is_edit %}0.5s{% else %}0.4s{% endif %};">
+                            <label for="{{ form.manufacturing_date.id_for_label }}" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-industry text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع{% else %}Manufacturing Date{% endif %}
+                            </label>
+                            {{ form.manufacturing_date }}
+                            {% if form.manufacturing_date.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.manufacturing_date.errors %}
+                                <li><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}اختياري - تاريخ تصنيع المنتج{% else %}Optional - Date when the product was manufactured{% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Expiration Date -->
+                        <div class="space-y-2 animate-fadeInUp" style="animation-delay: {% if is_edit %}0.6s{% else %}0.5s{% endif %};">
+                            <label for="{{ form.expiration_date.id_for_label }}" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-calendar-times text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ انتهاء الصلاحية{% else %}Expiration Date{% endif %}
+                            </label>
+                            {{ form.expiration_date }}
+                            {% if form.expiration_date.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.expiration_date.errors %}
+                                <li><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}اختياري - تاريخ انتهاء صلاحية المنتج{% else %}Optional - Date when the product expires{% endif %}
+                            </p>
+                        </div>
+
+                        <!-- Notes -->
+                        <div class="col-span-2 space-y-2 animate-fadeInUp" style="animation-delay: {% if is_edit %}0.7s{% else %}0.6s{% endif %};">
+                            <label for="{{ form.notes.id_for_label }}" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-comment text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}ملاحظات{% else %}Notes{% endif %}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <ul class="errorlist">
+                                {% for error in form.notes.errors %}
+                                <li><i class="fas fa-exclamation-circle mr-1"></i>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                            {% endif %}
+                            <p class="text-xs text-gray-500 flex items-center gap-1">
+                                <i class="fas fa-info-circle"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}اختياري - أي ملاحظات إضافية حول هذه الشحنة{% else %}Optional - Any additional notes about this shipment{% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="mt-8 flex justify-end space-x-4 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %} animate-fadeInUp" style="animation-delay: {% if is_edit %}0.8s{% else %}0.7s{% endif %};">
+                        {% if is_edit and shipment %}
+                        <a href="{% url 'view_product_shipments' shipment.product.id %}" class="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 flex items-center gap-2 transition-all" aria-label="{% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}">
+                            <i class="fas fa-times"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                        </a>
+                        {% else %}
+                        <a href="{% url 'viewProducts' %}" class="px-6 py-3 bg-gray-500 text-white rounded-md hover:bg-gray-600 flex items-center gap-2 transition-all" aria-label="{% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}">
+                            <i class="fas fa-times"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                        </a>
+                        {% endif %}
+
+                        <button type="submit" class="btn-gradient px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:from-blue-600 hover:to-purple-700 flex items-center gap-2" aria-label="{% if is_edit %}{% if LANGUAGE_CODE == 'ar' %}تحديث الشحنة{% else %}Update Shipment{% endif %}{% else %}{% if LANGUAGE_CODE == 'ar' %}إضافة الشحنة{% else %}Add Shipment{% endif %}{% endif %}">
+                            {% if is_edit %}
+                            <i class="fas fa-save"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}تحديث الشحنة{% else %}Update Shipment{% endif %}
+                            {% else %}
+                            <i class="fas fa-plus-circle"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}إضافة الشحنة{% else %}Add Shipment{% endif %}
+                            {% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Help Section -->
+        <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6 animate-fadeInUp" style="animation-delay: {% if is_edit %}0.9s{% else %}0.8s{% endif %};">
+            <h3 class="text-lg font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                <i class="fas fa-question-circle"></i>
+                {% if LANGUAGE_CODE == 'ar' %}نصائح مفيدة{% else %}Helpful Tips{% endif %}
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-blue-700">
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                    <p>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        <strong>الكمية:</strong> تأكد من إدخال الكمية الصحيحة للوحدات في هذه الشحنة
+                        {% else %}
+                        <strong>Quantity:</strong> Make sure to enter the correct number of units in this shipment
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                    <p>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        <strong>تواريخ الصلاحية:</strong> ستساعدك في تتبع المنتجات المنتهية الصلاحية
+                        {% else %}
+                        <strong>Expiration Dates:</strong> Help you track products that are expiring or expired
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                    <p>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        <strong>الملاحظات:</strong> استخدمها لإضافة معلومات مهمة حول الشحنة
+                        {% else %}
+                        <strong>Notes:</strong> Use them to add important information about the shipment
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="flex items-start gap-2">
+                    <i class="fas fa-lightbulb text-yellow-500 mt-0.5"></i>
+                    <p>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        <strong>المراقبة:</strong> راقب حالة الشحنات بانتظام لتجنب انتهاء الصلاحية
+                        {% else %}
+                        <strong>Monitoring:</strong> Regularly check shipment status to avoid expiration
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-focus on first input field
+        const firstInput = document.querySelector('input, select, textarea');
+        if (firstInput && !firstInput.value) {
+            firstInput.focus();
+        }
+
+        // Add real-time validation feedback
+        const form = document.querySelector('form');
+        const inputs = form.querySelectorAll('input, select, textarea');
+
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                // Remove existing validation classes
+                this.classList.remove('border-green-400', 'border-red-400');
+
+                // Add validation feedback
+                if (this.value.trim() !== '') {
+                    if (this.type === 'number' && this.value <= 0) {
+                        this.classList.add('border-red-400');
+                    } else {
+                        this.classList.add('border-green-400');
+                    }
+                }
+            });
+        });
+
+        // Form submission handling
+        form.addEventListener('submit', function(e) {
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+
+            // Show loading state
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <i class="fas fa-spinner fa-spin"></i>
+                {% if is_edit %}
+                    {% if LANGUAGE_CODE == 'ar' %}جاري التحديث...{% else %}Updating...{% endif %}
+                {% else %}
+                    {% if LANGUAGE_CODE == 'ar' %}جاري الإضافة...{% else %}Adding...{% endif %}
+                {% endif %}
+            `;
+
+            // Reset button after 3 seconds if form doesn't submit properly
+            setTimeout(function() {
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }, 3000);
+        });
+    });
+</script>
+
+{% endblock %}

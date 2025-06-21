@@ -1,0 +1,112 @@
+{% extends 'base_administrator_dashboard.html' %} {% load static %} {% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen flex items-center">
+    <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 {% if LANGUAGE_CODE == 'ar' %}xl:mr-64{% else %}xl:ml-64{% endif %}">
+        <!--    <div class="absolute top-0 {% if LANGUAGE_CODE == 'ar' %}left-4{% else %}right-4{% endif %} mt-4"> <div class="flex items-center space-x-1 px-3 py-2 bg-white rounded-full shadow-md hover:shadow-lg transition-all duration-300 border border-rose-100"> <a href="{% url 'set_language_redirect' 'en' %}?next={{ request.path }}" class="{% if LANGUAGE_CODE == 'en' %}text-rose-600 font-medium{% else %}text-gray-500 hover:text-pink-600 transition-colors{% endif %} text-sm px-2">EN</a> <div class="text-amber-400 font-bold">|</div> <a href="{% url 'set_language_redirect' 'ar' %}?next={{ request.path }}" class="{% if LANGUAGE_CODE == 'ar' %}text-rose-600 font-medium{% else %}text-gray-500 hover:text-pink-600 transition-colors{% endif %} text-sm px-2">AR</a> </div> </div>-->
+
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden border border-rose-100 transform transition duration-300 hover:scale-[1.01] mt-4">
+            <div class="px-4 py-5 sm:px-6 bg-gradient-to-r from-rose-100 to-amber-100">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 relative group">
+                        <img
+                                class="h-32 w-32 rounded-full border-4 border-white shadow-md transition-all duration-300 group-hover:shadow-rose-200"
+                                src="{{ userprofile.profile_image_base64|default:'https://via.placeholder.com/128' }}"
+                                alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي للإداري{% else %}Salon Director Profile Image{% endif %}"
+                        />
+                        <div class="absolute inset-0 rounded-full bg-rose-500 opacity-0 group-hover:opacity-10 transition-opacity duration-300"></div>
+                    </div>
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}mr-6{% else %}ml-6{% endif %}">
+                        <h1 class="text-3xl font-bold text-gray-900">{{administrator.full_name}} <span class="text-rose-500">👑</span></h1>
+                        <p class="text-xl text-gray-600">
+                            {% if LANGUAGE_CODE == 'ar' %}إداري نادي{% else %}Director of{% endif %} {{administrator.club.name}} <span class="text-rose-400">✨</span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-rose-600 flex items-center">
+                    <span class="mr-2">💫</span>
+                    {% if LANGUAGE_CODE == 'ar' %}نبذة عن الإداري{% else %}About the Salon Director{% endif %}
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500 px-2 py-3 bg-rose-50 bg-opacity-50 rounded-lg border border-rose-100">
+                    {{administrator.about}}
+                </p>
+            </div>
+            <div class="border-t border-rose-100">
+                <dl>
+                    <div
+                            class="bg-gradient-to-r from-rose-50 to-amber-50 bg-opacity-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
+                    >
+                        <dt class="text-sm font-medium text-rose-600 flex items-center">
+                            <span class="mr-2">🎭</span>
+                            {% if LANGUAGE_CODE == 'ar' %}المنصب{% else %}Position{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% if LANGUAGE_CODE == 'ar' %}إداري في النادي{% else %}Salon Director{% endif %}
+                        </dd>
+                    </div>
+                    <div
+                            class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6 hover:bg-rose-50 transition-colors duration-200"
+                    >
+                        <dt class="text-sm font-medium text-rose-600 flex items-center">
+                            <span class="mr-2">📧</span>
+                            {% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{userprofile.user.email}}
+                        </dd>
+                    </div>
+                    <div
+                            class="bg-gradient-to-r from-rose-50 to-amber-50 bg-opacity-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6"
+                    >
+                        <dt class="text-sm font-medium text-rose-600 flex items-center">
+                            <span class="mr-2">📱</span>
+                            {% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{ administrator.phone}}
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+            <div class="px-6 py-4 bg-gradient-to-r from-rose-50 to-amber-50 sm:px-10 {% if LANGUAGE_CODE == 'ar' %}flex justify-end{% else %}flex justify-start{% endif %}">
+                <a
+                        href="{% url 'edit_administrator_profile' %}"
+                        class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition duration-150 ease-in-out transform hover:scale-105"
+                >
+                    <span class="mr-1">✏️</span>
+                    {% if LANGUAGE_CODE == 'ar' %}تعديل الحساب{% else %}Edit Account{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Animation for hovering over list items */
+    dl div {
+      transition: all 0.3s ease;
+    }
+
+    dl div:hover {
+      transform: translateX(5px);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #fee2e2; /* rose-100 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #f43f5e; /* rose-500 */
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #e11d48; /* rose-600 */
+    }
+</style>
+{% endblock %}

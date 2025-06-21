@@ -1,0 +1,567 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+<style>
+    /* Reuse the same styles from club_orders.html */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    .table-row:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    .receipt-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .receipt-image:hover {
+        transform: scale(1.02);
+    }
+
+    .product-image {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animated-bg bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 font-sans">
+    <!-- Header Section -->
+    <div class="flex flex-col items-{% if LANGUAGE_CODE == 'ar' %}start{% else %}start{% endif %} py-8 gap-2">
+        <div class="flex flex-wrap justify-between items-center w-full gap-4">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                        <path d="M7 12h2v5H7v-5zm4-7h2v12h-2V5zm4 4h2v8h-2v-8z"/>
+                    </svg>
+                </div>
+                {% if LANGUAGE_CODE == 'ar' %}تفاصيل الطلب #{{ order.id }}{% else %}Order Details #{{ order.id }}{% endif %}
+            </h2>
+
+            <a href="{% url 'club_orders' %}" class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}العودة إلى الطلبات{% else %}Back to Orders{% endif %}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- Order Summary Section -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <!-- Order Status Card -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">{% if LANGUAGE_CODE == 'ar' %}حالة الطلب{% else %}Order Status{% endif %}</p>
+                    <div class="mt-2">
+                        {% if order.status == 'pending' %}
+                        <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {% if LANGUAGE_CODE == 'ar' %}قيد الانتظار{% else %}Pending{% endif %}
+                        </span>
+                        {% elif order.status == 'confirmed' %}
+                        <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {% if LANGUAGE_CODE == 'ar' %}تم التأكيد{% else %}Confirmed{% endif %}
+                        </span>
+                        {% elif order.status == 'cancelled' %}
+                        <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {% if LANGUAGE_CODE == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+                        </span>
+                        {% elif order.status == 'completed' %}
+                        <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            {% if LANGUAGE_CODE == 'ar' %}مكتمل{% else %}Completed{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Date Card -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">{% if LANGUAGE_CODE == 'ar' %}تاريخ الطلب{% else %}Order Date{% endif %}</p>
+                    <p class="text-lg font-semibold text-gray-800 mt-2">{{ order.created_at|date:"d M Y" }}</p>
+                </div>
+                <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Total Card -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-500 font-medium">{% if LANGUAGE_CODE == 'ar' %}المبلغ الإجمالي{% else %}Order Total{% endif %}</p>
+                    <p class="text-lg font-semibold text-gray-800 mt-2">{{ order.total_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                </div>
+                <div class="bg-green-100 p-2 rounded-full text-green-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer and Payment Information -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <!-- Customer Information -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}معلومات العميل{% else %}Client Information{% endif %}
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}الاسم{% else %}Name{% endif %}</p>
+                    <p class="font-medium">{{ order.first_name }} {{ order.last_name }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</p>
+                    <p class="font-medium">{{ order.email }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone{% endif %}</p>
+                    <p class="font-medium">{{ order.phone }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Information -->
+        <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}معلومات الدفع{% else %}Payment Information{% endif %}
+            </h3>
+            <div class="space-y-3">
+                <div>
+                    <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</p>
+                    <p class="font-medium">
+                        {% if order.payment_method == 'credit_card' %}
+                        {% if LANGUAGE_CODE == 'ar' %}بطاقة ائتمان{% else %}Credit Card{% endif %}
+                        {% elif order.payment_method == 'cash_on_delivery' %}
+                        {% if LANGUAGE_CODE == 'ar' %}تحويل بنكي{% else %}Bank Transfer{% endif %}
+                        {% endif %}
+                    </p>
+                </div>
+                {% if order.payment_method == 'cash_on_delivery' and has_transfer_receipt %}
+                <div>
+                    <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}إيصال التحويل{% else %}Transfer Receipt{% endif %}</p>
+                    <img src="{{ transfer_receipt_url }}" alt="Transfer Receipt" class="receipt-image mt-2" onclick="showReceiptModal('{{ transfer_receipt_url }}')">
+                </div>
+                {% endif %}
+                <div>
+                    <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}حالة الدفع{% else %}Payment Status{% endif %}</p>
+                    <p class="font-medium">
+                        {% if order.status == 'pending' %}
+                        {% if LANGUAGE_CODE == 'ar' %}قيد الانتظار{% else %}Pending{% endif %}
+                        {% elif order.status == 'paid' %}
+                        {% if LANGUAGE_CODE == 'ar' %}تم الدفع{% else %}Paid{% endif %}
+                        {% elif order.status == 'failed' %}
+                        {% if LANGUAGE_CODE == 'ar' %}فشل الدفع{% else %}Failed{% endif %}
+                        {% elif order.status == 'refunded' %}
+                        {% if LANGUAGE_CODE == 'ar' %}تم الاسترداد{% else %}Refunded{% endif %}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Items Section -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}المنتجات/الخدمات{% else %}Order Items{% endif %}
+        </h3>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}الصورة{% else %}Image{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}المنتج/الخدمة{% else %}Item{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}التاجر{% else %}Vendor{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Qty{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}المجموع{% else %}Total{% endif %}</th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                {% for item in order_items %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if item.product %}
+                        {% if item.product.product_images.all %}
+                        <img src="{{ item.product.product_images.first.img.url }}" alt="{{ item.product.title }}" class="product-image">
+                        {% else %}
+                        <div class="product-image bg-gray-100 flex items-center justify-center text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        {% elif item.service %}
+                        <div class="product-image bg-gray-100 flex items-center justify-center text-gray-400">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900">
+                            {% if item.product %}
+                            {{ item.product.title }}
+                            {% elif item.service %}
+                            {{ item.service.title }}
+                            {% endif %}
+                        </div>
+                        <div class="text-sm text-gray-500">
+                            {% if item.product %}
+                            {% if LANGUAGE_CODE == 'ar' %}منتج{% else %}Product{% endif %}
+                            {% elif item.service %}
+                            {% if LANGUAGE_CODE == 'ar' %}خدمة{% else %}Service{% endif %}
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                {% if item.product and item.product.creator and item.product.creator.userprofile.Coach_profile %}
+                                {% if item.product.creator.userprofile.Coach_profile.profile_image_base64 %}
+                                <img src="data:image/jpeg;base64,{{ item.product.creator.userprofile.Coach_profile.profile_image_base64 }}" alt="{{ item.product.creator.userprofile.Coach_profile.business_name }}" class="h-10 w-10 rounded-full">
+                                {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                                {% elif item.service and item.service.creator and item.service.creator.userprofile.Coach_profile %}
+                                {% if item.service.creator.userprofile.Coach_profile.profile_image_base64 %}
+                                <img src="data:image/jpeg;base64,{{ item.service.creator.userprofile.Coach_profile.profile_image_base64 }}" alt="{{ item.service.creator.userprofile.Coach_profile.business_name }}" class="h-10 w-10 rounded-full">
+                                {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                                {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4">
+                                {% if item.product and item.product.creator and item.product.creator.userprofile.Coach_profile %}
+                                <div class="text-sm font-medium text-gray-900">{{ item.product.creator.userprofile.Coach_profile.business_name }}</div>
+                                <div class="text-sm text-gray-500">{{ item.product.creator.userprofile.Coach_profile.full_name }}</div>
+                                {% elif item.service and item.service.creator and item.service.creator.userprofile.Coach_profile %}
+                                <div class="text-sm font-medium text-gray-900">{{ item.service.creator.userprofile.Coach_profile.business_name }}</div>
+                                <div class="text-sm text-gray-500">{{ item.service.creator.userprofile.Coach_profile.full_name }}</div>
+                                {% else %}
+                                <div class="text-sm font-medium text-gray-900">{% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}N/A{% endif %}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ item.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ item.quantity }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ item.get_total|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Commission Breakdown Section -->
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}تفاصيل العمولة{% else %}Commission Breakdown{% endif %}
+        </h3>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+            <!-- Total Order Value -->
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-blue-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}إجمالي قيمة الطلب{% else %}Total Order Value{% endif %}</p>
+                        <p class="text-xl font-bold text-blue-800 mt-1">{{ order.total_price|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                        <p class="text-xs text-blue-600 mt-1">{% if LANGUAGE_CODE == 'ar' %}(يشمل 15% ضريبة){% else %}(includes 15% VAT){% endif %}</p>
+                    </div>
+                    <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VAT Amount -->
+            <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-yellow-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}قيمة الضريبة (15%){% else %}VAT Amount (15%){% endif %}</p>
+                        <p class="text-xl font-bold text-yellow-800 mt-1">{{ commission_breakdown.vat_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                    </div>
+                    <div class="bg-yellow-100 p-2 rounded-full text-yellow-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 14l6-6m-5.5.5h.01m4.99 5h.01M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16l3.5-2 3.5 2 3.5-2 3.5 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Total Vendor Commissions -->
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-purple-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}إجمالي عمولات البائعين{% else %}Total Vendor Commissions{% endif %}</p>
+                        <p class="text-xl font-bold text-purple-800 mt-1">{{ commission_breakdown.total_vendor_commission|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                    </div>
+                    <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Club Revenue -->
+            <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="text-sm text-green-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}إيرادات المنصة{% else %}Club Revenue{% endif %}</p>
+                        <p class="text-xl font-bold text-green-800 mt-1">{{ commission_breakdown.club_revenue|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                    </div>
+                    <div class="bg-green-100 p-2 rounded-full text-green-600">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vendor Commission Details -->
+        <h4 class="text-md font-semibold text-gray-700 mb-3">{% if LANGUAGE_CODE == 'ar' %}تفاصيل عمولات البائعين{% else %}Vendor Commission Details{% endif %}</h4>
+
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}التاجر{% else %}Vendor{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}التصنيف{% else %}Category{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}المنتجات{% else %}Items{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}إجمالي المبيعات{% else %}Total Sales{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}نسبة العمولة{% else %}Commission Rates{% endif %}</th>
+                    <th class="px-6 py-3 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-xs font-medium text-gray-500 uppercase tracking-wider">{% if LANGUAGE_CODE == 'ar' %}مبلغ العمولة{% else %}Commission Amount{% endif %}</th>
+                </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                {% for vendor_data in commission_breakdown.vendor_breakdowns %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10">
+                                {% if vendor_data.vendor.profile_image_base64 %}
+                                <img src="data:image/jpeg;base64,{{ vendor_data.vendor.profile_image_base64 }}" alt="{{ vendor_data.vendor.business_name }}" class="h-10 w-10 rounded-full">
+                                {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                    </svg>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ vendor_data.vendor.business_name }}</div>
+                                <div class="text-sm text-gray-500">{{ vendor_data.vendor.full_name }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ vendor_data.vendor.vendor_classification|default:"-" }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div class="space-y-1">
+                            {% for item in vendor_data.items %}
+                            <div>
+                                {% if item.product %}
+                                {{ item.product.title }} (x{{ item.quantity }})
+                                {% elif item.service %}
+                                {{ item.service.title }} (x{{ item.quantity }})
+                                {% else %}
+                                {% if LANGUAGE_CODE == 'ar' %}عنصر غير معروف{% else %}Unknown item{% endif %} (x{{ item.quantity }})
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <div class="text-gray-400">{% if LANGUAGE_CODE == 'ar' %}لا توجد عناصر{% else %}No items{% endif %}</div>
+                            {% endfor %}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ vendor_data.total_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {{ vendor_data.commission_rate|floatformat:2 }} %
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        {{ vendor_data.commission_amount|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+    <!-- Cancellation Details (if cancelled) -->
+    {% if order.status == 'cancelled' and cancellation %}
+    <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}تفاصيل الإلغاء{% else %}Cancellation Details{% endif %}
+        </h3>
+
+        <div class="space-y-4">
+            <div>
+                <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}سبب الإلغاء{% else %}Cancellation Reason{% endif %}</p>
+                <p class="font-medium">{{ cancellation.get_reason_display }}</p>
+            </div>
+            {% if cancellation.custom_reason %}
+            <div>
+                <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}تفاصيل السبب{% else %}Reason Details{% endif %}</p>
+                <p class="font-medium">{{ cancellation.custom_reason }}</p>
+            </div>
+            {% endif %}
+            {% if cancellation.additional_notes %}
+            <div>
+                <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}ملاحظات إضافية{% else %}Additional Notes{% endif %}</p>
+                <p class="font-medium">{{ cancellation.additional_notes }}</p>
+            </div>
+            {% endif %}
+            <div>
+                <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}تاريخ الإلغاء{% else %}Cancellation Date{% endif %}</p>
+                <p class="font-medium">{{ cancellation.created_at|date:"d M Y H:i" }}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Receipt Modal (same as in club_orders.html) -->
+    <div id="receiptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg max-w-4xl max-h-full overflow-auto">
+            <div class="p-4 border-b flex justify-between items-center">
+                <h3 class="text-lg font-semibold">{% if LANGUAGE_CODE == 'ar' %}إيصال التحويل{% else %}Transfer Receipt{% endif %}</h3>
+                <button onclick="closeReceiptModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-4">
+                <img id="receiptImage" src="" alt="Transfer Receipt" class="max-w-full h-auto rounded-lg shadow-lg">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Reuse the same modal functions from club_orders.html
+        function showReceiptModal(imageUrl) {
+            console.log('showReceiptModal called with URL:', imageUrl);
+            const modal = document.getElementById('receiptModal');
+            const image = document.getElementById('receiptImage');
+
+            if (modal && image) {
+                image.src = imageUrl;
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+            }
+        }
+
+        function closeReceiptModal() {
+            console.log('closeReceiptModal called');
+            const modal = document.getElementById('receiptModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('receiptModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeReceiptModal();
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeReceiptModal();
+            }
+        });
+    </script>
+</div>
+{% endblock %}

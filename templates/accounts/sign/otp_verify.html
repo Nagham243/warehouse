@@ -1,0 +1,66 @@
+{% extends "base_landing.html" %}
+
+{% block content %}
+
+<div class="flex min-h-screen items-center justify-center bg-indigo-50 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md space-y-8">
+      <div>
+        <h2 class="mt-6 text-center text-3xl font-extrabold text-black">
+          {% if LANGUAGE_CODE == 'ar' %}
+          تحقق من الرمز المرسل
+          {% else %}
+          Verify the Code Sent
+          {% endif %}
+        </h2>
+        <p class="mt-2 text-center text-sm text-indigo-400">
+          {% if LANGUAGE_CODE == 'ar' %}
+          أدخل رمز التحقق المرسل إلى بريدك الإلكتروني
+          {% else %}
+          Enter the verification code sent to your email
+          {% endif %}
+        </p>
+      </div>
+      <form class="mt-8 space-y-6" method="post">
+        {% csrf_token %}
+        <div class="-space-y-px rounded-md shadow-sm">
+          <div>
+            <label for="otp" class="sr-only">
+              {% if LANGUAGE_CODE == 'ar' %}
+              رمز التحقق
+              {% else %}
+              Verification Code
+              {% endif %}
+            </label>
+            <input
+              id="otp"
+              name="otp"
+              type="text"
+              required
+              class="relative block w-full appearance-none rounded-md border border-indigo-200 px-3 py-2 text-black placeholder-indigo-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+              placeholder="{% if LANGUAGE_CODE == 'ar' %}أدخل رمز التحقق{% else %}Enter verification code{% endif %}"
+            />
+          </div>
+        </div>
+
+        <div>
+          <button
+            type="submit"
+            class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+          >
+            {% if LANGUAGE_CODE == 'ar' %}
+            تحقق
+            {% else %}
+            Verify
+            {% endif %}
+          </button>
+        </div>
+        <div class="text-center text-sm text-red-500">
+          {% if error %}
+            {{ error }}
+          {% endif %}
+        </div>
+      </form>
+    </div>
+</div>
+
+{% endblock content %}

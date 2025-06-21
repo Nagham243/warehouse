@@ -1,0 +1,462 @@
+{% extends "base_student_dashboard.html" %} {% load students_tags %} {% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>معلومات التحويل البنكي - Bank Transfer Information</title>
+    <style>
+        :root {
+            --primary-rose: #e11d48;
+            --light-rose: #fda4af;
+            --dark-rose: #be123c;
+            --amber: #f59e0b;
+            --light-amber: #fde68a;
+            --dark-amber: #d97706;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-700: #374151;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #fef3c7 0%, #fecdd3 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width:800px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            margin-bottom: 5rem;
+        }
+
+        .header {
+            background: linear-gradient(to right, var(--primary-rose), var(--amber));
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .header h1, .header h2 {
+            margin: 0.5rem 0;
+            font-weight: 600;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+        }
+
+        .header h2 {
+            font-size: 1.25rem;
+            opacity: 0.9;
+        }
+
+        .content-section {
+            padding: 1.5rem;
+        }
+
+        .section-title {
+            color: var(--primary-rose);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-bottom: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-title:before {
+            content: "";
+            display: inline-block;
+            width: 0.5rem;
+            height: 1.5rem;
+            background: var(--primary-rose);
+            border-radius: 0.25rem;
+        }
+
+        .total-amount {
+            background: var(--light-rose);
+            border: 2px dashed var(--primary-rose);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            text-align: center;
+            margin: 1.5rem 0;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .info-item {
+            background: var(--gray-100);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .info-value {
+            font-weight: 500;
+            color: var(--gray-900);
+            position: relative;
+            padding-right: 2rem;
+        }
+
+        .copy-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--primary-rose);
+            color: white;
+            border: none;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 0.375rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--dark-rose);
+        }
+
+        .copy-btn svg {
+            width: 0.875rem;
+            height: 0.875rem;
+        }
+
+        .note-box {
+            background: #fff3f3;
+            border-left: 4px solid var(--primary-rose);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            font-size: 0.875rem;
+            color: var(--gray-700);
+        }
+
+        .note-box strong {
+            color: var(--primary-rose);
+        }
+
+        .file-upload {
+            margin: 1.5rem 0;
+        }
+
+        .file-upload-label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--gray-900);
+        }
+
+        .file-upload-input {
+            width: 100%;
+            padding: 1.5rem;
+            border: 2px dashed var(--light-rose);
+            border-radius: 0.75rem;
+            background: var(--gray-100);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .file-upload-input:hover {
+            border-color: var(--primary-rose);
+            background: white;
+        }
+
+        .file-upload-text {
+            color: var(--gray-700);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .preview-container {
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 200px;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            margin-bottom: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-rose);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--dark-rose);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-secondary {
+            background: var(--amber);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: var(--dark-amber);
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-200);
+        }
+
+        .btn-outline:hover {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        @media (max-width: 640px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+
+            .header h2 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <div class="card ">
+        <div class="header">
+            <h1>معلومات التحويل البنكي</h1>
+            <h2>Bank Transfer Information</h2>
+        </div>
+
+        <div class="content-section">
+            <div class="section-title">ملخص الطلب - Order Summary</div>
+
+            <div class="total-amount">
+                المبلغ الإجمالي: {{ order_total|floatformat:2 }} ر.س
+                <br>
+                Total Amount: {{ order_total|floatformat:2 }} SAR
+            </div>
+
+            <div class="section-title">تفاصيل الحساب البنكي - Bank Account Details</div>
+
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">اسم البنك - Bank Name:</span>
+                    <span class="info-value">
+                        {{ club.bank_name }}
+                        <button class="copy-btn" onclick="copyToClipboard(this.parentElement)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">رقم الحساب - Account Number:</span>
+                    <span class="info-value">
+                        {{club.account_number }}
+                        <button class="copy-btn" onclick="copyToClipboard(this.parentElement)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">رقم الآيبان - IBAN:</span>
+                    <span class="info-value">
+                        {{club.iban }}
+                        <button class="copy-btn" onclick="copyToClipboard(this.parentElement)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="info-item">
+                    <span class="info-label">اسم المستفيد - Beneficiary Name:</span>
+                    <span class="info-value">
+                        {{club.account_name }}
+                        <button class="copy-btn" onclick="copyToClipboard(this.parentElement)">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+            </div>
+
+            <div class="note-box">
+                <strong>ملاحظة مهمة - Important Note:</strong><br>
+                بعد إتمام التحويل، يرجى رفع صورة إثبات التحويل أدناه<br>
+                After completing the transfer, please upload the transfer receipt image below
+            </div>
+
+            <form method="post" action="{% url 'confirm_order' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <div class="file-upload">
+                    <label for="transfer_receipt" class="file-upload-label">
+                        رفع إثبات التحويل - Upload Transfer Receipt:
+                    </label>
+                    <input type="file"
+                           id="transfer_receipt"
+                           name="transfer_receipt"
+                           accept="image/*"
+                           class="file-upload-input"
+                           onchange="previewImage(this)">
+                    <div id="preview-container" class="preview-container" style="display: none;">
+                        <img id="preview-image" class="preview-image" alt="Transfer Receipt Preview">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    تأكيد الطلب - Confirm Order
+                </button>
+            </form>
+
+            <form method="get" action="{% url 'checkout' %}">
+                <button type="submit" class="btn btn-outline">
+                    إلغاء والعودة للدفع - Cancel & Return to Checkout
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function copyToClipboard(element) {
+        // Get the text to copy (excluding the SVG icon)
+        const textToCopy = element.textContent.trim();
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                // Show feedback
+                const btn = element.querySelector('.copy-btn');
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                `;
+                btn.style.backgroundColor = '#10b981';
+
+                setTimeout(() => {
+                    btn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                        </svg>
+                    `;
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        } else {
+            // Fallback for older browsers
+            const textArea = document.createElement('textarea');
+            textArea.value = textToCopy;
+            document.body.appendChild(textArea);
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                // Show feedback
+                const btn = element.querySelector('.copy-btn');
+                btn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                `;
+                btn.style.backgroundColor = '#10b981';
+
+                setTimeout(() => {
+                    btn.innerHTML = `
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/>
+                        </svg>
+                    `;
+                    btn.style.backgroundColor = '';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+    }
+
+    function previewImage(input) {
+        const previewContainer = document.getElementById('preview-container');
+        const previewImage = document.getElementById('preview-image');
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewContainer.style.display = 'block';
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            previewContainer.style.display = 'none';
+        }
+    }
+</script>
+</body>
+</html>
+{% endblock %}

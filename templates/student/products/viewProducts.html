@@ -1,0 +1,295 @@
+{% extends "base_student_dashboard.html" %} {% load students_tags %} {% load static %} {% block content %}
+
+<div class="min-h-screen bg-gradient-to-br from-rose-50 to-amber-50">
+  <!-- Banner with Products Header -->
+  <div class="relative h-56 bg-gradient-to-r from-rose-600 to-pink-600 overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="absolute bottom-0 left-0 right-0 text-center text-white pb-8 animate-[fadeInUp_0.6s_ease-out]">
+      <h1 class="text-4xl font-extrabold mb-2">{% if LANGUAGE_CODE == 'ar' %}
+        ✨ منتجات النادي
+        {% else %}
+        ✨ Salon Products
+        {% endif %}</h1>
+      <p class="text-xl"> {{ club.productsDescription }}</p>
+    </div>
+  </div>
+
+  <section class="container mx-auto px-4 pt-8 pb-16">
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div class="animate-[fadeInUp_0.6s_ease-out_0.2s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-6">
+        <h3 class="text-gray-500 text-sm mb-2 text-right">{% if LANGUAGE_CODE == 'ar' %}
+          إجمالي المنتجات
+          {% else %}
+          Total Products
+          {% endif %}</h3>
+        <div class="text-4xl font-bold text-rose-400/80 text-right">{{ total_products }}</div>
+      </div>
+      <div class="animate-[fadeInUp_0.6s_ease-out_0.3s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-6">
+        <h3 class="text-gray-500 text-sm mb-2 text-right">{% if LANGUAGE_CODE == 'ar' %}
+          أحدث المنتجات
+          {% else %}
+          Latest Product
+          {% endif %}</h3>
+        <div class="text-4xl font-bold text-rose-400/80 text-right">{% if products %}{{ products.0.title|truncatechars:15 }}{% else %}{% if LANGUAGE_CODE == 'ar' %}
+          لا يوجد
+          {% else %}
+          None
+          {% endif %}{% endif %}</div>
+      </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 animate-[fadeIn_0.8s_ease-out_0.4s_both]">
+      <div class="relative">
+        <button id="resetFilters" class="w-full px-3 py-2.5 bg-rose-100 border border-rose-200 rounded-md hover:bg-rose-200 transition text-rose-700/80 font-medium">
+          {% if LANGUAGE_CODE == 'ar' %}
+          🔄 إعادة تعيين
+          {% else %}
+          🔄 Reset Filters
+          {% endif %}
+        </button>
+      </div>
+      <div class="relative">
+        <input
+                id="searchInput"
+                type="text"
+                placeholder="{% if LANGUAGE_CODE == 'ar' %}🔍 بحث عن منتج...{% else %}🔍 Search for a product...{% endif %}"
+                class="w-full px-3 py-2.5 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-400"
+        />
+      </div>
+      <div class="relative">
+        <select id="priceFilter" class="w-full px-3 py-2.5 border border-rose-200 rounded-md focus:outline-none focus:ring-2 focus:ring-rose-400">
+          <option value="">{% if LANGUAGE_CODE == 'ar' %}
+            💰 جميع الأسعار
+            {% else %}
+            💰 All Prices
+            {% endif %}</option>
+          <option value="low">{% if LANGUAGE_CODE == 'ar' %}
+            أقل من 50 ريال
+            {% else %}
+            Less than 50 SAR
+            {% endif %}</option>
+          <option value="medium">{% if LANGUAGE_CODE == 'ar' %}
+            50 - 100 ريال
+            {% else %}
+            50 - 100 SAR
+            {% endif %}</option>
+          <option value="high">{% if LANGUAGE_CODE == 'ar' %}
+            أكثر من 100 ريال
+            {% else %}
+            More than 100 SAR
+            {% endif %}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+      {% for product in products %}
+      <div class="animate-[fadeInRight_0.5s_ease-out_{{ forloop.counter|add:0.5 }}s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 overflow-hidden flex flex-col h-full product-card"
+           data-name="{{ product.title|lower }}"
+           data-price="{{ product.price }}"
+           data-category="{{ product.classification.id }}">
+        <div class="h-60 overflow-hidden">
+          {% if product.product_images.all %}
+          <img
+                  src="{{ product.product_images.first.img.url }}?v={{ product.updated_at|date:'U' }}"
+                  alt="{{ product.title }}"
+                  class="w-full h-full object-contain transition-transform duration-300 hover:scale-105 product-image"
+                  data-id="{{ product.id }}"
+          >
+          {% else %}
+          <div class="h-full w-full bg-rose-50 flex items-center justify-center">
+            <span class="text-rose-300"><i class="bi bi-image text-3xl"></i></span>
+          </div>
+          {% endif %}
+          <!-- Status Badge -->
+          <div class="absolute top-2 left-2 flex flex-wrap gap-1">
+            {% if product.is_enabled %}
+            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs shadow-sm"><i class="fas fa-check-circle ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}متاح{% else %}Available{% endif %}</span>
+            {% else %}
+            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm"><i class="fas fa-times-circle ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}غير متاح{% else %}Unavailable{% endif %}</span>
+            {% endif %}
+            {% if product.stock == 0 %}
+            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm"><i class="fas fa-exclamation-circle ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}نفذ{% else %}Out of stock{% endif %}</span>
+            {% elif product.stock <= 10 %}
+            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs shadow-sm"><i class="fas fa-exclamation-triangle ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}منخفض{% else %}Low stock{% endif %}</span>
+            {% endif %}
+            {% if product.is_expired %}
+            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm"><i class="fas fa-exclamation-circle ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}منتهي{% else %}Expired{% endif %}</span>
+            {% elif product.is_expiring_soon %}
+            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs shadow-sm"><i class="fas fa-clock ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}ينتهي قريباً{% else %}Expiring soon{% endif %}</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="p-4 flex-grow">
+          <div class="flex justify-between items-center mb-2">
+            <h2 class="text-xl font-bold truncate text-rose-700/80">{{ product.title }}</h2>
+          </div>
+          <div class="mb-4">
+            <p class="text-gray-600 text-sm line-clamp-3">{{ product.desc|truncatechars:100 }}</p>
+          </div>
+          <div class="flex justify-between items-center">
+            <div>
+              <span class="font-bold text-lg text-rose-500">{{ product.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+            </div>
+            {% if product.stock %}
+            <div class="text-gray-600">
+              {% if LANGUAGE_CODE == 'ar' %}
+              المخزون:
+              {% else %}
+              Stock:
+              {% endif %} <span class="font-medium">{{ product.stock }}</span>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        <div class="bg-rose-50/60 border-t border-rose-100 px-4 py-3 flex justify-center">
+          <a href="{% url 'viewProductsSpecific' product.id %}" class="text-rose-500 hover:text-rose-700 font-medium">{% if LANGUAGE_CODE == 'ar' %}
+            ✨ عرض التفاصيل
+            {% else %}
+            ✨ View Details
+            {% endif %}</a>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-span-3 p-8 text-center">
+        <p class="text-gray-500 font-medium">{% if LANGUAGE_CODE == 'ar' %}
+          🙁 لا توجد منتجات متاحة حالياً
+          {% else %}
+          🙁 No products available at the moment
+          {% endif %}</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if products.has_other_pages %}
+    <div class="flex justify-center mt-8 mb-12 animate-[fadeInUp_0.6s_ease-out_0.5s_both]">
+      <div class="inline-flex rounded-md shadow">
+        {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}" class="px-4 py-2 text-sm font-medium text-white bg-rose-400/90 border border-rose-300 rounded-l-md hover:bg-rose-600/90 transition-all duration-300">
+          {% if LANGUAGE_CODE == 'ar' %}
+          السابق
+          {% else %}
+          Previous
+          {% endif %}
+        </a>
+        {% endif %}
+
+        {% for i in products.paginator.page_range %}
+        {% if products.number == i %}
+        <span class="px-4 py-2 text-sm font-medium text-white bg-rose-600/90 border border-rose-300">{{ i }}</span>
+        {% else %}
+        <a href="?page={{ i }}" class="px-4 py-2 text-sm font-medium text-white bg-rose-400/90 border border-rose-300 hover:bg-rose-600/90 transition-all duration-300">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}" class="px-4 py-2 text-sm font-medium text-white bg-rose-400/90 border border-rose-300 rounded-r-md hover:bg-rose-600/90 transition-all duration-300">
+          {% if LANGUAGE_CODE == 'ar' %}
+          التالي
+          {% else %}
+          Next
+          {% endif %}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </section>
+</div>
+
+<style>
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+      }
+      to {
+          opacity: 1;
+      }
+  }
+
+  @keyframes fadeInDown {
+      from {
+          opacity: 0;
+          transform: translateY(-20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInUp {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInRight {
+      from {
+          opacity: 0;
+          transform: translateX(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateX(0);
+      }
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const priceFilter = document.getElementById('priceFilter');
+    const searchInput = document.getElementById('searchInput');
+    const resetButton = document.getElementById('resetFilters');
+    const productCards = document.querySelectorAll('.product-card');
+
+    function filterProducts() {
+      const priceVal = priceFilter?.value || '';
+      const searchQuery = searchInput?.value.trim().toLowerCase() || '';
+
+      productCards.forEach(card => {
+        const name = card.dataset.name?.toLowerCase() || '';
+        const price = parseFloat(card.dataset.price || 0);
+
+        let matchPrice = true;
+        if (priceVal === 'low') {
+          matchPrice = price < 50;
+        } else if (priceVal === 'medium') {
+          matchPrice = price >= 50 && price <= 100;
+        } else if (priceVal === 'high') {
+          matchPrice = price > 100;
+        }
+
+        const matchSearch = name.includes(searchQuery);
+
+        if (matchPrice && matchSearch) {
+          card.style.display = '';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    priceFilter?.addEventListener('change', filterProducts);
+    searchInput?.addEventListener('input', filterProducts);
+
+    resetButton?.addEventListener('click', function() {
+      if (priceFilter) priceFilter.value = '';
+      if (searchInput) searchInput.value = '';
+      filterProducts();
+    });
+
+    filterProducts();
+  });
+</script>
+
+{% endblock %}

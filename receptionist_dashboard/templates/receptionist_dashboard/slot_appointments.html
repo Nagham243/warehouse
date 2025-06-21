@@ -1,0 +1,287 @@
+{% extends "base_receptionist_dashboard.html" %}
+{% load static %}
+
+{% block title %}{% if LANGUAGE_CODE == 'ar' %}
+✨ مواعيد الفترة - {{ day }} {{ time_slot }}
+{% else %}
+✨ Slot Appointments - {{ day }} {{ time_slot }}
+{% endif %}{% endblock %}
+
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .attendance-table {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .present-badge {
+        background-color: #10b981;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .absent-badge {
+        background-color: #ef4444;
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .attendance-stats {
+        background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+        border-radius: 8px;
+        padding: 12px;
+        margin: 12px 0;
+    }
+</style>
+
+<section class="bg-gradient-to-br from-rose-50 to-amber-50 w-full min-h-screen py-12 px-4 md:px-8">
+    <div class="{% if LANGUAGE_CODE == 'ar' %}xl:mr-64{% else %}xl:ml-64{% endif %} p-6">
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-lg overflow-hidden border border-rose-100 animate-[fadeInDown_0.8s_ease-out]">
+                <div class="bg-gradient-to-r from-rose-600 to-pink-600 text-white px-6 py-4 rounded-t-lg">
+                    <div class="flex items-center justify-between">
+                        <h1 class="text-xl font-bold">{% if LANGUAGE_CODE == 'ar' %}
+                            📅 مواعيد يوم {{ day }} - {{ time_slot }}
+                            {% else %}
+                            📅 Appointments for {{ day }} - {{ time_slot }}
+                            {% endif %}</h1>
+                        <a href="{% url 'receptionist_salon_appointments' %}" class="bg-white text-rose-600 px-4 py-2 rounded-md hover:bg-rose-100 transition duration-200">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            ↩️ العودة للجدول
+                            {% else %}
+                            ↩️ Back to Schedule
+                            {% endif %}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    {% if appointments %}
+                    <div class="mb-6 animate-[fadeIn_0.8s_ease-out_0.1s_both]">
+                        <h2 class="text-lg font-semibold mb-4 text-rose-400/80">{% if LANGUAGE_CODE == 'ar' %}
+                            👥 عدد المواعيد في هذه الفترة: {{ appointments|length }}
+                            {% else %}
+                            👥 Number of appointments in this slot: {{ appointments|length }}
+                            {% endif %}</h2>
+
+                        <div class="grid grid-cols-1 gap-8">
+                            {% for appointment in appointments %}
+                            <div class="border border-rose-100 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 animate-[fadeInRight_0.5s_ease-out_{{ forloop.counter|add:0.2 }}s_both]">
+                                <div class="bg-rose-50 text-rose-700/80 px-4 py-2 font-semibold flex justify-between items-center">
+                                    <span>{{ appointment.employee }}</span>
+                                    <span class="text-sm">{{ appointment.start_time }} - {{ appointment.end_time }}</span>
+                                </div>
+
+                                <div class="p-4">
+                                    <div class="grid md:grid-cols-2 gap-6">
+                                        <!-- Appointment Details -->
+                                        <div>
+                                            <h3 class="font-semibold text-rose-600 mb-3">
+                                                {% if LANGUAGE_CODE == 'ar' %}
+                                                📋 تفاصيل الموعد
+                                                {% else %}
+                                                📋 Appointment Details
+                                                {% endif %}
+                                            </h3>
+
+                                            <div class="mb-3">
+                                                <span class="font-semibold text-rose-400/80">{% if LANGUAGE_CODE == 'ar' %}
+                                                     الخدمات:
+                                                  {% else %}
+                                                     Services:
+                                                  {% endif %}</span>
+                                                <span class="text-gray-600">{{ appointment.services }}</span>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <span class="font-semibold text-rose-400/80">{% if LANGUAGE_CODE == 'ar' %}
+                                                     المدرب:
+                                                  {% else %}
+                                                     Employee:
+                                                  {% endif %}</span>
+                                                <span class="text-gray-600">{{ appointment.employee }}</span>
+                                            </div>
+
+                                            <div class="flex justify-end mt-4">
+                                                <a href="{% url 'appointment_details' appointment.id %}" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-4 py-2 rounded-md transition duration-200">
+                                                    {% if LANGUAGE_CODE == 'ar' %}
+                                                    🔍 التفاصيل
+                                                    {% else %}
+                                                    🔍 Details
+                                                    {% endif %}
+                                                </a>
+                                            </div>
+                                        </div>
+
+                                        <!-- Attendance Section -->
+                                        <div>
+                                            <h3 class="font-semibold text-rose-600 mb-3">
+                                                {% if LANGUAGE_CODE == 'ar' %}
+                                                📊 سجل الحضور
+                                                {% else %}
+                                                📊 Attendance Record
+                                                {% endif %}
+                                            </h3>
+
+                                            {% if appointment.attendance_records %}
+                                            <!-- Attendance Statistics -->
+                                            <div class="attendance-stats">
+                                                <div class="grid grid-cols-2 gap-4 text-sm">
+                                                    <div class="text-center">
+                                                        <div class="font-bold text-green-600 text-lg">{{ appointment.attendance_stats.present }}</div>
+                                                        <div class="text-gray-600">{% if LANGUAGE_CODE == 'ar' %}حاضر{% else %}Present{% endif %}</div>
+                                                    </div>
+                                                    <div class="text-center">
+                                                        <div class="font-bold text-red-600 text-lg">{{ appointment.attendance_stats.absent }}</div>
+                                                        <div class="text-gray-600">{% if LANGUAGE_CODE == 'ar' %}غائب{% else %}Absent{% endif %}</div>
+                                                    </div>
+                                                </div>
+                                                <div class="text-center mt-2 pt-2 border-t border-gray-300">
+                                                        <span class="text-sm text-gray-600">
+                                                            {% if LANGUAGE_CODE == 'ar' %}
+                                                            نسبة الحضور: {{ appointment.attendance_stats.percentage }}%
+                                                            {% else %}
+                                                            Attendance Rate: {{ appointment.attendance_stats.percentage }}%
+                                                            {% endif %}
+                                                        </span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Attendance Table -->
+                                            <div class="attendance-table border border-gray-200 rounded-lg">
+                                                <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                                                    <h4 class="font-medium text-gray-700 text-sm">
+                                                        {% if LANGUAGE_CODE == 'ar' %}
+                                                        قائمة الطلاب ({{ appointment.attendance_stats.total }})
+                                                        {% else %}
+                                                        Students List ({{ appointment.attendance_stats.total }})
+                                                        {% endif %}
+                                                    </h4>
+                                                </div>
+                                                <div class="max-h-48 overflow-y-auto">
+                                                    {% for record in appointment.attendance_records %}
+                                                    <div class="flex justify-between items-center px-3 py-2 border-b border-gray-100 last:border-b-0 hover:bg-gray-50">
+                                                        <span class="text-sm text-gray-700">{{ record.student.username }}</span>
+                                                        {% if record.is_present %}
+                                                        <span class="present-badge">
+                                                                    {% if LANGUAGE_CODE == 'ar' %}✓ حاضر{% else %}✓ Present{% endif %}
+                                                                </span>
+                                                        {% else %}
+                                                        <span class="absent-badge">
+                                                                    {% if LANGUAGE_CODE == 'ar' %}✗ غائب{% else %}✗ Absent{% endif %}
+                                                                </span>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            {% if appointment.attendance_records.first.date_recorded %}
+                                            <div class="text-xs text-gray-500 mt-2">
+                                                {% if LANGUAGE_CODE == 'ar' %}
+                                                آخر تحديث: {{ appointment.attendance_records.first.date_recorded|date:"d/m/Y H:i" }}
+                                                {% else %}
+                                                Last updated: {{ appointment.attendance_records.first.date_recorded|date:"d/m/Y H:i" }}
+                                                {% endif %}
+                                            </div>
+                                            {% endif %}
+
+                                            {% else %}
+                                            <div class="text-center py-4 text-gray-500">
+                                                <div class="text-gray-400 mb-2">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-sm">
+                                                    {% if LANGUAGE_CODE == 'ar' %}
+                                                    لم يتم تسجيل الحضور بعد
+                                                    {% else %}
+                                                    No attendance recorded yet
+                                                    {% endif %}
+                                                </p>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="py-8 text-center">
+                        <div class="mb-4 text-gray-400">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-700">{% if LANGUAGE_CODE == 'ar' %}لا توجد مواعيد في هذه الفترة{% else %}No appointments in this time slot{% endif %}</h2>
+                        <p class="text-gray-500 mt-2">{% if LANGUAGE_CODE == 'ar' %}يمكنك حجز موعد جديد من خلال الضغط على الزر أدناه{% else %}You can book a new appointment by clicking the button below{% endif %}</p>
+                        <div class="mt-6">
+                            <a href="{% url 'select_appointment_day' %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-md transition duration-200">
+                                {% if LANGUAGE_CODE == 'ar' %}حجز موعد جديد{% else %}Book New Appointment{% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Any additional JavaScript can be added here if needed
+</script>
+{% endblock %}

@@ -1,0 +1,442 @@
+{% extends 'base_coach_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Card Effects */
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #fef6ee; /* amber-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #f59e0b; /* amber-500 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #d97706; /* amber-600 */
+    }
+
+    /* Input Styling */
+    select, input {
+        border-color: #fcd34d !important; /* amber-300 */
+        border-radius: 0.5rem !important;
+        transition: all 0.2s ease !important;
+        padding: 0.75rem 1rem;
+        background-color: #fff;
+        color: #78350f; /* amber-900 */
+    }
+
+    select:focus, input:focus {
+        border-color: #f59e0b !important; /* amber-500 */
+        box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2) !important; /* amber-500 with opacity */
+        outline: none !important;
+    }
+</style>
+
+<div class="min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn" style="background-color: #fef6ee;"> <!-- amber-50 -->
+    <section class="container mx-auto px-4 pt-8 pb-16">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8 animate-fadeIn">
+            <h1 class="text-3xl font-bold text-gray-800 relative inline-block">
+                <span class="relative z-10 flex items-center gap-2">
+                    <i class="fas fa-box text-amber-600"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}إدارة المنتجات{% else %}Product Management{% endif %}
+                </span>
+                <span class="absolute bottom-0 left-0 w-full h-2 bg-amber-200 opacity-30 z-0"></span>
+            </h1>
+            <a href="{% url 'coachaddProduct' %}" class="btn-gradient px-4 py-2 bg-gradient-to-r from-amber-500 to-pink-600 text-white rounded-lg hover:from-amber-600 hover:to-pink-700 flex items-center transition-all duration-300 shadow-md" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة منتج جديد{% else %}Add New Product{% endif %}">
+                <i class="fas fa-plus mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إضافة منتج جديد{% else %}Add New Product{% endif %}
+            </a>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-500 stat-card animate-fadeInUp">
+                <h3 class="text-amber-600 text-sm mb-2 flex items-center">
+                    <i class="fas fa-box mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إجمالي المنتجات{% else %}Total Products{% endif %}
+                </h3>
+                <div class="text-4xl font-bold text-amber-700">{{ total_products }}</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-500 stat-card animate-fadeInUp" style="animation-delay: 0.1s;">
+                <h3 class="text-pink-600 text-sm mb-2 flex items-center">
+                    <i class="fas fa-money-bill-wave mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}القيمة الإجمالية{% else %}Total Value{% endif %}
+                </h3>
+                <div class="text-4xl font-bold text-pink-700">
+                    <span id="total-value">{{ total_value|floatformat:2 }}</span>
+                    <span class="text-sm">{% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-300 stat-card animate-fadeInUp" style="animation-delay: 0.2s;">
+                <h3 class="text-amber-600 text-sm mb-2 flex items-center">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}مخزون منخفض{% else %}Low Stock{% endif %}
+                </h3>
+                <div class="text-4xl font-bold text-amber-600">{{ low_stock_count }}</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-300 stat-card animate-fadeInUp" style="animation-delay: 0.3s;">
+                <h3 class="text-pink-600 text-sm mb-2 flex items-center">
+                    <i class="fas fa-times-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}نفذ من المخزون{% else %}Out of Stock{% endif %}
+                </h3>
+                <div class="text-4xl font-bold text-pink-600">{{ out_of_stock_count }}</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-amber-400 stat-card animate-fadeInUp" style="animation-delay: 0.4s;">
+                <h3 class="text-amber-600 text-sm mb-2 flex items-center">
+                    <i class="fas fa-clock mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}ينتهي خلال شهر{% else %}Expiring Soon{% endif %}
+                </h3>
+                <div class="text-4xl font-bold text-amber-600">{{ expiring_soon_count }}</div>
+            </div>
+            <div class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-pink-400 stat-card animate-fadeInUp" style="animation-delay: 0.5s;">
+                <h3 class="text-pink-600 text-sm mb-2 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}منتجات منتهية{% else %}Expired Products{% endif %}
+                </h3>
+                <div class="text-4xl font-bold text-pink-700">{{ expired_count }}</div>
+            </div>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8 animate-fadeInUp">
+            <div class="relative">
+                <select id="statusFilter" class="w-full px-4 py-2.5 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent bg-white text-amber-700 shadow-sm transition-all duration-200">
+                    <option>{% if LANGUAGE_CODE == 'ar' %}جميع المنتجات{% else %}All Products{% endif %}</option>
+                    <option>{% if LANGUAGE_CODE == 'ar' %}متاحة فقط{% else %}Available Only{% endif %}</option>
+                    <option>{% if LANGUAGE_CODE == 'ar' %}غير متاحة{% else %}Unavailable{% endif %}</option>
+                    <option>{% if LANGUAGE_CODE == 'ar' %}مخزون منخفض{% else %}Low Stock{% endif %}</option>
+                    <option>{% if LANGUAGE_CODE == 'ar' %}ينتهي خلال شهر{% else %}Expiring Soon{% endif %}</option>
+                    <option>{% if LANGUAGE_CODE == 'ar' %}منتهي الصلاحية{% else %}Expired{% endif %}</option>
+                </select>
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <i class="fas fa-filter text-amber-400"></i>
+                </div>
+            </div>
+            <div class="relative">
+                <input id="minPrice" type="number" placeholder="{% if LANGUAGE_CODE == 'ar' %}السعر الأدنى{% else %}Min Price{% endif %}" class="w-full px-4 py-2.5 pl-10 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent bg-white text-amber-700 shadow-sm transition-all duration-200" aria-label="{% if LANGUAGE_CODE == 'ar' %}السعر الأدنى{% else %}Minimum Price{% endif %}"/>
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <span class="text-amber-400">≥</span>
+                </div>
+            </div>
+            <div class="relative">
+                <input id="maxPrice" type="number" placeholder="{% if LANGUAGE_CODE == 'ar' %}السعر الأعلى{% else %}Max Price{% endif %}" class="w-full px-4 py-2.5 pl-10 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent bg-white text-amber-700 shadow-sm transition-all duration-200" aria-label="{% if LANGUAGE_CODE == 'ar' %}السعر الأعلى{% else %}Maximum Price{% endif %}"/>
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <span class="text-amber-400">≤</span>
+                </div>
+            </div>
+            <div class="relative">
+                <input id="searchInput" type="text" placeholder="{% if LANGUAGE_CODE == 'ar' %}بحث عن منتج...{% else %}Search for a product...{% endif %}" class="w-full px-4 py-2.5 pl-10 border border-amber-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-300 focus:border-transparent bg-white text-amber-700 shadow-sm transition-all duration-200" aria-label="{% if LANGUAGE_CODE == 'ar' %}بحث عن منتج{% else %}Search for a product{% endif %}"/>
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <i class="fas fa-search text-amber-400"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            {% for product in products %}
+            <div class="bg-white rounded-xl shadow-sm overflow-hidden flex flex-col h-full stat-card border border-amber-100 transition-all duration-300 animate-fadeInUp"
+                 style="animation-delay: {{ forloop.counter|divisibleby:2|yesno:'0.1s,0.2s' }};"
+                 data-name="{{ product.title|lower }}"
+                 data-price="{{ product.price }}"
+                 data-status="{% if not product.is_enabled %}unavailable{% elif product.stock == 0 %}out{% elif product.stock <= 10 %}low{% else %}available{% endif %}"
+                 data-expiring="{% if product.is_expired %}expired{% elif product.is_expiring_soon %}expiring{% else %}valid{% endif %}">
+                <!-- Product Image -->
+                <a href="{% url 'coachproduct_details' product.id %}" class="h-60 overflow-hidden bg-gradient-to-br from-amber-50 to-pink-50 block relative">
+                    {% if product.product_images.all %}
+                    <img src="{{ product.product_images.first.img.url }}?v={{ product.updated_at|date:'U' }}"
+                         alt="{{ product.title }}"
+                         class="w-full h-full object-contain product-image"
+                         data-id="{{ product.id }}">
+                    {% else %}
+                    <div class="h-full w-full flex items-center justify-center">
+                        <span class="text-amber-300"><i class="fas fa-image text-5xl"></i></span>
+                    </div>
+                    {% endif %}
+                    <!-- Status Badge -->
+                    <div class="absolute top-2 left-2 flex flex-wrap gap-1">
+                        {% if product.is_enabled %}
+                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs shadow-sm"><i class="fas fa-check-circle mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}متاح{% else %}Available{% endif %}</span>
+                        {% else %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm"><i class="fas fa-times-circle mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}غير متاح{% else %}Unavailable{% endif %}</span>
+                        {% endif %}
+                        {% if product.stock == 0 %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm"><i class="fas fa-exclamation-circle mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}نفذ{% else %}Out of stock{% endif %}</span>
+                        {% elif product.stock <= 10 %}
+                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs shadow-sm"><i class="fas fa-exclamation-triangle mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}منخفض{% else %}Low stock{% endif %}</span>
+                        {% endif %}
+                        {% if product.is_expired %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm"><i class="fas fa-exclamation-circle mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}منتهي{% else %}Expired{% endif %}</span>
+                        {% elif product.is_expiring_soon %}
+                        <span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs shadow-sm"><i class="fas fa-clock mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}ينتهي قريباً{% else %}Expiring soon{% endif %}</span>
+                        {% endif %}
+                        {% if product.approval_status == 'rejected' %}
+                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}مرفوض{% else %}Unavailable{% endif %}
+                        </span>
+                        {% endif %}
+                    </div>
+                </a>
+                <!-- Product Content -->
+                <div class="p-5 flex-grow">
+                    <!-- Product Title -->
+                    <h2 class="text-xl font-bold mb-2 truncate">
+                        <a href="{% url 'coachproduct_details' product.id %}" class="hover:text-amber-600 transition-colors duration-200 group">
+                            {{ product.title }}
+                            <i class="fas fa-arrow-{% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %} text-amber-400 opacity-0 group-hover:opacity-100 transition-all duration-200 ml-1"></i>
+                        </a>
+                    </h2>
+
+                    <!-- Show rejection reason if product is rejected -->
+                    {% if product.approval_status == 'rejected' %}
+                    <div class="mb-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-r">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <h3 class="text-sm font-medium text-red-800">
+                                    {% if LANGUAGE_CODE == 'ar' %}سبب الرفض{% else %}Rejection Reason{% endif %}
+                                </h3>
+                                <div class="mt-2 text-sm text-red-700">
+                                    <p>{{ product.approval_notes|default:"No reason provided" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    <!-- Product Description -->
+                    <div class="mb-4">
+                        <p class="text-gray-500 text-sm line-clamp-3">{{ product.desc|truncatechars:100 }}</p>
+                    </div>
+                    <!-- Price and Stock -->
+                    <div class="flex justify-between items-center mb-3">
+                        <div>
+                            <span class="font-bold text-lg text-amber-600">{{ product.price }} <span class="text-sm">{% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span></span>
+                        </div>
+                        <div class="text-gray-600 text-sm bg-amber-50 px-2 py-1 rounded-lg transition-all duration-200 stat-card">
+                            <i class="fas fa-box mr-1 text-amber-600"></i>{% if LANGUAGE_CODE == 'ar' %}المخزون:{% else %}Stock:{% endif %} <span class="font-medium">{{ product.stock }}</span>
+                        </div>
+                    </div>
+                    <!-- Expiration Date -->
+                    {% if product.expiration_date %}
+                    <div class="text-sm text-gray-600 bg-amber-50 px-2 py-1 rounded-lg transition-all duration-200 stat-card">
+                        <i class="fas fa-calendar-times mr-1 text-amber-600"></i>{% if LANGUAGE_CODE == 'ar' %}انتهاء الصلاحية:{% else %}Expiry Date:{% endif %}
+                        <span class="font-medium {% if product.is_expired %}text-red-600{% elif product.is_expiring_soon %}text-amber-600{% else %}text-gray-800{% endif %}">
+                            {{ product.expiration_date|date:"Y-m-d" }}
+                        </span>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Action Buttons -->
+                {% if product.approval_status == 'approved' or product.approval_status == 'pending' %}
+                <div class="bg-gradient-to-r from-amber-50 to-pink-50 border-t border-amber-200 px-5 py-3 flex justify-between">
+                    <div class="flex space-x-3">
+                        <a href="{% url 'coachproduct_details' product.id %}" class="text-amber-600 hover:text-amber-800 font-medium flex items-center transition-all duration-200 group" aria-label="{% if LANGUAGE_CODE == 'ar' %}تفاصيل المنتج{% else %}Product Details{% endif %}">
+                            <i class="fas fa-eye mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}تفاصيل{% else %}Details{% endif %}
+                        </a>
+                        <a href="{% url 'coacheditProduct' product.id %}" class="text-pink-600 hover:text-pink-800 flex items-center transition-all duration-200 group" aria-label="{% if LANGUAGE_CODE == 'ar' %}تعديل المنتج{% else %}Edit Product{% endif %}">
+                            <i class="fas fa-edit mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+                        </a>
+                    </div>
+                    <a href="{% url 'coachDeleteProduct' product.id %}" class="text-red-500 hover:text-red-700 flex items-center transition-all duration-200 group delete-product" data-id="{{ product.id }}" aria-label="{% if LANGUAGE_CODE == 'ar' %}حذف المنتج{% else %}Delete Product{% endif %}">
+                        <i class="fas fa-trash mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+                    </a>
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-gradient-to-r from-amber-50 to-pink-50 border-t border-amber-200 px-5 py-3 flex justify-between">
+                <div class="flex space-x-3">
+                    <a href="{% url 'coachproduct_details' product.id %}" class="text-amber-600 hover:text-amber-800 font-medium flex items-center transition-all duration-200 group" aria-label="{% if LANGUAGE_CODE == 'ar' %}تفاصيل المنتج{% else %}Product Details{% endif %}">
+                        <i class="fas fa-eye mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}تفاصيل{% else %}Details{% endif %}
+                    </a>
+                </div>
+                <a href="{% url 'coachDeleteProduct' product.id %}" class="text-red-500 hover:text-red-700 flex items-center transition-all duration-200 group delete-product" data-id="{{ product.id }}" aria-label="{% if LANGUAGE_CODE == 'ar' %}حذف المنتج{% else %}Delete Product{% endif %}">
+                    <i class="fas fa-trash mr-1"></i>{% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+        {% empty %}
+        <div class="col-span-3 p-8 text-center bg-white rounded-xl shadow-sm border border-amber-100 animate-fadeInUp">
+            <div class="text-amber-500 mb-4">
+                <i class="fas fa-box text-5xl"></i>
+            </div>
+            <p class="text-amber-600 font-medium text-lg mb-4"><i class="fas fa-info-circle mr-2"></i>{% if LANGUAGE_CODE == 'ar' %}لا توجد منتجات متاحة حالياً{% else %}No products available at the moment{% endif %}</p>
+            <a href="{% url 'coachaddProduct' %}" class="mt-2 inline-block btn-gradient px-4 py-2 bg-gradient-to-r from-amber-500 to-pink-600 text-white rounded-lg hover:from-amber-600 hover:to-pink-700 transition-all duration-300 shadow-md" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة منتج جديد{% else %}Add New Product{% endif %}">
+                <i class="fas fa-plus mr-2"></i>{% if LANGUAGE_CODE == 'ar' %}إضافة منتج جديد{% else %}Add New Product{% endif %}
+            </a>
+        </div>
+        {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if products.has_other_pages %}
+<div class="flex justify-center mt-8 animate-fadeInUp">
+    <div class="inline-flex rounded-lg shadow-sm">
+        {% if products.has_previous %}
+        <a href="?page={{ products.previous_page_number }}" class="px-4 py-2 text-sm font-medium text-amber-600 bg-white border border-amber-200 {% if LANGUAGE_CODE == 'ar' %}rounded-l-lg{% else %}rounded-r-lg{% endif %} hover:bg-amber-50 transition-all duration-300 flex items-center btn-gradient" aria-label="{% if LANGUAGE_CODE == 'ar' %}الصفحة السابقة{% else %}Previous Page{% endif %}">
+            {% if LANGUAGE_CODE == 'ar' %}<i class="fas fa-chevron-right mr-1"></i>السابق{% else %}<i class="fas fa-chevron-left mr-1"></i>Previous{% endif %}
+        </a>
+        {% endif %}
+        {% for i in products.paginator.page_range %}
+        {% if products.number == i %}
+        <span class="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-amber-500 to-pink-600 border border-amber-300">{{ i }}</span>
+        {% else %}
+        <a href="?page={{ i }}" class="px-4 py-2 text-sm font-medium text-amber-600 bg-white border border-amber-200 hover:bg-amber-50 transition-all duration-300 btn-gradient" aria-label="{% if LANGUAGE_CODE == 'ar' %}الصفحة {{ i }}{% else %}Page {{ i }}{% endif %}">{{ i }}</a>
+        {% endif %}
+        {% endfor %}
+        {% if products.has_next %}
+        <a href="?page={{ products.next_page_number }}" class="px-4 py-2 text-sm font-medium text-amber-600 bg-white border border-amber-200 {% if LANGUAGE_CODE == 'ar' %}rounded-r-lg{% else %}rounded-l-lg{% endif %} hover:bg-amber-50 transition-all duration-300 flex items-center btn-gradient" aria-label="{% if LANGUAGE_CODE == 'ar' %}الصفحة التالية{% else %}Next Page{% endif %}">
+            {% if LANGUAGE_CODE == 'ar' %}التالي<i class="fas fa-chevron-left ml-1"></i>{% else %}Next<i class="fas fa-chevron-right ml-1"></i>{% endif %}
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+</section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Delete confirmation
+        const deleteButtons = document.querySelectorAll('.delete-product');
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (confirm('{% if LANGUAGE_CODE == "ar" %}هل أنت متأكد من رغبتك في حذف هذا المنتج؟{% else %}Are you sure you want to delete this product?{% endif %}')) {
+                    window.location.href = this.getAttribute('href');
+                }
+            });
+        });
+
+        // Filter products with smooth animations
+        const statusFilter = document.getElementById('statusFilter');
+        const minPriceInput = document.getElementById('minPrice');
+        const maxPriceInput = document.getElementById('maxPrice');
+        const searchInput = document.getElementById('searchInput');
+        const productCards = document.querySelectorAll('.stat-card');
+        const emptyState = document.querySelector('.col-span-3');
+
+        function filterProducts() {
+            const statusVal = statusFilter.value;
+            const minPrice = parseFloat(minPriceInput.value) || 0;
+            const maxPrice = parseFloat(maxPriceInput.value) || Infinity;
+            const searchQuery = searchInput.value.trim().toLowerCase();
+
+            // Fade out effect
+            productCards.forEach(card => {
+                card.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(20px)';
+            });
+
+            // Filter after fade out
+            setTimeout(() => {
+                let visibleCount = 0;
+
+                productCards.forEach((card, index) => {
+                    const name = card.dataset.name;
+                    const price = parseFloat(card.dataset.price);
+                    const status = card.dataset.status;
+                    const expiring = card.dataset.expiring;
+
+                    const matchStatus =
+                        (statusVal === 'جميع المنتجات' || statusVal === 'All Products') ||
+                        ((statusVal === 'متاحة فقط' || statusVal === 'Available Only') && status === 'available') ||
+                        ((statusVal === 'غير متاحة' || statusVal === 'Unavailable') && status === 'unavailable') ||
+                        ((statusVal === 'مخزون منخفض' || statusVal === 'Low Stock') && status === 'low') ||
+                        ((statusVal === 'ينتهي خلال شهر' || statusVal === 'Expiring Soon') && expiring === 'expiring') ||
+                        ((statusVal === 'منتهي الصلاحية' || statusVal === 'Expired') && expiring === 'expired');
+
+                    const matchPrice = price >= minPrice && price <= maxPrice;
+                    const matchSearch = name.includes(searchQuery);
+
+                    if (matchStatus && matchPrice && matchSearch) {
+                        card.style.display = '';
+                        // Staggered fade in effect
+                        setTimeout(() => {
+                            card.style.opacity = '1';
+                            card.style.transform = 'translateY(0)';
+                        }, visibleCount * 50);
+                        visibleCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                // Handle empty state
+                if (emptyState) {
+                    emptyState.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    if (visibleCount === 0) {
+                        emptyState.style.display = 'block';
+                        setTimeout(() => {
+                            emptyState.style.opacity = '1';
+                            emptyState.style.transform = 'translateY(0)';
+                        }, 300);
+                    } else {
+                        emptyState.style.opacity = '0';
+                        emptyState.style.transform = 'translateY(20px)';
+                        setTimeout(() => {
+                            emptyState.style.display = 'none';
+                        }, 300);
+                    }
+                }
+            }, 300);
+        }
+
+        // Event listeners with debounce
+        let filterTimeout;
+        function debounceFilter() {
+            clearTimeout(filterTimeout);
+            filterTimeout = setTimeout(filterProducts, 300);
+        }
+
+        statusFilter.addEventListener('change', filterProducts);
+        minPriceInput.addEventListener('input', debounceFilter);
+        maxPriceInput.addEventListener('input', debounceFilter);
+        searchInput.addEventListener('input', debounceFilter);
+    });
+</script>
+{% endblock %}

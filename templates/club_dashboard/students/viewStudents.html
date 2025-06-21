@@ -1,0 +1,420 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  /* Animation Classes */
+  .animate-float {
+      animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-fadeIn {
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-fadeInUp {
+      animation: fadeInUp 0.8s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-stagger > * {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+  .animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+
+  /* Button Effects */
+  .btn-gradient {
+      background-size: 200% auto;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .btn-gradient:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Table Row Effects */
+  .table-row:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Keyframes */
+  @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+  }
+
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Background Animation */
+  .animated-bg {
+      animation: gradientBG 15s ease infinite;
+      background-size: 300% 300%;
+  }
+
+  @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+  }
+
+  /* Ripple Effect */
+  .ripple {
+      position: relative;
+      overflow: hidden;
+  }
+
+  .ripple-effect {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      pointer-events: none;
+  }
+
+  @keyframes ripple {
+      to { transform: scale(4); opacity: 0; }
+  }
+
+  /* Search Bar Styles */
+  .search-container {
+      background: white;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+  }
+
+  .search-input {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      width: 100%;
+      transition: all 0.3s;
+  }
+
+  .search-input:focus {
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  }
+
+  .search-dropdown {
+      position: absolute;
+      z-index: 10;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      width: 200px;
+      margin-top: 5px;
+  }
+
+  .search-dropdown-item {
+      padding: 10px 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+  }
+
+  .search-dropdown-item:hover {
+      background: #f8fafc;
+  }
+
+  .search-icon {
+      position: absolute;
+      top: 50%;
+      {% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %}: 15px;
+      transform: translateY(-50%);
+      color: #64748b;
+  }
+</style>
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animated-bg bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 pt-8 font-sans">
+  <!-- Header Section -->
+  <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4 animate-fadeIn">
+    <div class="flex items-center space-x-4 space-x-reverse">
+      <div class="p-3 rounded-full bg-blue-100 text-blue-600 animate-float">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-3xl font-bold text-gray-800">
+          {% if LANGUAGE_CODE == 'ar' %}قائمة العملاء{% else %}Clients List{% endif %}
+        </h1>
+        <p class="text-gray-600">
+          {% if LANGUAGE_CODE == 'ar' %}
+          إدارة جميع عملاء المنصة
+          {% else %}
+          Manage all Salon clients
+          {% endif %}
+        </p>
+      </div>
+    </div>
+
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'addStudent' %}"
+         class="ripple btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2 hover:gap-3 transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        {% if LANGUAGE_CODE == 'ar' %}إضافة عميل جديد{% else %}Add New Client{% endif %}
+      </a>
+
+      <a href="{% url 'import_students' %}"
+         class="ripple btn-gradient bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2 hover:gap-3 transition-all duration-300">
+        {% if LANGUAGE_CODE == 'ar' %}استيراد قائمة عملاء{% else %}Add New Client{% endif %}
+      </a>
+
+      <a href="{% url 'export_students_excel' %}"
+         class="ripple btn-gradient bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2 hover:gap-3 transition-all duration-300">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16h16V4H4zm4 4h8v8H8V8z" />
+        </svg>
+        {% if LANGUAGE_CODE == 'ar' %}تصدير إلى Excel{% else %}Export to Excel{% endif %}
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-container animate-fadeInUp">
+    <div class="relative">
+      <input type="text" id="searchInput"
+             class="search-input pr-10"
+             placeholder="{% if LANGUAGE_CODE == 'ar' %}ابحث عن عميل...{% else %}Search for a player...{% endif %}"
+             onkeyup="filterTable()">
+      <div class="search-icon">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="flex flex-wrap gap-4 mt-4">
+      <select id="searchField" class="search-input py-2">
+        <option value="all">{% if LANGUAGE_CODE == 'ar' %}كل الحقول{% else %}All Fields{% endif %}</option>
+        <option value="username">{% if LANGUAGE_CODE == 'ar' %}اسم المستخدم{% else %}Username{% endif %}</option>
+        <option value="email">{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</option>
+        <option value="full_name">{% if LANGUAGE_CODE == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</option>
+        <option value="phone">{% if LANGUAGE_CODE == 'ar' %}الهاتف{% else %}Phone{% endif %}</option>
+        <option value="birthday">{% if LANGUAGE_CODE == 'ar' %}تاريخ الميلاد{% else %}Birthday{% endif %}</option>
+      </select>
+      <button onclick="filterTable()" class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        {% if LANGUAGE_CODE == 'ar' %}بحث{% else %}Search{% endif %}
+      </button>
+      <button onclick="resetSearch()" class="btn-gradient bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+        {% if LANGUAGE_CODE == 'ar' %}إعادة تعيين{% else %}Reset{% endif %}
+      </button>
+    </div>
+  </div>
+
+  <!-- Clients Table -->
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-100 animate-fadeInUp">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} text-gray-700" id="studentsTable">
+        <thead class="text-xs text-white uppercase bg-gradient-to-r from-blue-500 to-purple-500">
+        <tr>
+          <th scope="col" class="px-6 py-4 font-semibold">{% if LANGUAGE_CODE == 'ar' %}الاسم{% else %}Username{% endif %}</th>
+          <th scope="col" class="px-6 py-4 font-semibold">{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</th>
+          <th scope="col" class="px-6 py-4 font-semibold">{% if LANGUAGE_CODE == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}</th>
+          <th scope="col" class="px-6 py-4 font-semibold">{% if LANGUAGE_CODE == 'ar' %}الهاتف{% else %}Phone{% endif %}</th>
+          <th scope="col" class="px-6 py-4 font-semibold">{% if LANGUAGE_CODE == 'ar' %}تاريخ الميلاد{% else %}Birthday{% endif %}</th>
+          <th scope="col" class="px-6 py-4 font-semibold">
+            {% if LANGUAGE_CODE == 'ar' %}الحالة اليدوية{% else %}Manual Status{% endif %}
+          </th>
+          <th scope="col" class="px-6 py-4 font-semibold">تاريخ الإشتراك</th>
+          <th scope="col" class="px-6 py-4 font-semibold">تاريخ إنتهاء الاشتراك</th>
+          <th scope="col" class="px-6 py-4 font-semibold">{% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+        </tr>
+        </thead>
+        <tbody class="animate-stagger" id="studentsTableBody">
+        {% for student in students %}
+        <tr class="bg-white border-b table-row transition-all duration-300">
+          <td class="px-6 py-4 font-medium text-gray-800">
+            <div class="flex items-center gap-2 {% if LANGUAGE_CODE == 'ar' %}justify-end{% else %}justify-start{% endif %}">
+              {{ student.user.username }}
+              <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                <span class="text-blue-600">{{ student.user.username|first|upper }}</span>
+              </div>
+            </div>
+          </td>
+          <td class="px-6 py-4">{{ student.user.email }}</td>
+          <td class="px-6 py-4">
+            {{ student.student_profile.full_name|default:"-" }}
+          </td>
+          <td class="px-6 py-4">
+            {{ student.student_profile.phone|default:"-" }}
+          </td>
+          <td class="px-6 py-4">
+            {{ student.student_profile.birthday|default:"-" }}
+          </td>
+          <td class="px-6 py-4">
+            {{ student.manual_status_display|default:"-" }}
+          </td>
+          <td class="px-6 py-4">
+            {{ student.student_profile.subscription_start_date|date:"Y-m-d"|default:"-" }}
+          </td>
+          <td class="px-6 py-4">
+            {{ student.student_profile.subscription_end_date|date:"Y-m-d"|default:"-" }}
+          </td>
+          <td class="px-6 py-4">
+            <div class="flex flex-col md:flex-row gap-2 {% if LANGUAGE_CODE == 'ar' %}justify-end{% else %}justify-start{% endif %}">
+              <a href="{% url 'editStudent' student.student_profile.id %}"
+                 class="ripple btn-gradient bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+              </a>
+              <a href="{% url 'deleteStudent' student.student_profile.id %}"
+                 onclick="return confirm('{% if LANGUAGE_CODE == 'ar' %}هل أنت متأكد من حذف هذا العميل؟{% else %}Are you sure you want to delete this client?{% endif %}')"
+                 class="ripple btn-gradient bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 rounded-lg text-xs font-medium flex items-center gap-2 shadow-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% empty %}
+        <tr class="bg-white border-b animate-fadeInUp">
+          <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+            <div class="flex flex-col items-center justify-center">
+              <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+              </svg>
+              <p class="text-lg text-gray-600">
+                {% if LANGUAGE_CODE == 'ar' %}
+                لا يوجد عملاء حالياً
+                {% else %}
+                No clients found
+                {% endif %}
+              </p>
+              <a href="{% url 'addStudent' %}" class="mt-4 btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}
+                إضافة عميل جديد
+                {% else %}
+                Add new client
+                {% endif %}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                </svg>
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Ripple effect for buttons
+  document.querySelectorAll('.ripple').forEach(button => {
+      button.addEventListener('click', function(e) {
+          e.preventDefault();
+          const link = this.getAttribute('href');
+          if (this.hasAttribute('onclick') && !confirm(this.getAttribute('onclick').includes('delete') ? '{% if LANGUAGE_CODE == 'ar' %}هل أنت متأكد من حذف هذا العميل؟{% else %}Are you sure you want to delete this client?{% endif %}' : '')) {
+              return;
+          }
+
+          // Create ripple effect
+          const ripple = document.createElement('span');
+          ripple.classList.add('ripple-effect');
+          this.appendChild(ripple);
+
+          // Get click position
+          const rect = this.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          ripple.style.left = `${x}px`;
+          ripple.style.top = `${y}px`;
+
+          // Remove ripple after animation
+          setTimeout(() => {
+              ripple.remove();
+              if (link) window.location.href = link;
+          }, 600);
+      });
+  });
+
+  // Search functionality
+  function filterTable() {
+    const input = document.getElementById('searchInput');
+    const filter = input.value.toUpperCase();
+    const fieldSelect = document.getElementById('searchField');
+    const field = fieldSelect.value;
+    const table = document.getElementById('studentsTableBody');
+    const rows = table.getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      let found = false;
+
+      // Get all cells in the row
+      const cells = row.getElementsByTagName('td');
+
+      for (let j = 0; j < cells.length; j++) {
+        const cell = cells[j];
+        // Skip the actions column (last column)
+        if (j === cells.length - 1) continue;
+
+        // If specific field is selected, only search in that column
+        if (field !== 'all') {
+          let columnIndex = -1;
+          switch(field) {
+            case 'username': columnIndex = 0; break;
+            case 'email': columnIndex = 1; break;
+            case 'full_name': columnIndex = 2; break;
+            case 'phone': columnIndex = 3; break;
+            case 'birthday': columnIndex = 4; break;
+          }
+
+          if (j !== columnIndex) continue;
+        }
+
+        if (cell) {
+          const txtValue = cell.textContent || cell.innerText;
+          if (txtValue.toUpperCase().indexOf(filter) > -1) {
+            found = true;
+            break;
+          }
+        }
+      }
+
+      row.style.display = found ? '' : 'none';
+    }
+  }
+
+  function resetSearch() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('searchField').value = 'all';
+    filterTable();
+  }
+
+  // Add event listener for Enter key
+  document.getElementById('searchInput').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      filterTable();
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "student/refunds/base_refund.html" %}
+{% load crispy_forms_tags %}
+
+{% block refund_content %}
+<div class="max-w-4xl mx-auto mb-24">
+    <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-6 animate-[fadeInUp_0.6s_ease-out]">
+        <h2 class="text-2xl font-bold text-rose-700/80 mb-6">
+            {% if LANGUAGE_CODE == 'ar' %}
+            إنشاء نزاع استرداد جديد
+            {% else %}
+            Create New Refund Dispute
+            {% endif %}
+        </h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Main dispute fields -->
+            {{ form|crispy }}
+
+            <!-- File upload specific styling -->
+            <div class="file-upload-section mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.attachments.label }}
+                </label>
+                <div class="flex items-center justify-center w-full">
+                    <label for="id_attachments" class="flex flex-col items-center justify-center w-full h-32 border-2 border-rose-300 border-dashed rounded-lg cursor-pointer bg-rose-50 hover:bg-rose-100 transition">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                            <i class="fas fa-cloud-upload-alt text-rose-500 text-3xl mb-3"></i>
+                            <p class="mb-2 text-sm text-gray-500">
+                                <span class="font-semibold">
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    انقر لرفع الملفات
+                                    {% else %}
+                                    Click to upload files
+                                    {% endif %}
+                                </span>
+                            </p>
+                            <p class="text-xs text-gray-500">
+                                {% if LANGUAGE_CODE == 'ar' %}
+                                (PDF, DOC, PNG, JPG, MP4)
+                                {% else %}
+                                (PDF, DOC, PNG, JPG, MP4)
+                                {% endif %}
+                            </p>
+                        </div>
+                        <input id="id_attachments" name="attachments" type="file" multiple class="hidden" />
+                    </label>
+                </div>
+                {% if form.attachments.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.attachments.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{% url 'list' %}"
+                   class="px-4 py-2 bg-rose-100 text-rose-700 rounded-md hover:bg-rose-200 transition">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    إلغاء
+                    {% else %}
+                    Cancel
+                    {% endif %}
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    حفظ
+                    {% else %}
+                    Save
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .file-upload-section input[type="file"]::file-selector-button {
+        display: none;
+    }
+    .file-upload-section:hover {
+        border-color: #e11d48;
+    }
+</style>
+{% endblock %}

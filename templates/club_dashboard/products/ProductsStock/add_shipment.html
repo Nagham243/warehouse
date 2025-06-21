@@ -1,0 +1,144 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s ease;
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #3B82F6; /* blue-500 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #1D4ED8; /* blue-700 */
+    }
+
+    /* Form Input Styling */
+    select, input, textarea {
+        border-color: #93C5FD !important; /* blue-300 */
+        border-radius: 0.5rem !important;
+        transition: all 0.2s ease !important;
+        padding: 0.75rem 1rem !important;
+        background-color: #fff;
+        color: #1E3A8A; /* blue-900 */
+    }
+
+    select:focus, input:focus, textarea:focus {
+        border-color: #3B82F6 !important; /* blue-500 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important; /* blue-500 with opacity */
+        outline: none !important;
+    }
+</style>
+
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn">
+    <section class="container mx-auto px-4 pt-8 pb-16">
+        <div class="flex justify-between items-center mb-8 animate-fadeIn">
+            <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                <i class="fas fa-truck text-blue-600"></i>
+                {% if LANGUAGE_CODE == 'ar' %}إضافة شحنة جديدة{% else %}Add New Shipment{% endif %}
+            </h1>
+            <a href="{% url 'viewProducts' %}" class="btn-gradient px-6 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 flex items-center gap-2" aria-label="{% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}">
+                <i class="fas fa-arrow-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}"></i>
+                {% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md overflow-hidden border border-blue-100 stat-card animate-fadeInUp">
+            <div class="p-8">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="col-span-2 space-y-2 animate-fadeInUp" style="animation-delay: 0.1s;">
+                            <label for="product" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-box text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}المنتج{% else %}Product{% endif %}
+                            </label>
+                            {{ form.product }}
+                        </div>
+
+                        <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.2s;">
+                            <label for="quantity" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-boxes text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Quantity{% endif %}
+                            </label>
+                            {{ form.quantity }}
+                        </div>
+
+                        <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.3s;">
+                            <label for="manufacturing_date" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-industry text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع{% else %}Manufacturing Date{% endif %}
+                            </label>
+                            {{ form.manufacturing_date }}
+                        </div>
+
+                        <div class="space-y-2 animate-fadeInUp" style="animation-delay: 0.4s;">
+                            <label for="expiration_date" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-calendar-times text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ انتهاء الصلاحية{% else %}Expiration Date{% endif %}
+                            </label>
+                            {{ form.expiration_date }}
+                        </div>
+
+                        <div class="col-span-2 space-y-2 animate-fadeInUp" style="animation-delay: 0.5s;">
+                            <label for="notes" class="block text-sm font-medium text-blue-700 flex items-center gap-2">
+                                <i class="fas fa-comment text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}ملاحظات{% else %}Notes{% endif %}
+                            </label>
+                            {{ form.notes }}
+                        </div>
+                    </div>
+
+                    <div class="mt-8 flex justify-end animate-fadeInUp" style="animation-delay: 0.6s;">
+                        <button type="submit" class="btn-gradient px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:from-blue-600 hover:to-purple-700 flex items-center gap-2" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة الشحنة{% else %}Add Shipment{% endif %}">
+                            <i class="fas fa-plus-circle"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}إضافة الشحنة{% else %}Add Shipment{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+</div>
+{% endblock %}

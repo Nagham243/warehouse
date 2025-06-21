@@ -1,0 +1,271 @@
+{% extends "base_club_dashboard.html" %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Back button and title -->
+    <div class="flex items-center py-8 gap-4">
+        <a href="{% url 'manage_services' %}" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all duration-200">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-800">
+            {% if LANGUAGE_CODE == 'ar' %} تفاصيل الخدمة {% else %} Service Details {% endif %}
+        </h1>
+    </div>
+
+    <!-- Service Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Service Images -->
+                <div class="w-full md:w-1/3">
+                    <div class="bg-gray-100 rounded-lg overflow-hidden mb-4 h-64 flex items-center justify-center">
+                        {% if service.image %}
+                        <img src="{{ service.image.url }}" alt="{{ service.title }}" class="w-full h-full object-contain">
+                        {% else %}
+                        <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 3H11V13H13V3ZM17.83 5.17L16.41 6.59C17.99 7.86 19 9.81 19 12C19 15.87 15.87 19 12 19C8.13 19 5 15.87 5 12C5 9.81 6.01 7.86 7.58 6.58L6.17 5.17C4.23 6.82 3 9.26 3 12C3 16.97 7.03 21 12 21C16.97 21 21 16.97 21 12C21 9.26 19.77 6.82 17.83 5.17Z"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        {% for image in service.service_images.all|slice:"1:4" %}
+                        <div class="bg-gray-100 rounded-md overflow-hidden h-20 flex items-center justify-center">
+                            <img src="{{ image.img.url }}" alt="{{ service.title }}" class="w-full h-full object-cover">
+                        </div>
+                        {% endfor %}
+                        {% if service.service_images.all|length < 4 %}
+                        {% for i in "123" %}
+                        {% if forloop.counter > service.service_images.all|length %}
+                        <div class="bg-gray-100 rounded-md overflow-hidden h-20 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Service Details -->
+                <div class="w-full md:w-2/3">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">{{ service.title }}</h2>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+              {% if service.approval_status == 'pending' %}bg-amber-100 text-amber-800
+              {% elif service.approval_status == 'approved' %}bg-green-100 text-green-800
+              {% elif service.approval_status == 'rejected' %}bg-red-100 text-red-800
+              {% endif %}">
+              {% if service.approval_status == 'pending' %}
+                {% if LANGUAGE_CODE == 'ar' %} قيد المراجعة {% else %} Pending {% endif %}
+              {% elif service.approval_status == 'approved' %}
+                {% if LANGUAGE_CODE == 'ar' %} مقبول {% else %} Approved {% endif %}
+              {% elif service.approval_status == 'rejected' %}
+                {% if LANGUAGE_CODE == 'ar' %} مرفوض {% else %} Rejected {% endif %}
+              {% endif %}
+            </span>
+                    </div>
+
+                    <div class="mb-6">
+                        <p class="text-gray-700">{{ service.desc }}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} السعر {% else %} Price {% endif %}
+                            </h3>
+                            <p class="text-xl font-semibold text-gray-800">${{ service.price }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} السعر المخفض {% else %} Discounted Price {% endif %}
+                            </h3>
+                            <p class="text-xl font-semibold text-gray-800">
+                                {% if service.discounted_price %}
+                                ${{ service.discounted_price }}
+                                {% else %}
+                                {% if LANGUAGE_CODE == 'ar' %} لا يوجد {% else %} None {% endif %}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} المدة {% else %} Duration {% endif %}
+                            </h3>
+                            <p class="text-xl font-semibold text-gray-800">{{ service.duration }} {% if LANGUAGE_CODE == 'ar' %} دقيقة {% else %} mins {% endif %}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} فترة التسعير {% else %} Pricing Period {% endif %}
+                            </h3>
+                            <p class="text-gray-800">{{ service.get_pricing_period_months_display }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} تاريخ الإنشاء {% else %} Creation Date {% endif %}
+                            </h3>
+                            <p class="text-gray-800">{{ service.creation_date|date:"d M Y" }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} حالة التفعيل {% else %} Enabled Status {% endif %}
+                            </h3>
+                            <p class="text-gray-800">
+                                {% if service.is_enabled %}
+                                {% if LANGUAGE_CODE == 'ar' %} مفعل {% else %} Enabled {% endif %}
+                                {% else %}
+                                {% if LANGUAGE_CODE == 'ar' %} غير مفعل {% else %} Disabled {% endif %}
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} التصنيف {% else %} Category {% endif %}
+                            </h3>
+                            <p class="text-gray-800">
+                                {% for cat in service.classification.all %}
+                                {{ cat.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                {% if LANGUAGE_CODE == 'ar' %} غير مصنف {% else %} Uncategorized {% endif %}
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} أيام الاشتراك {% else %} Subscription Days {% endif %}
+                            </h3>
+                            <p class="text-gray-800">{{ service.subscription_days }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Section -->
+        {% if service.approval_status == 'pending' %}
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div class="flex justify-end gap-4">
+                <button onclick="showApprovalModal({{ service.id }}, '{{ service.title|escapejs }}')" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-green-300/40">
+                    {% if LANGUAGE_CODE == 'ar' %} قبول الخدمة {% else %} Approve Service {% endif %}
+                </button>
+                <button onclick="showRejectionModal({{ service.id }}, '{{ service.title|escapejs }}')" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-red-300/40">
+                    {% if LANGUAGE_CODE == 'ar' %} رفض الخدمة {% else %} Reject Service {% endif %}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Approval Notes (if approved/rejected) -->
+    {% if service.approval_status != 'pending' %}
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-800 mb-4">
+                {% if service.approval_status == 'approved' %}
+                {% if LANGUAGE_CODE == 'ar' %} ملاحظات القبول {% else %} Approval Notes {% endif %}
+                {% else %}
+                {% if LANGUAGE_CODE == 'ar' %} سبب الرفض {% else %} Rejection Reason {% endif %}
+                {% endif %}
+            </h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-700">{{ service.approval_notes|default:"No notes provided" }}</p>
+            </div>
+            <div class="mt-4 text-sm text-gray-500">
+                {% if LANGUAGE_CODE == 'ar' %} تم بواسطة {% else %} By {% endif %}
+                {{ service.approved_by.get_full_name|default:service.approved_by.username }}
+                {% if LANGUAGE_CODE == 'ar' %} في {% else %} on {% endif %}
+                {{ service.approved_at|date:"d M Y" }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Approval Modal -->
+<div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                {% if LANGUAGE_CODE == 'ar' %} قبول الخدمة {% else %} Approve Service {% endif %}
+            </h3>
+            <p class="text-gray-600 mb-6">
+                {% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد من قبول الخدمة "<span id="approvalServiceTitle"></span>"؟ {% else %} Are you sure you want to approve "<span id="approvalServiceTitle"></span>"? {% endif %}
+            </p>
+            <form id="approvalForm" method="POST" action="{% url 'approve_service' 0 %}">
+                {% csrf_token %}
+                <input type="hidden" name="service_id" id="approvalServiceId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %} ملاحظات (اختياري) {% else %} Notes (optional) {% endif %}
+                    </label>
+                    <textarea name="approval_notes" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="hideModal('approvalModal')" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} تأكيد القبول {% else %} Confirm Approval {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div id="rejectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                {% if LANGUAGE_CODE == 'ar' %} رفض الخدمة {% else %} Reject Service {% endif %}
+            </h3>
+            <p class="text-gray-600 mb-6">
+                {% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد من رفض الخدمة "<span id="rejectionServiceTitle"></span>"؟ {% else %} Are you sure you want to reject "<span id="rejectionServiceTitle"></span>"? {% endif %}
+            </p>
+            <form id="rejectionForm" method="POST" action="{% url 'reject_service' 0 %}">
+                {% csrf_token %}
+                <input type="hidden" name="service_id" id="rejectionServiceId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %} سبب الرفض {% else %} Reason for rejection {% endif %}
+                    </label>
+                    <textarea name="rejection_reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" rows="3" required></textarea>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="hideModal('rejectionModal')" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} تأكيد الرفض {% else %} Confirm Rejection {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showApprovalModal(serviceId, serviceTitle) {
+      document.getElementById('approvalServiceTitle').textContent = serviceTitle;
+      document.getElementById('approvalServiceId').value = serviceId;
+      const form = document.getElementById('approvalForm');
+      form.action = form.action.replace('/0/', `/${serviceId}/`);
+      document.getElementById('approvalModal').classList.remove('hidden');
+    }
+
+    function showRejectionModal(serviceId, serviceTitle) {
+      document.getElementById('rejectionServiceTitle').textContent = serviceTitle;
+      document.getElementById('rejectionServiceId').value = serviceId;
+      const form = document.getElementById('rejectionForm');
+      form.action = form.action.replace('/0/', `/${serviceId}/`);
+      document.getElementById('rejectionModal').classList.remove('hidden');
+    }
+
+    function hideModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "student/refunds/base_refund.html" %}
+{% load crispy_forms_tags %}
+
+{% block refund_content %}
+<div class=" mb-24 max-w-4xl mx-auto">
+    <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-6 animate-[fadeInUp_0.6s_ease-out]">
+        <h2 class="text-2xl font-bold text-rose-700/80 mb-6">
+            {% if LANGUAGE_CODE == 'ar' %}
+            {{ title }}
+            {% else %}
+            {{ title }}
+            {% endif %}
+        </h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <div class="mt-6 flex justify-end space-x-3">
+                <a href="{% if dispute %}{% url 'clientdetail' dispute.id %}{% else %}{% url 'list' %}{% endif %}"
+                   class="px-4 py-2 bg-rose-100 text-rose-700 rounded-md hover:bg-rose-200 transition">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    إلغاء
+                    {% else %}
+                    Cancel
+                    {% endif %}
+                </a>
+                <button type="submit"
+                        class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    حفظ
+                    {% else %}
+                    Save
+                    {% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

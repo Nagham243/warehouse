@@ -1,0 +1,310 @@
+{% extends "base_student_dashboard.html" %}
+{% load students_tags %}
+{% block content %}
+<main class="min-h-screen bg-white">
+  <div class="relative h-96 bg-gradient-to-r from-rose-600 to-pink-600 overflow-hidden">
+    <div class="absolute inset-0 bg-black opacity-50"></div>
+    <div class="absolute top-4 w-full text-center z-20">
+      <h2 class="text-white text-2xl font-semibold drop-shadow-lg">
+        {% if LANGUAGE_CODE == 'ar' %}
+        نادي {{ club.name }}
+        {% else %}
+        {{ club.name}} Club
+        {% endif %}
+      </h2>
+    </div>
+    <div class="absolute top-20 left-1/2 transform -translate-x-1/2 z-30">
+      <img src="data:image/jpeg;base64,{{ club.club_profile_image_base64|safe }}"
+           alt="{% if LANGUAGE_CODE == 'ar' %}شعار النادي{% else %}Club Logo{% endif %}"
+           class="w-32 h-32 rounded-full border-4 border-white shadow-xl">
+    </div>
+    <div class="absolute bottom-6 left-0 right-0 text-center text-white z-20">
+      <h1 class="text-3xl font-bold mb-1 drop-shadow-md">اسم اللاعب: {{ user.username }}</h1>
+      <p class="text-lg mb-2">{{ user.email }}</p>
+      <span class="inline-block text-sm font-medium px-3 py-1 rounded-full shadow-md
+      {% if manual_status == 'active' %}
+        bg-green-100 text-green-800
+      {% elif manual_status == 'expiring_soon' %}
+        bg-yellow-100 text-yellow-800
+      {% elif manual_status == 'expired' %}
+        bg-red-100 text-red-800
+      {% elif manual_status == 'trial' %}
+        bg-blue-100 text-blue-800
+      {% else %}
+        bg-gray-100 text-gray-700
+      {% endif %}
+    ">
+      نوع الحساب :
+      {% if LANGUAGE_CODE == 'ar' %}
+        {% if manual_status == 'active' %} نشط
+        {% elif manual_status == 'expiring_soon' %} سينتهي قريبًا
+        {% elif manual_status == 'expired' %} منتهي
+        {% elif manual_status == 'trial' %} تجريبي
+        {% else %} غير معروف {% endif %}
+      {% else %}
+        {% if manual_status == 'active' %} Active
+        {% elif manual_status == 'expiring_soon' %} Expiring Soon
+        {% elif manual_status == 'expired' %} Expired
+        {% elif manual_status == 'trial' %} Trial
+        {% else %} Unknown {% endif %}
+      {% endif %}
+    </span>
+    </div>
+  </div>
+
+
+  <!-- 📌 Dashboard Content -->
+  <div class="container mx-auto px-4 py-16 pb-36">
+    <div class="space-y-8">
+      <!-- 📖 About the Salon -->
+      <div class="animate-[fadeIn_0.8s_ease-out_0.1s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-8">
+        <h2 class="text-2xl font-bold text-rose-400/80 mb-4">
+          {% if LANGUAGE_CODE == 'ar' %}
+          ✨ من نحن
+          {% else %}
+          ✨ About Us
+          {% endif %}
+        </h2>
+        <p class="text-gray-700 mb-4">
+          {{ club.about }}
+        </p>
+      </div>
+
+      {% if show_employee_client_counts %}
+      <!--  💇‍♂️ Employees & Clients Count -->
+      <div class="grid md:grid-cols-2 grid-cols-1 gap-6">
+        <div class="animate-[fadeInUp_0.6s_ease-out_0.2s_both] bg-white rounded-lg p-8 text-center shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100">
+          <h3 class="text-2xl font-bold text-rose-400/80 mb-4">{% if LANGUAGE_CODE == 'ar' %}
+            المدربون
+            {% else %}
+            👩‍💼 Employees
+            {% endif %}</h3>
+          <p class="text-5xl font-bold text-rose-400/80">{{ coaches.count }}</p>
+<!--          <a href="#" class="w-full rounded-lg bg-rose-400/90 text-center text-white py-2 hover:bg-rose-600/90 transition-all duration-300 mt-4 inline-block">-->
+<!--            {% if LANGUAGE_CODE == 'ar' %} عرض التفاصيل {% else %} View Details {% endif %}-->
+<!--          </a>-->
+        </div>
+        <div class="animate-[fadeInUp_0.6s_ease-out_0.3s_both] bg-white rounded-lg p-8 text-center shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100">
+          <h3 class="text-2xl font-bold text-rose-400/80 mb-4">{% if LANGUAGE_CODE == 'ar' %}
+            اللاعبون
+            {% else %}
+            👥 Clients
+            {% endif %}</h3>
+          <p class="text-5xl font-bold text-rose-400/80">{{ students.count }}</p>
+<!--          <a href="#" class="w-full rounded-lg bg-rose-400/90 text-center text-white py-2 hover:bg-rose-600/90 transition-all duration-300 mt-4 inline-block">-->
+<!--            {% if LANGUAGE_CODE == 'ar' %} عرض التفاصيل {% else %} View Details {% endif %}-->
+<!--          </a>-->
+        </div>
+      </div>
+      {% endif %}
+
+
+      <!-- 📅 Appointments - Only if Membership is Active -->
+      {% if subscription_status == "active" or subscription_status == "expiring_soon" %}
+      <div class="animate-[fadeIn_0.8s_ease-out_0.4s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-8">
+        <h2 class="text-2xl font-bold text-rose-400/80 mb-4">{% if LANGUAGE_CODE == 'ar' %}
+          📅 مواعيدي
+          {% else %}
+          📅 My Appointments
+          {% endif %}</h2>
+
+        <ul class="divide-y divide-gray-200">
+          {% for appointment in appointments %}
+          <li class="animate-[fadeInRight_0.5s_ease-out_{{ forloop.counter|add:0.5 }}s_both] flex justify-between items-center py-4 hover:bg-rose-50/60 transition-all duration-300 rounded-lg p-3">
+            <div class="flex flex-col md:flex-row md:items-center space-y-2 md:space-y-0 md:space-x-3">
+        <span class="text-lg font-bold text-rose-700/80 uppercase ml-4">
+          {% for service in appointment.booking.services.all %}
+          {{ service.service.title }}{% if not forloop.last %}, {% endif %}
+          {% empty %}
+          <span class="text-gray-400">{% if LANGUAGE_CODE == 'ar' %}لا توجد خدمات{% else %}No services{% endif %}</span>
+          {% endfor %}
+        </span>
+              {% if appointment.booking.employee %}
+              <span class="text-sm text-gray-600 mr-4">
+          {% if LANGUAGE_CODE == 'ar' %}
+          مع المدرب: {{ appointment.booking.employee }}
+          {% else %}
+          with coach: {{ appointment.booking.employee }}
+          {% endif %}
+        </span>
+              {% endif %}
+            </div>
+
+            <div class="flex flex-col items-end">
+        <span class="text-sm font-semibold {% if appointment.is_past %} text-red-600 {% else %} text-green-600 {% endif %}">
+          {% if appointment.is_past %}
+          ❌ <span class="text-lg font-bold">{% if LANGUAGE_CODE == 'ar' %}
+                انتهى الموعد
+              {% else %}
+                Appointment Ended
+              {% endif %}</span>
+          {% else %}
+          ✅ <span class="text-lg font-bold">{% if LANGUAGE_CODE == 'ar' %}
+                يبدأ في {{ appointment.day|date:'Y-m-d' }}
+              {% else %}
+                Starts at {{ appointment.day|date:'Y-m-d' }}
+              {% endif %}</span>
+          {% endif %}
+        </span>
+
+              <span class="text-gray-500">{{ appointment.start_time|time:"h:i A" }} - {{ appointment.end_time|time:"h:i A" }}</span>
+
+              {% if appointment.day %}
+              <span class="text-xs text-gray-600 mt-1">
+          {% if LANGUAGE_CODE == 'ar' %}
+          اليوم: {{ appointment.day }}
+          {% else %}
+          Day: {{ appointment.day }}
+          {% endif %}
+        </span>
+              {% endif %}
+            </div>
+          </li>
+          {% empty %}
+          <li class="text-center text-gray-500 py-4">{% if LANGUAGE_CODE == 'ar' %}
+            🙁 لا توجد مواعيد حالياً
+            {% else %}
+            🙁 No appointments at the moment
+            {% endif %}</li>
+          {% endfor %}
+        </ul>
+
+<!--        {% if appointments %}-->
+<!--        <div class="mt-4 text-right">-->
+<!--          <a href="#" class="text-rose-500 hover:text-rose-700 text-sm font-medium">-->
+<!--            {% if LANGUAGE_CODE == 'ar' %}-->
+<!--            عرض كل المواعيد ←-->
+<!--            {% else %}-->
+<!--            View all appointments →-->
+<!--            {% endif %}-->
+<!--          </a>-->
+<!--        </div>-->
+<!--        {% endif %}-->
+      </div>
+      {% endif %}
+
+      {% comment %}<!-- 📝 Membership History -->{% endcomment %}
+      <div class="animate-[fadeIn_0.8s_ease-out_0.5s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-8">
+        <h2 class="text-2xl font-bold text-rose-400/80 mb-6">
+          {% if LANGUAGE_CODE == 'ar' %}
+          📜 اشتراكاتي
+          {% else %}
+          📜 My Last Orders
+          {% endif %}
+        </h2>
+
+        <div class="grid md:grid-cols-2 gap-6">
+          {% for appointment in service_orders %}
+          <div class="border border-rose-100 rounded-xl p-6 bg-gradient-to-br from-white to-rose-50 shadow-md hover:shadow-lg transition-all duration-300">
+            <div class="flex items-center mb-4">
+              <div class="bg-rose-100 text-rose-500 rounded-full p-2 mr-4">
+                📝
+              </div>
+              <h3 class="text-xl font-semibold text-rose-600">
+                {{ appointment.service.title }}
+              </h3>
+            </div>
+
+            <div class="text-gray-600 text-sm mb-2">
+              {% if LANGUAGE_CODE == 'ar' %}
+              ينتهي الاشتراك في:
+              {% else %}
+              Subscription ends on:
+              {% endif %}
+              <span class="font-bold text-rose-700">{{ appointment.end_datetime|date:'Y-m-d' }}</span>
+            </div>
+
+            <div class="text-xs text-gray-500 mb-3">
+              {% if appointment.end_datetime < today %}
+              ❌ {% if LANGUAGE_CODE == 'ar' %}انتهى الاشتراك{% else %}Expired{% endif %}
+              {% else %}
+              ✅ {% if LANGUAGE_CODE == 'ar' %}ساري المفعول{% else %}Active{% endif %}
+              {% endif %}
+            </div>
+
+            {% comment %}Add renewal button if subscription is expiring within 3 days{% endcomment %}
+            {% with three_days_from_now=today|timedelta:3 %}
+            {% if appointment.end_datetime <= three_days_from_now and appointment.end_datetime >= today %}
+            <div class="mt-4">
+              <div class="flex flex-col sm:flex-row gap-4 items-center">
+                <form method="POST" action="{% url 'add_service_to_cart' %}" class="w-full">
+                  {% csrf_token %}
+                  <input type="hidden" name="service_id" value="{{ appointment.service.id }}">
+                  <input type="hidden" name="quantity" value="1">
+                  <button type="submit"
+                          class="w-full bg-pink-600 text-white py-3 px-8 rounded-full hover:bg-pink-700 transition duration-300 transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-opacity-50"
+                  >
+                    <i class="fas fa-calendar-alt mr-2"></i>
+                    <span>{% if LANGUAGE_CODE == 'ar' %}
+                    جدد اشتراكك الآن
+                  {% else %}
+                    Renew Subscription Now
+                  {% endif %}</span>
+                  </button>
+                </form>
+              </div>
+            </div>
+            {% endif %}
+            {% endwith %}
+          </div>
+          {% empty %}
+          <p class="text-gray-500 text-center col-span-2">
+            {% if LANGUAGE_CODE == 'ar' %}
+            🙁 لا توجد اشتراكات
+            {% else %}
+            🙁 No subscriptions found
+            {% endif %}
+          </p>
+          {% endfor %}
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+</main>
+
+<style>
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+      }
+      to {
+          opacity: 1;
+      }
+  }
+
+  @keyframes fadeInDown {
+      from {
+          opacity: 0;
+          transform: translateY(-20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInUp {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInRight {
+      from {
+          opacity: 0;
+          transform: translateX(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateX(0);
+      }
+  }
+</style>
+{% endblock %}

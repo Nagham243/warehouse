@@ -1,0 +1,175 @@
+{% extends "base_club_dashboard.html" %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Title and back button -->
+    <div class="flex justify-between items-center py-8">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %} تفاصيل العمولة {% else %} Commission Details {% endif %}
+        </h1>
+        <a href="{% url 'commission_list' %}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center transition-all duration-200">
+            {% if LANGUAGE_CODE == 'ar' %} العودة إلى القائمة {% else %} Back to List {% endif %}
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Commission Details Card -->
+    <div class="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg max-w-3xl mx-auto">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Basic Info -->
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    {% if LANGUAGE_CODE == 'ar' %}المعلومات الأساسية{% else %}Basic Information{% endif %}
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Commission Name{% endif %}</p>
+                        <p class="font-medium">{{ commission.name }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}نوع العمولة{% else %}Commission Type{% endif %}</p>
+                        <p class="font-medium">{{ commission.get_commission_type_display }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}نسبة العمولة{% else %}Commission Rate{% endif %}</p>
+                        <p class="font-medium text-blue-600">{{ commission.commission_rate }}%</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}الحالة{% else %}Status{% endif %}</p>
+                        <span class="px-2 py-1 text-xs rounded-full bg-{% if commission.is_active %}green-100 text-green-800{% else %}red-100 text-red-800{% endif %}">
+                            {% if commission.is_active %}
+                                {% if LANGUAGE_CODE == 'ar' %}نشط{% else %}Active{% endif %}
+                            {% else %}
+                                {% if LANGUAGE_CODE == 'ar' %}غير نشط{% else %}Inactive{% endif %}
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Type-Specific Info -->
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                    {% if LANGUAGE_CODE == 'ar' %}تفاصيل إضافية{% else %}Additional Details{% endif %}
+                </h2>
+                <div class="space-y-4">
+                    {% if commission.commission_type == 'vendor' %}
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}تصنيف البائع{% else %}Vendor Classification{% endif %}</p>
+                        <p class="font-medium">{{ commission.vendor_classification }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}عدد البائعين المخصصين{% else %}Assigned Vendors{% endif %}</p>
+                        <p class="font-medium">{{ assigned_vendors.count }}</p>
+                    </div>
+                    {% else %}
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}تاريخ البداية{% else %}Start Date{% endif %}</p>
+                        <p class="font-medium">{{ commission.start_date }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}تاريخ النهاية{% else %}End Date{% endif %}</p>
+                        <p class="font-medium">{{ commission.end_date }}</p>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}عدد الأيام المتبقية{% else %}Days Remaining{% endif %}</p>
+                        <p class="font-medium">{{ commission.end_date|timeuntil:commission.start_date }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Assigned Vendors Section (for vendor commissions) -->
+        {% if commission.commission_type == 'vendor' and assigned_vendors %}
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                {% if LANGUAGE_CODE == 'ar' %}البائعين المخصصين{% else %}Assigned Vendors{% endif %}
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-gray-700">
+                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}اسم البائع{% else %}Vendor Name{% endif %}</th>
+                        <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}نوع النشاط{% else %}Activity Type{% endif %}</th>
+                        <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}تاريخ التخصيص{% else %}Assignment Date{% endif %}</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for assignment in assigned_vendors %}
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4 font-medium">{{ assignment.vendor.full_name }}</td>
+                        <td class="px-6 py-4">{{ assignment.vendor.get_activity_type_display }}</td>
+                        <td class="px-6 py-4">{{ assignment.assigned_at|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Active Time Period Commissions (for reference) -->
+        {% if commission.commission_type == 'time_period' and active_time_commissions %}
+        <div class="mt-8">
+            <h2 class="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
+                {% if LANGUAGE_CODE == 'ar' %}العمولات النشطة حالياً{% else %}Currently Active Commissions{% endif %}
+            </h2>
+            <div class="space-y-2">
+                {% for active_commission in active_time_commissions %}
+                {% if active_commission.id != commission.id %}
+                <div class="p-3 bg-gray-50 rounded-lg flex justify-between items-center">
+                    <div>
+                        <p class="font-medium">{{ active_commission.name }}</p>
+                        <p class="text-sm text-gray-600">{{ active_commission.start_date }} - {{ active_commission.end_date }}</p>
+                    </div>
+                    <a href="{% url 'commission_detail' active_commission.id %}" class="text-blue-600 hover:text-blue-800 text-sm">
+                        {% if LANGUAGE_CODE == 'ar' %}عرض{% else %}View{% endif %}
+                    </a>
+                </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Action Buttons -->
+        <div class="mt-8 flex justify-end space-x-3">
+            <a href="{% url 'commission_edit' commission.id %}" class="ml-2 px-6 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors">
+                {% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+            </a>
+            <button onclick="toggleCommissionStatus({{ commission.id }})" class="px-6 py-2 bg-{% if commission.is_active %}red-500{% else %}green-500{% endif %} text-white rounded-lg hover:bg-{% if commission.is_active %}red-600{% else %}green-600{% endif %} transition-colors">
+                {% if commission.is_active %}
+                {% if LANGUAGE_CODE == 'ar' %}تعطيل{% else %}Deactivate{% endif %}
+                {% else %}
+                {% if LANGUAGE_CODE == 'ar' %}تفعيل{% else %}Activate{% endif %}
+                {% endif %}
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function toggleCommissionStatus(commissionId) {
+        fetch(`/club-dashboard/commissions/${commissionId}/toggle-status/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            }
+        });
+    }
+</script>
+{% endblock %}

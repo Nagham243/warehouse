@@ -1,0 +1,327 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s ease;
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Card Effects */
+    .stat-card:hover {
+        background-color: #eff6ff !important; /* blue-50 */
+        transition: background-color 0.2s ease;
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #eff6ff; /* blue-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #3B82F6; /* blue-500 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #1D4ED8; /* blue-700 */
+    }
+
+    /* Table styling */
+    th, td {
+        padding: 0.75rem 1.5rem;
+        text-align: {% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %};
+    }
+
+    thead {
+        background-color: #f0f7ff; /* blue-50 */
+    }
+
+    /* Action buttons styling */
+    .action-btn {
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.375rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        transition: all 0.2s ease;
+    }
+
+    .btn-edit {
+        background-color: #f59e0b;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background-color: #d97706;
+        transform: translateY(-1px);
+    }
+
+    .btn-delete {
+        background-color: #ef4444;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        background-color: #dc2626;
+        transform: translateY(-1px);
+    }
+
+    /* Delete confirmation modal */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        margin: 15% auto;
+        padding: 20px;
+        border-radius: 8px;
+        width: 90%;
+        max-width: 400px;
+        text-align: center;
+    }
+</style>
+
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn">
+    <section class="container mx-auto px-4 pt-8 pb-16">
+        <!-- Header Section -->
+        <div class="flex justify-between items-center mb-8 animate-fadeIn">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-truck text-blue-600"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}شحنات المنتج{% else %}Product Shipments{% endif %}
+                </h1>
+                <h2 class="text-xl text-blue-600">{{ product.title }}</h2>
+            </div>
+            <div class="flex space-x-4 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %}">
+                <a href="{% url 'add_shipment' %}?product_id={{ product.id }}" class="btn-gradient px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-md hover:from-blue-600 hover:to-purple-700 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة شحنة جديدة{% else %}Add New Shipment{% endif %}">
+                    <i class="fas fa-plus mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إضافة شحنة جديدة{% else %}Add New Shipment{% endif %}
+                </a>
+                <a href="{% url 'viewProducts' %}" class="btn-gradient px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}">
+                    <i class="fas fa-arrow-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            <div class="bg-white p-6 rounded-lg shadow-md stat-card animate-fadeInUp">
+                <h3 class="text-gray-500 text-sm mb-2 flex items-center">
+                    <i class="fas fa-boxes mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إجمالي الشحنات{% else %}Total Shipments{% endif %}
+                </h3>
+                <div class="text-3xl font-bold text-blue-600">{{ stats.total_count }}</div>
+                <div class="text-lg text-gray-500">{{ stats.total_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md stat-card animate-fadeInUp" style="animation-delay: 0.1s;">
+                <h3 class="text-gray-500 text-sm mb-2 flex items-center">
+                    <i class="fas fa-check-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}شحنات سليمة{% else %}Valid Shipments{% endif %}
+                </h3>
+                <div class="text-3xl font-bold text-green-600">{{ stats.valid_count }}</div>
+                <div class="text-lg text-gray-500">{{ stats.valid_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md stat-card animate-fadeInUp" style="animation-delay: 0.2s;">
+                <h3 class="text-gray-500 text-sm mb-2 flex items-center">
+                    <i class="fas fa-clock mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}تنتهي قريباً{% else %}Expiring Soon{% endif %}
+                </h3>
+                <div class="text-3xl font-bold text-yellow-500">{{ stats.expiring_soon_count }}</div>
+                <div class="text-lg text-gray-500">{{ stats.expiring_soon_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}</div>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow-md stat-card animate-fadeInUp" style="animation-delay: 0.3s;">
+                <h3 class="text-gray-500 text-sm mb-2 flex items-center">
+                    <i class="fas fa-exclamation-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}منتهية الصلاحية{% else %}Expired{% endif %}
+                </h3>
+                <div class="text-3xl font-bold text-red-500">{{ stats.expired_count }}</div>
+                <div class="text-lg text-gray-500">{{ stats.expired_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}</div>
+            </div>
+        </div>
+
+        <!-- Shipments Table -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8 animate-fadeInUp">
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 flex items-center">
+                    <i class="fas fa-table mr-2 text-blue-600"></i> {% if LANGUAGE_CODE == 'ar' %}سجل الشحنات{% else %}Shipments Record{% endif %}
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-blue-200" role="grid" aria-label="{% if LANGUAGE_CODE == 'ar' %}سجل شحنات المنتج{% else %}Product Shipments Record{% endif %}">
+                        <thead class="bg-blue-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ الإضافة{% else %}Date Added{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Quantity{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع{% else %}Manufacturing Date{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ انتهاء الصلاحية{% else %}Expiration Date{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}الحالة{% else %}Status{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}ملاحظات{% else %}Notes{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-blue-200">
+                        {% for shipment in shipments %}
+                        <tr class="stat-card">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.created_at|date:"Y-m-d" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ shipment.quantity }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.manufacturing_date|default:"{% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}Not specified{% endif %}" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.expiration_date|default:"{% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}Not specified{% endif %}" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if shipment.is_expired %}
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        {% if LANGUAGE_CODE == 'ar' %}منتهي الصلاحية{% else %}Expired{% endif %}
+                                    </span>
+                                {% elif shipment.is_expiring_soon %}
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        {% if LANGUAGE_CODE == 'ar' %}ينتهي قريباً{% else %}Expiring Soon{% endif %}
+                                    </span>
+                                {% else %}
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        {% if LANGUAGE_CODE == 'ar' %}سليم{% else %}Valid{% endif %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.notes|truncatechars:30|default:"-" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex space-x-2 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %}">
+                                    <a href="{% url 'edit_shipment' shipment.id %}" class="action-btn btn-edit" title="{% if LANGUAGE_CODE == 'ar' %}تعديل الشحنة{% else %}Edit Shipment{% endif %}">
+                                        <i class="fas fa-edit"></i>
+                                        {% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+                                    </a>
+                                    <button onclick="confirmDelete({{ shipment.id }}, '{{ shipment.product.title|escapejs }}', {{ shipment.quantity }})" class="action-btn btn-delete" title="{% if LANGUAGE_CODE == 'ar' %}حذف الشحنة{% else %}Delete Shipment{% endif %}">
+                                        <i class="fas fa-trash"></i>
+                                        {% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
+                                <i class="fas fa-info-circle mr-2 text-blue-600"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}لا توجد شحنات متاحة لهذا المنتج{% else %}No shipments available for this product{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+    <div class="modal-content">
+        <h3 class="text-lg font-bold text-gray-800 mb-4">
+            {% if LANGUAGE_CODE == 'ar' %}تأكيد الحذف{% else %}Confirm Delete{% endif %}
+        </h3>
+        <p class="text-gray-600 mb-6" id="deleteMessage">
+            {% if LANGUAGE_CODE == 'ar' %}هل أنت متأكد من حذف هذه الشحنة؟{% else %}Are you sure you want to delete this shipment?{% endif %}
+        </p>
+        <div class="flex justify-center space-x-4 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %}">
+            <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">
+                {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+            </button>
+            <a id="confirmDeleteBtn" href="#" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                {% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(shipmentId, productTitle, quantity) {
+        const modal = document.getElementById('deleteModal');
+        const message = document.getElementById('deleteMessage');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+
+        {% if LANGUAGE_CODE == 'ar' %}
+        message.innerHTML = `هل أنت متأكد من حذف شحنة المنتج "<strong>${productTitle}</strong>" بكمية <strong>${quantity}</strong> وحدة؟`;
+        {% else %}
+        message.innerHTML = `Are you sure you want to delete the shipment for product "<strong>${productTitle}</strong>" with quantity <strong>${quantity}</strong> units?`;
+        {% endif %}
+
+        confirmBtn.href = `/club_dashboard/shipments/delete/${shipmentId}/`;
+        modal.style.display = 'block';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('deleteModal');
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

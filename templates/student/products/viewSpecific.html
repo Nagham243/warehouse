@@ -1,0 +1,425 @@
+{% extends "base_student_dashboard.html" %} {% load students_tags %} {% load static %} {% block content %}
+<link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"
+/>
+
+<style>
+  .swiper-button-next,
+  .swiper-button-prev {
+    background-color: #ffffff;
+    border-radius: 50%;
+    border: 1px solid #fce7f3;
+    color: #db2777;
+    font-size: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    padding: 12px;
+    width: 15px;
+    height: 15px;
+  }
+
+  .swiper-button-next:hover,
+  .swiper-button-prev:hover {
+    background-color: #fbcfe8;
+    color: #9d174d;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .swiper-button-next:after,
+  .swiper-button-prev:after {
+    font-size: 8px;
+  }
+
+  /* Image zoom effect */
+  .zoom-container {
+    overflow: hidden;
+    position: relative;
+  }
+
+  .zoom-image {
+    transition: transform 0.5s ease;
+    cursor: zoom-in;
+  }
+
+  .zoom-image.zoomed {
+    transform: scale(1.5);
+  }
+
+  @keyframes fadeIn {
+      from {
+          opacity: 0;
+      }
+      to {
+          opacity: 1;
+      }
+  }
+
+  @keyframes fadeInDown {
+      from {
+          opacity: 0;
+          transform: translateY(-20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInUp {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  @keyframes fadeInRight {
+      from {
+          opacity: 0;
+          transform: translateX(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateX(0);
+      }
+  }
+</style>
+
+<section class="w-full py-8 md:py-16 bg-gradient-to-br from-rose-50 to-amber-50">
+  <div class="max-w-7xl mx-auto px-4 md:px-8">
+    <!-- Breadcrumb Navigation -->
+    <div class="text-gray-600 mb-6 text-lg animate-[fadeIn_0.8s_ease-out]">
+      <a href="{% url 'StudentViewProducts' %}" class="hover:text-rose-600">{% if LANGUAGE_CODE == 'ar' %}
+        ✨ المنتجات
+        {% else %}
+        ✨ Products
+        {% endif %}</a>
+      <span class="mx-2">/</span>
+      <span class="text-rose-600">{{ product.title }}</span>
+    </div>
+    <div class="container mx-auto px-4 mt-4 md:mt-8 pb-24">
+      <div class="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 overflow-hidden animate-[fadeIn_0.8s_ease-out]">
+        <div class="flex flex-col md:flex-row">
+          <!-- Product Image Swiper - Now on the left side -->
+          <div class="md:w-1/2 relative swiper-container zoom-container">
+            <div class="swiper-wrapper">
+              {% if product.product_images.all %}
+              {% for img in product.product_images.all %}
+              <div class="swiper-slide">
+                <img
+                        src="{{ img.img.url }}"
+                        class="w-full object-contain rounded-lg zoom-image"
+                        alt="{{product.title}} image"
+                />
+              </div>
+              {% endfor %}
+              {% else %}
+              <div class="swiper-slide">
+                <div class="h-full w-full bg-rose-50 flex items-center justify-center">
+                  <span class="text-rose-300"><i class="bi bi-image text-6xl"></i></span>
+                </div>
+              </div>
+              {% endif %}
+            </div>
+            <div class="swiper-pagination"></div>
+            <div class="swiper-button-next"></div>
+            <div class="swiper-button-prev"></div>
+            {% if product.is_new %}
+            <div class="absolute top-4 left-4 bg-rose-600 text-white px-3 py-1 rounded-full text-sm font-semibold">
+              {% if LANGUAGE_CODE == 'ar' %}
+              ✨ جديد
+              {% else %}
+              ✨ New
+              {% endif %}
+            </div>
+            {% endif %}
+          </div>
+          <!-- Product Details -->
+          <div class="md:w-1/2 p-6 md:p-8 flex flex-col justify-between bg-white z-50">
+            <div>
+              <h1 class="text-3xl font-bold mb-4 text-right text-rose-700/80 animate-[fadeInRight_0.5s_ease-out]">
+                {{product.title}}
+              </h1>
+              <p class="text-gray-600 mb-6 text-right leading-relaxed animate-[fadeInRight_0.5s_ease-out_0.1s_both]">
+                {{product.desc}}
+              </p>
+              <div class="mb-6 text-right animate-[fadeInRight_0.5s_ease-out_0.2s_both]">
+                <span class="text-3xl font-bold text-rose-500 block">{{product.price}} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</span>
+                <span class="text-sm text-gray-500 block">{% if LANGUAGE_CODE == 'ar' %}
+                    شامل الضريبة | التوصيل مجاني
+                  {% else %}
+                    Tax Included | Free Delivery
+                  {% endif %}</span>
+              </div>
+
+              {% if product.stock is not None %}
+              <div class="mb-4 text-right animate-[fadeInRight_0.5s_ease-out_0.3s_both]">
+              <span class="{% if product.stock > 10 %}text-green-500{% elif product.stock > 0 %}text-yellow-500{% else %}text-red-500{% endif %} font-medium">
+                {% if product.stock > 0 %}
+                  {% if LANGUAGE_CODE == 'ar' %}
+                      متوفر في المخزون ({{ product.stock }})
+                    {% else %}
+                      Available in stock ({{ product.stock }})
+                    {% endif %}
+                {% else %}
+                  {% if LANGUAGE_CODE == 'ar' %}
+                      غير متوفر حالياً <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs shadow-sm mr-2"><i class="fas fa-exclamation-circle ml-1"></i>{% if LANGUAGE_CODE == 'ar' %}نفذ{% else %}Out of stock{% endif %}</span>
+                    {% else %}
+                      Currently out of stock
+                    {% endif %}
+                {% endif %}
+              </span>
+              </div>
+              {% endif %}
+            </div>
+            {% if product.is_enabled != None %}
+            <div>
+              <p class="text-pink-500 text-sm mb-2">{% if LANGUAGE_CODE == 'ar' %}
+                الحالة
+                {% else %}
+                Status
+                {% endif %}</p>
+              <p class="font-bold">
+                {% if product.is_enabled %}
+                <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                        متاح
+                      {% else %}
+                        Available
+                      {% endif %}</span>
+                {% else %}
+                <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-sm">{% if LANGUAGE_CODE == 'ar' %}
+                        غير متاح
+                      {% else %}
+                        Not Available
+                      {% endif %}</span>
+                {% endif %}
+              </p>
+            </div>
+            {% endif %}
+            <div>
+              <div class="flex flex-col sm:flex-row justify-end items-center mb-6 space-y-4 sm:space-y-0 animate-[fadeInUp_0.6s_ease-out_0.4s_both]">
+                <div class="flex items-center w-full sm:w-auto ml-4">
+                  <label for="quantity" class="text-right text-gray-700 ml-2">{% if LANGUAGE_CODE == 'ar' %}
+                    الكمية:
+                    {% else %}
+                    Quantity:
+                    {% endif %}</label>
+                  <select
+                          id="quantity"
+                          class="border border-rose-200 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
+                  >
+                    {% for i in "12345"|make_list %}
+                    <option>{{i}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <button
+                        id="add-to-cart-btn"
+                        class="w-full sm:w-auto py-3 px-8 rounded-full transition-all duration-300 transform focus:outline-none focus:ring-2 focus:ring-opacity-50
+                        {% if product.stock == 0 or not product.is_enabled %}
+                            bg-gray-300 text-gray-500 cursor-not-allowed opacity-50
+                        {% else %}
+                            bg-pink-600 text-white hover:bg-pink-700 hover:scale-105 focus:ring-pink-500
+                        {% endif %}"
+                        {% if product.stock == 0 or not product.is_enabled %}disabled{% endif %}
+                        data-product-id="{{ product.id }}"
+                >
+                  <i class="fas fa-shopping-cart mr-2"></i>
+                  <span>{% if LANGUAGE_CODE == 'ar' %}
+                       أضف إلى السلة
+                    {% else %}
+                       Add to Cart
+                    {% endif %}</span>
+                </button>
+              </div>
+              <div class="text-right">
+              <span class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}
+                    رمز المنتج:
+                  {% else %}
+                    Product Code:
+                  {% endif %}
+                  {{ product.id }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Related Products -->
+    <div class="mt-4 mb-12">
+      <h2 class="text-2xl font-bold mb-8 text-right text-rose-700/80 animate-[fadeIn_0.8s_ease-out_0.5s_both]">
+        {% if LANGUAGE_CODE == 'ar' %}
+        ✨ منتجات ذات صلة
+        {% else %}
+        ✨ Related Products
+        {% endif %}
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for related_product in products %}
+        {% if related_product.id != product.id %}
+        <div class="animate-[fadeInRight_0.5s_ease-out_{{ forloop.counter|add:0.6 }}s_both] bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 overflow-hidden flex flex-col h-full">
+          <div class="h-60 overflow-hidden">
+            {% if related_product.product_images.all %}
+            <img
+                    src="{{ related_product.product_images.first.img.url }}?v={{ related_product.updated_at|date:'U' }}"
+                    alt="{{ related_product.title }}"
+                    class="w-full h-full object-contain transition-transform duration-300 hover:scale-105 product-image"
+                    data-id="{{ related_product.id }}"
+            >
+            {% else %}
+            <div class="h-full w-full bg-rose-50 flex items-center justify-center">
+              <span class="text-rose-300"><i class="bi bi-image text-3xl"></i></span>
+            </div>
+            {% endif %}
+          </div>
+          <div class="p-4 flex-grow">
+            <div class="flex justify-between items-center mb-2">
+              <h2 class="text-xl font-bold truncate text-rose-700/80">{{ related_product.title }}</h2>
+            </div>
+            <div class="mb-4">
+              <p class="text-gray-600 text-sm line-clamp-3">{{ related_product.desc|truncatechars:100 }}</p>
+            </div>
+            <div class="flex justify-between items-center">
+              <div>
+                <span class="font-bold text-lg text-rose-500">{{ related_product.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+              </div>
+              {% if related_product.stock %}
+              <div class="text-gray-600">
+                {% if LANGUAGE_CODE == 'ar' %}
+                المخزون:
+                {% else %}
+                Stock:
+                {% endif %} <span class="font-medium">{{ related_product.stock }}</span>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          <div class="bg-rose-50/60 border-t border-rose-100 px-4 py-3 flex justify-center">
+            <a href="{% url 'viewProductsSpecific' related_product.id %}" class="text-rose-500 hover:text-rose-700 font-medium">{% if LANGUAGE_CODE == 'ar' %}
+              ✨ عرض التفاصيل
+              {% else %}
+              ✨ View Details
+              {% endif %}</a>
+          </div>
+        </div>
+        {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<!-- Initialize Swiper -->
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Swiper
+    var swiper = new Swiper(".swiper-container", {
+      initialSlide: 0,
+      pagination: {
+        el: ".swiper-pagination",
+        clickable: true,
+        renderBullet: function (index, className) {
+          return '<span class="' + className + ' custom-bullet"></span>';
+        },
+      },
+      navigation: {
+        nextEl: ".swiper-button-next",
+        prevEl: ".swiper-button-prev",
+      },
+    });
+
+    // Image zoom functionality
+    const zoomImages = document.querySelectorAll('.zoom-image');
+    const zoomContainer = document.querySelector('.zoom-container');
+
+    zoomImages.forEach(image => {
+      image.addEventListener('mousemove', function(e) {
+        const { left, top, width, height } = image.getBoundingClientRect();
+        const x = (e.clientX - left) / width;
+        const y = (e.clientY - top) / height;
+
+        // Calculate position
+        const transformX = -((x * 100) - 50) * 0.5;
+        const transformY = -((y * 100) - 50) * 0.5;
+
+        image.classList.add('zoomed');
+        image.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+      });
+
+      image.addEventListener('mouseleave', function() {
+        image.classList.remove('zoomed');
+        image.style.transformOrigin = 'center center';
+      });
+    });
+  });
+
+  document.addEventListener('DOMContentLoaded', function() {
+  const addToCartBtn = document.getElementById('add-to-cart-btn');
+  const quantitySelect = document.getElementById('quantity');
+
+  addToCartBtn.addEventListener('click', function() {
+    const productId = this.dataset.productId;
+    const quantity = parseInt(quantitySelect.value);
+
+    // AJAX request to add to cart
+    const formData = new FormData();
+    formData.append('product_id', productId);
+    formData.append('quantity', quantity);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch('{% url "add_to_cart" %}', {
+      method: 'POST',
+      body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        // Show success message
+        const toast = document.createElement('div');
+        toast.className = 'fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-md shadow-lg z-50';
+        toast.innerHTML = `
+          <div class="flex items-center">
+            <i class="fas fa-check-circle mr-2"></i>
+            <span>${data.message}</span>
+          </div>
+        `;
+        document.body.appendChild(toast);
+
+        // Remove toast after 3 seconds
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+
+        // Update cart count in navbar
+        updateNavbarCartCount(data.cart_count);
+      } else {
+        // Show error message
+        alert(data.message);
+      }
+    })
+    .catch(error => console.error('Error:', error));
+  });
+
+  // Function to update the cart count in the navbar
+  function updateNavbarCartCount(count) {
+    const cartCountElement = document.getElementById('cart-count');
+    if (cartCountElement) {
+      cartCountElement.textContent = count;
+
+      // Add a short animation to highlight the change
+      cartCountElement.classList.add('animate-pulse');
+      setTimeout(() => {
+        cartCountElement.classList.remove('animate-pulse');
+      }, 1000);
+    }
+  }
+});
+</script>
+
+{% endblock %}

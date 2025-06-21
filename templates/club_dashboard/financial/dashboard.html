@@ -1,0 +1,1034 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+
+{% block title %}التفاصيل المالية{% endblock %}
+
+{% block content %}
+<style>
+    :root {
+      --primary: #4F46E5;
+      --primary-light: #EEF2FF;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --info: #06B6D4;
+      --dark: #1E293B;
+      --gray: #64748B;
+      --light-gray: #F1F5F9;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #F8FAFC;
+      color: #1E293B;
+    }
+
+    .dashboard-container {
+      padding: 1.5rem;
+      {% if LANGUAGE_CODE == 'ar' %}margin-right: 260px;{% else %}margin-left: 260px;{% endif %}
+
+    }
+
+    .page-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .page-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+
+    .card {
+      background-color: white;
+      border-radius: 0.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.1);
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--dark);
+      display: flex;
+      align-items: center;
+    }
+
+    .card-title i {
+      margin-left: 0.5rem;
+      color: var(--primary);
+    }
+
+    .card-body {
+      padding: 1.5rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .stat-card {
+      border-radius: 0.75rem;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-5px);
+    }
+
+    .stat-card.primary {
+      background-color: var(--primary-light);
+      border-right: 4px solid var(--primary);
+    }
+
+    .stat-card.success {
+      background-color: rgba(16, 185, 129, 0.1);
+      border-right: 4px solid var(--success);
+    }
+
+    .stat-card.warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      border-right: 4px solid var(--warning);
+    }
+
+    .stat-card.info {
+      background-color: rgba(6, 182, 212, 0.1);
+      border-right: 4px solid var(--info);
+    }
+
+    .stat-label {
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-icon {
+      font-size: 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .primary-icon {
+      color: var(--primary);
+    }
+
+    .success-icon {
+      color: var(--success);
+    }
+
+    .warning-icon {
+      color: var(--warning);
+    }
+
+    .info-icon {
+      color: var(--info);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 350px;
+      width: 100%;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+
+    .badge-success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    .badge-danger {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--danger);
+    }
+
+    .badge-info {
+      background-color: rgba(6, 182, 212, 0.1);
+      color: var(--info);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      background-color: #F8FAFC;
+      padding: 0.75rem 1rem;
+      text-align: right;
+      font-weight: 600;
+      font-size: 0.875rem;
+      color: var(--gray);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 0.75rem 1rem;
+      border-top: 1px solid #E2E8F0;
+      vertical-align: middle;
+    }
+
+    tbody tr:hover {
+      background-color: #F8FAFC;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      font-size: 0.875rem;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+    }
+
+    .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #4338CA;
+    }
+
+    .btn-outline {
+      background-color: transparent;
+      border: 1px solid #E2E8F0;
+      color: var(--gray);
+    }
+
+    .btn-outline:hover {
+      background-color: #F8FAFC;
+    }
+
+    .filter-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+
+    .form-group {
+      margin-bottom: 0;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--gray);
+    }
+
+    .form-control {
+      display: block;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      font-size: 0.875rem;
+      line-height: 1.5;
+      color: var(--dark);
+      background-color: white;
+      background-clip: padding-box;
+      border: 1px solid #D1D5DB;
+      border-radius: 0.375rem;
+      transition: border-color 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+      border-color: var(--primary);
+      outline: 0;
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap:.5rem;
+    }
+
+    .col-full {
+      flex: 0 0 100%;
+      max-width: 100%;
+    }
+
+    .col-half {
+      flex: 0 0 calc(50% - .5rem);
+      max-width: calc(50% - .5rem);
+    }
+
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1050;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      outline: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+    }
+
+    .modal-dialog {
+      position: relative;
+      width: auto;
+      margin: 1.75rem auto;
+      max-width: 700px;
+    }
+
+    .modal-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      background-color: white;
+      background-clip: padding-box;
+      border-radius: 0.75rem;
+      outline: 0;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .modal-title {
+      margin-bottom: 0;
+      line-height: 1.5;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+
+    .modal-body {
+      position: relative;
+      flex: 1 1 auto;
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #E2E8F0;
+    }
+
+    .close {
+      font-size: 1.5rem;
+      font-weight: 700;
+      line-height: 1;
+      color: #000;
+      text-shadow: 0 1px 0 #fff;
+      opacity: .5;
+      background: transparent;
+      border: 0;
+      cursor: pointer;
+    }
+
+    .close:hover {
+      opacity: .75;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 1280px) {
+      .dashboard-container {
+        margin-right: 0;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .col-half {
+        flex: 0 0 100%;
+        max-width: 100%;
+      }
+    }
+</style>
+</head>
+<body>
+<!-- Sidebar placeholder (assuming it's included from another file) -->
+
+<div class="dashboard-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            {% if LANGUAGE_CODE == 'ar' %}التفاصيل المالية والإيرادات{% else %}Financial Details and Revenue{% endif %}
+        </h1>
+        <p class="text-gray">
+            {% if LANGUAGE_CODE == 'ar' %}لوحة تحكم إدارة الإيرادات والمبيعات{% else %}Revenue and Sales Management Dashboard{% endif %}
+        </p>
+    </div>
+
+    <!-- Revenue Summary Cards -->
+    <div class="stats-grid">
+        <!-- Total Revenue Card -->
+        <div class="stat-card primary">
+            <div class="stat-icon primary-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <h3 class="stat-label">
+                {% if LANGUAGE_CODE == 'ar' %}إجمالي الإيرادات{% else %}Total Revenue{% endif %}
+            </h3>
+            <div class="stat-value">{{ total_revenue }} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</div>
+            <div class="stat-trend">
+                <i class="fas fa-chart-line mr-1"></i>
+                <span>
+                    {% if LANGUAGE_CODE == 'ar' %}إجمالي الإيرادات خلال الفترة المحددة{% else %}Total revenue during the selected period{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <!-- Credit Card Revenue Card -->
+        <div class="stat-card success">
+            <div class="stat-icon success-icon">
+                <i class="fas fa-credit-card"></i>
+            </div>
+            <h3 class="stat-label">
+                {% if LANGUAGE_CODE == 'ar' %}إيرادات بطاقات الائتمان{% else %}Credit Card Revenue{% endif %}
+            </h3>
+            <div class="stat-value">{{ credit_card_revenue }} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</div>
+            <div class="stat-trend">
+                <i class="fas fa-percentage mr-1"></i>
+                <span>{{ credit_card_percentage }} {% if LANGUAGE_CODE == 'ar' %}من الإجمالي{% else %}of total{% endif %}</span>
+            </div>
+        </div>
+
+        <!-- Cash Revenue Card -->
+        <div class="stat-card info">
+            <div class="stat-icon info-icon">
+                <i class="fas fa-money-bill-alt"></i>
+            </div>
+            <h3 class="stat-label">
+                {% if LANGUAGE_CODE == 'ar' %}إيرادات الدفع النقدي{% else %}Cash Revenue{% endif %}
+            </h3>
+            <div class="stat-value">{{ cash_revenue }} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</div>
+            <div class="stat-trend">
+                <i class="fas fa-percentage mr-1"></i>
+                <span>{{ cash_percentage }} {% if LANGUAGE_CODE == 'ar' %}من الإجمالي{% else %}of total{% endif %}</span>
+            </div>
+        </div>
+
+        <!-- Pending Revenue Card -->
+        <div class="stat-card warning mb-4">
+            <div class="stat-icon warning-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <h3 class="stat-label">
+                {% if LANGUAGE_CODE == 'ar' %}الإيرادات المعلقة{% else %}Pending Revenue{% endif %}
+            </h3>
+            <div class="stat-value">{{ pending_revenue }} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</div>
+            <div class="stat-trend">
+                <i class="fas fa-exclamation-circle mr-1"></i>
+                <span>
+                    {% if LANGUAGE_CODE == 'ar' %}إيرادات بانتظار الاكتمال{% else %}Revenue pending completion{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Monthly Revenue Chart -->
+        <div class="col-half">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}الإيرادات الشهرية{% else %}Monthly Revenue{% endif %}
+                    </h2>
+                    <div class="card-actions">
+                        <button class="btn btn-outline btn-sm" id="downloadChartBtn">
+                            <i class="fas fa-download {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}تحميل{% else %}Download{% endif %}
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="monthlyRevenueChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Method Distribution -->
+        <div class="col-half">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-chart-pie"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}توزيع طرق الدفع{% else %}Payment Method Distribution{% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="height: 300px;">
+                        <canvas id="paymentMethodChart"></canvas>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <span class="badge badge-success {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}">
+                            <i class="fas fa-circle {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}بطاقات ائتمان{% else %}Credit Cards{% endif %}
+                        </span>
+                        <span class="badge badge-info">
+                            <i class="fas fa-circle {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}دفع نقدي{% else %}Cash Payment{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Products and Services Row -->
+    <div class="row">
+        <!-- Top Products -->
+        <div class="col-half">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-box"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}أفضل المنتجات مبيعاً{% else %}Top Selling Products{% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>{% if LANGUAGE_CODE == 'ar' %}المنتج{% else %}Product{% endif %}</th>
+                                <th>{% if LANGUAGE_CODE == 'ar' %}الكمية المباعة{% else %}Quantity Sold{% endif %}</th>
+                                <th>{% if LANGUAGE_CODE == 'ar' %}الإيرادات{% else %}Revenue{% endif %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for product in top_products %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fas fa-box text-primary {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+                                        {{ product.name }}
+                                    </div>
+                                </td>
+                                <td>{{ product.quantity }}</td>
+                                <td>{{ product.revenue }} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">
+                                    {% if LANGUAGE_CODE == 'ar' %}لا توجد منتجات مباعة{% else %}No products sold{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Services -->
+        <div class="col-half">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-concierge-bell"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}أفضل الخدمات مبيعاً{% else %}Top Selling Services{% endif %}
+                    </h2>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>{% if LANGUAGE_CODE == 'ar' %}الخدمة{% else %}Service{% endif %}</th>
+                                <th>{% if LANGUAGE_CODE == 'ar' %}الكمية المباعة{% else %}Quantity Sold{% endif %}</th>
+                                <th>{% if LANGUAGE_CODE == 'ar' %}الإيرادات{% else %}Revenue{% endif %}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for service in top_services %}
+                            <tr>
+                                <td>
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fas fa-spa text-success {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+                                        {{ service.name }}
+                                    </div>
+                                </td>
+                                <td>{{ service.quantity }}</td>
+                                <td>{{ service.revenue }} {% if LANGUAGE_CODE == 'ar' %}ريال{% else %}SAR{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">
+                                    {% if LANGUAGE_CODE == 'ar' %}لا توجد خدمات مباعة{% else %}No services sold{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    // Wait for the document to be fully loaded before running jQuery code
+    $(document).ready(function() {
+        // Initialize DataTables
+        $('#allOrdersTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/Arabic.json"
+            },
+            "order": [[5, "desc"]]
+        });
+
+        $('#creditCardTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/Arabic.json"
+            },
+            "order": [[4, "desc"]]
+        });
+
+        $('#cashTable').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/1.10.22/i18n/Arabic.json"
+            },
+            "order": [[4, "desc"]]
+        });
+
+        // Tab switching functionality
+        const showAllBtn = document.getElementById('showAllOrdersBtn');
+        if (showAllBtn) {
+            showAllBtn.addEventListener('click', function () {
+            document.getElementById('allOrdersTab').style.display = 'block';
+            document.getElementById('creditCardOrdersTab').style.display = 'none';
+            document.getElementById('cashOrdersTab').style.display = 'none';
+
+            document.getElementById('showAllOrdersBtn').classList.add('active');
+            document.getElementById('showCreditCardOrdersBtn').classList.remove('active');
+            document.getElementById('showCashOrdersBtn').classList.remove('active');
+        });
+
+        document.getElementById('showCreditCardOrdersBtn').addEventListener('click', function() {
+            document.getElementById('allOrdersTab').style.display = 'none';
+            document.getElementById('creditCardOrdersTab').style.display = 'block';
+            document.getElementById('cashOrdersTab').style.display = 'none';
+
+            document.getElementById('showAllOrdersBtn').classList.remove('active');
+            document.getElementById('showCreditCardOrdersBtn').classList.add('active');
+            document.getElementById('showCashOrdersBtn').classList.remove('active');
+        });
+
+        document.getElementById('showCashOrdersBtn').addEventListener('click', function() {
+            document.getElementById('allOrdersTab').style.display = 'none';
+            document.getElementById('creditCardOrdersTab').style.display = 'none';
+            document.getElementById('cashOrdersTab').style.display = 'block';
+
+            document.getElementById('showAllOrdersBtn').classList.remove('active');
+            document.getElementById('showCreditCardOrdersBtn').classList.remove('active');
+            document.getElementById('showCashOrdersBtn').classList.add('active');
+        });
+}
+        // Chart initializations
+        const monthlyRevenueChartCtx = document.getElementById('monthlyRevenueChart').getContext('2d');
+        const monthsData = {{ months_data|safe }};
+        const monthlyRevenueChart = new Chart(monthlyRevenueChartCtx, {
+            type: 'line',
+            data: {
+                labels: monthsData.map(item => item.month),
+                datasets: [
+                    {
+                        {% if LANGUAGE_CODE == 'ar' %}label: 'إجمالي الإيرادات'
+                        {% else %}label: 'total revenue'
+                        {% endif %},
+                        data: monthsData.map(item => item.total),
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: 'rgba(79, 70, 229, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(79, 70, 229, 1)',
+                        pointRadius: 4,
+                        tension: 0.4
+                    },
+                    {
+                        {% if LANGUAGE_CODE == 'ar' %}label: 'بطاقات الائتمان'
+                        {% else %}label: 'Credit Cards'
+                        {% endif %}
+                        ,
+                        data: monthsData.map(item => item.credit_card),
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                        pointRadius: 3,
+                        tension: 0.4
+                    },
+                    {
+                        {% if LANGUAGE_CODE == 'ar' %}label: 'الدفع النقدي'{% else %}label: 'Cash Payments'{% endif %}
+                        ,
+                        data: monthsData.map(item => item.cash),
+                        backgroundColor: 'rgba(6, 182, 212, 0.2)',
+                        borderColor: 'rgba(6, 182, 212, 1)',
+                        borderWidth: 2,
+                        pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                        pointRadius: 3,
+                        tension: 0.4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom',
+                    rtl: true,
+                    labels: {
+                        fontFamily: 'Cairo, sans-serif',
+                        fontSize: 12
+                    }
+                },
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            callback: function(value) {
+                                return value + ' ريال';
+                            },
+                            fontFamily: 'Cairo, sans-serif'
+                        },
+                        gridLines: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            zeroLineColor: 'rgba(0, 0, 0, 0.1)'
+                        }
+                    }],
+                    xAxes: [{
+                        gridLines: {
+                            color: 'rgba(0, 0, 0, 0.05)',
+                            zeroLineColor: 'rgba(0, 0, 0, 0.1)'
+                        },
+                        ticks: {
+                            fontFamily: 'Cairo, sans-serif'
+                        }
+                    }]
+                },
+                tooltips: {
+                    rtl: true,
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            return data.datasets[tooltipItem.datasetIndex].label + ': ' + tooltipItem.yLabel + ' ريال';
+                        }
+                    }
+                }
+            }
+        });
+
+        // Payment Methods Chart
+        const paymentMethodChartCtx = document.getElementById('paymentMethodChart').getContext('2d');
+        const creditCardRevenue = {{ credit_card_revenue|default:0 }};
+        const cashRevenue = {{ cash_revenue|default:0 }};
+
+        const paymentMethodChart = new Chart(paymentMethodChartCtx, {
+            type: 'doughnut',
+            data: {
+                {% if LANGUAGE_CODE == 'ar' %}labels: ['بطاقات الائتمان', 'الدفع النقدي']{% else %}labels: ['Credit Cards', 'Cash Payments']{% endif %}
+                ,
+                datasets: [{
+                    data: [creditCardRevenue, cashRevenue],
+                    backgroundColor: [
+                        'rgba(16, 185, 129, 0.8)',
+                        'rgba(6, 182, 212, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(16, 185, 129, 1)',
+                        'rgba(6, 182, 212, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                legend: {
+                    position: 'bottom',
+                    rtl: true,
+                    labels: {
+                        fontFamily: 'Cairo, sans-serif',
+                        fontSize: 12
+                    }
+                },
+                tooltips: {
+                    rtl: true,
+                    callbacks: {
+                        label: function(tooltipItem, data) {
+                            const dataset = data.datasets[tooltipItem.datasetIndex];
+                            const total = dataset.data.reduce((prev, curr) => prev + curr, 0);
+                            const currentValue = dataset.data[tooltipItem.index];
+                            const percentage = Math.floor(((currentValue / total) * 100) + 0.5);
+                            return data.labels[tooltipItem.index] + ': ' + currentValue + ' ريال (' + percentage + '%)';
+                        }
+                    }
+                },
+                cutoutPercentage: 70
+            }
+        });
+
+        // Modal functionality for order details
+        const orderDetailsButtons = document.querySelectorAll('.view-order-details');
+        const orderDetailsModal = document.getElementById('orderDetailsModal');
+        const orderDetailsContent = document.getElementById('orderDetailsContent');
+        const closeModalBtn = document.querySelector('.close');
+
+        if (orderDetailsButtons.length > 0 && orderDetailsModal && closeModalBtn) {
+            orderDetailsButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    // Fetch order details via AJAX
+                    fetch(`/api/orders/${orderId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Populate modal with order details
+                            let html = `
+                                <div class="order-details">
+                                    <div class="order-header">
+                                        <h3>طلب #${data.id}</h3>
+                                        <p class="text-gray">تم الإنشاء: ${data.created_at}</p>
+                                    </div>
+                                    <div class="customer-info">
+                                        <h4>معلومات العميل</h4>
+                                        <p><strong>الاسم:</strong> ${data.first_name} ${data.last_name}</p>
+                                        <p><strong>البريد الإلكتروني:</strong> ${data.email}</p>
+                                        <p><strong>الهاتف:</strong> ${data.phone}</p>
+                                    </div>
+                                    <div class="order-items mt-4">
+                                        <h4>المنتجات والخدمات</h4>
+                                        <table class="table mt-2">
+                                            <thead>
+                                                <tr>
+                                                    <th>المنتج/الخدمة</th>
+                                                    <th>الكمية</th>
+                                                    <th>السعر</th>
+                                                    <th>المجموع</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>`;
+
+                            data.items.forEach(item => {
+                                html += `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>${item.price} ريال</td>
+                                        <td>${item.quantity * item.price} ريال</td>
+                                    </tr>`;
+                            });
+
+                            html += `
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th colspan="3">المجموع الكلي</th>
+                                                    <th>${data.total_price} ريال</th>
+                                                </tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                    <div class="payment-info mt-4">
+                                        <h4>معلومات الدفع</h4>
+                                        <p><strong>طريقة الدفع:</strong> ${data.payment_method === 'credit_card' ? 'بطاقة ائتمان' : 'دفع نقدي'}</p>
+                                        <p><strong>حالة الدفع:</strong>
+                                            ${data.status === 'pending' ? '<span class="badge badge-warning">قيد الانتظار</span>' :
+                                                data.status === 'confirmed' ? '<span class="badge badge-info">تم التأكيد</span>' :
+                                                data.status === 'cancelled' ? '<span class="badge badge-danger">تم الإلغاء</span>' :
+                                                '<span class="badge badge-success">مكتمل</span>'}
+                                        </p>
+                                        ${data.payment_method === 'credit_card' ? `<p><strong>رقم العملية:</strong> ${data.transaction_id || 'غير متاح'}</p>` : ''}
+                                    </div>
+                                </div>
+                            `;
+
+                            orderDetailsContent.innerHTML = html;
+                            orderDetailsModal.style.display = 'block';
+                        })
+                        .catch(error => {
+                            console.error('Error fetching order details:', error);
+                            orderDetailsContent.innerHTML = '<p class="text-danger">حدث خطأ أثناء جلب تفاصيل الطلب</p>';
+                            orderDetailsModal.style.display = 'block';
+                        });
+                });
+            });
+
+            // Close modal
+            closeModalBtn.addEventListener('click', function() {
+                orderDetailsModal.style.display = 'none';
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target === orderDetailsModal) {
+                    orderDetailsModal.style.display = 'none';
+                }
+            });
+        }
+
+        // Print order functionality
+        const printOrderBtn = document.getElementById('printOrderBtn');
+        if (printOrderBtn && orderDetailsContent) {
+            printOrderBtn.addEventListener('click', function() {
+                const printContents = orderDetailsContent.innerHTML;
+                const originalContents = document.body.innerHTML;
+
+                document.body.innerHTML = `
+                    <div dir="rtl" style="font-family: 'Cairo', sans-serif; padding: 20px;">
+                        <h2 style="text-align: center; margin-bottom: 20px;">تفاصيل الطلب</h2>
+                        ${printContents}
+                    </div>
+                `;
+
+                window.print();
+                document.body.innerHTML = originalContents;
+
+                // Re-initialize event listeners after restoring content
+                location.reload();
+            });
+        }
+
+        // Export functionality
+        const exportProductsBtn = document.getElementById('exportProductsBtn');
+        if (exportProductsBtn) {
+            exportProductsBtn.addEventListener('click', function() {
+                exportTableToCSV('top_products.csv', 'top_products');
+            });
+        }
+
+        const exportServicesBtn = document.getElementById('exportServicesBtn');
+        if (exportServicesBtn) {
+            exportServicesBtn.addEventListener('click', function() {
+                exportTableToCSV('top_services.csv', 'top_services');
+            });
+        }
+
+        // Function to export table to CSV
+        function exportTableToCSV(filename, tableId) {
+            const csv = [];
+            const rows = document.querySelectorAll(`#${tableId} tr`);
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = [], cols = rows[i].querySelectorAll('td, th');
+
+                for (let j = 0; j < cols.length; j++) {
+                    // Get the text content and remove any commas to avoid CSV issues
+                    let data = cols[j].innerText.replace(/(\r\n|\n|\r)/gm, '').replace(/,/g, ';');
+                    row.push('"' + data + '"');
+                }
+
+                csv.push(row.join(','));
+            }
+
+            // Download CSV file
+            downloadCSV(csv.join('\n'), filename);
+        }
+
+        function downloadCSV(csv, filename) {
+            const csvFile = new Blob([csv], {type: 'text/csv'});
+            const downloadLink = document.createElement('a');
+
+            // File name
+            downloadLink.download = filename;
+
+            // Create a link to the file
+            downloadLink.href = window.URL.createObjectURL(csvFile);
+
+            // Hide download link
+            downloadLink.style.display = 'none';
+
+            // Add the link to DOM
+            document.body.appendChild(downloadLink);
+
+            // Click download link
+            downloadLink.click();
+
+            // Remove link from DOM
+            document.body.removeChild(downloadLink);
+        }
+
+        // Chart download functionality
+        const downloadChartBtn = document.getElementById('downloadChartBtn');
+        if (downloadChartBtn) {
+            downloadChartBtn.addEventListener('click', function() {
+                const canvas = document.getElementById('monthlyRevenueChart');
+                const image = canvas.toDataURL('image/png', 1.0);
+                const downloadLink = document.createElement('a');
+
+                downloadLink.href = image;
+                downloadLink.download = 'monthly_revenue_chart.png';
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                document.body.removeChild(downloadLink);
+            });
+        }
+    });
+</script>
+{% endblock %}

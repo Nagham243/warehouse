@@ -1,0 +1,336 @@
+{% extends 'base_coach_dashboard.html' %} {% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-pink-50 to-amber-50 w-full px-4 md:px-8 min-h-screen pb-12">
+    <div class="flex justify-between items-center py-8">
+        <h1 class="text-4xl font-bold text-pink-800 mr-4">
+            {% if LANGUAGE_CODE == 'ar' %}سجل الحضور - {{ appointment.day }}{% else %}Attendance Record - {{ appointment.day }}{% endif %}
+        </h1>
+        <div class="flex space-x-3">
+            {% if students %}
+            <a href="{% url 'exportAttendanceExcel' booking_id day start_time end_time %}"
+               class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-6 py-2 rounded-lg transition duration-300 flex items-center ml-2">
+                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}تصدير Excel{% else %}Export Excel{% endif %}
+            </a>
+            {% endif %}
+            <a href="{% url 'viewCoachAppointments' %}" class="bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white px-6 py-2 rounded-lg transition duration-300">
+                {% if LANGUAGE_CODE == 'ar' %}العودة للمواعيد{% else %}Back to Appointments{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Appointment Details Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-6 mr-4">
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">
+            {% if LANGUAGE_CODE == 'ar' %}تفاصيل الموعد{% else %}Appointment Details{% endif %}
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center p-3 bg-pink-50 rounded-lg">
+                <p class="text-sm text-gray-600">{% if LANGUAGE_CODE == 'ar' %}اليوم{% else %}Day{% endif %}</p>
+                <p class="text-lg font-semibold text-pink-800">{{ appointment.day }}</p>
+            </div>
+            <div class="text-center p-3 bg-pink-50 rounded-lg">
+                <p class="text-sm text-gray-600">{% if LANGUAGE_CODE == 'ar' %}وقت البدء{% else %}Start Time{% endif %}</p>
+                <p class="text-lg font-semibold text-pink-800 time-display">{{ appointment.start_time }}</p>
+            </div>
+            <div class="text-center p-3 bg-pink-50 rounded-lg">
+                <p class="text-sm text-gray-600">{% if LANGUAGE_CODE == 'ar' %}وقت الانتهاء{% else %}End Time{% endif %}</p>
+                <p class="text-lg font-semibold text-pink-800 time-display">{{ appointment.end_time }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Card -->
+    {% if students %}
+    <div class="mt-6 bg-white rounded-xl shadow-lg p-6 mr-4 mb-6">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">
+            {% if LANGUAGE_CODE == 'ar' %}إحصائيات الحضور{% else %}Attendance Statistics{% endif %}
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="text-center p-4 bg-blue-50 rounded-lg">
+                <p class="text-2xl font-bold text-blue-600" id="total-students">{{ students|length }}</p>
+                <p class="text-sm text-gray-600">{% if LANGUAGE_CODE == 'ar' %}إجمالي الطلاب{% else %}Total Students{% endif %}</p>
+            </div>
+            <div class="text-center p-4 bg-green-50 rounded-lg">
+                <p class="text-2xl font-bold text-green-600" id="present-count">{{ attended_student_ids|length }}</p>
+                <p class="text-sm text-gray-600">{% if LANGUAGE_CODE == 'ar' %}الحاضرون{% else %}Present{% endif %}</p>
+            </div>
+            <div class="text-center p-4 bg-red-50 rounded-lg">
+                <!-- Fixed: Calculate absent count in backend or JavaScript -->
+                <p class="text-2xl font-bold text-red-600" id="absent-count"></p>
+                <p class="text-sm text-gray-600">{% if LANGUAGE_CODE == 'ar' %}الغائبون{% else %}Absent{% endif %}</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Attendance Table -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden mr-4">
+        <div class="px-6 py-4 bg-pink-50 border-b">
+            <h3 class="text-xl font-semibold text-gray-800">
+                {% if LANGUAGE_CODE == 'ar' %}سجل حضور الطلاب{% else %}Student Attendance Record{% endif %}
+            </h3>
+            <p class="text-sm text-gray-600 mt-1">
+                {% if LANGUAGE_CODE == 'ar' %}انقر على الأيقونة لتغيير حالة الحضور{% else %}Click on the icon to toggle attendance status{% endif %}
+            </p>
+        </div>
+
+        <form method="post" action="{% url 'updateAttendance' booking_id day start_time end_time %}">
+            {% csrf_token %}
+            <table class="w-full text-sm text-right text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-pink-100">
+                <tr>
+                    <th scope="col" class="px-6 py-3">#</th>
+                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}اسم الطالب{% else %}Student Name{% endif %}</th>
+                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}</th>
+                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}حالة الحضور{% else %}Attendance Status{% endif %}</th>
+                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for student in students %}
+                <tr class="bg-white border-b hover:bg-pink-25">
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                        {{ forloop.counter }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div class="w-8 h-8 bg-pink-100 rounded-full flex items-center justify-center ml-3">
+                                <span class="text-pink-600 font-semibold">{{ student.username|first|upper }}</span>
+                            </div>
+                            <span class="font-medium text-gray-900">{{ student.username }}</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <a href="mailto:{{ student.email }}" class="text-blue-600 hover:underline">
+                            {{ student.email }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="flex items-center">
+                            <div id="status-{{ student.id }}" class="attendance-status flex items-center">
+                                {% if student.id in attended_student_ids %}
+                                <span class="flex items-center text-green-600">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% if LANGUAGE_CODE == 'ar' %}حاضر{% else %}Present{% endif %}
+                                </span>
+                                {% else %}
+                                <span class="flex items-center text-red-600">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% if LANGUAGE_CODE == 'ar' %}غائب{% else %}Absent{% endif %}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <button type="button"
+                                onclick="toggleAttendance({{ student.id }})"
+                                class="bg-gradient-to-r from-pink-500 to-amber-500 hover:from-pink-600 hover:to-amber-600 text-white px-4 py-2 rounded-lg transition duration-300 text-sm">
+                            {% if LANGUAGE_CODE == 'ar' %}تغيير الحالة{% else %}Toggle Status{% endif %}
+                        </button>
+                        <input type="hidden"
+                               name="attendance_{{ student.id }}"
+                               id="attendance_{{ student.id }}"
+                               value="{% if student.id in attended_student_ids %}present{% else %}absent{% endif %}">
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="bg-white border-b">
+                    <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                        {% if LANGUAGE_CODE == 'ar' %}لا يوجد طلاب مسجلون في هذا الموعد{% else %}No students registered for this appointment{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            {% if students %}
+            <div class="px-6 py-4 bg-gray-50 border-t flex justify-between items-center">
+                <div class="flex space-x-2">
+                    <button type="button" onclick="markAllPresent()" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-4 py-2 rounded-lg transition duration-300 text-sm ml-4">
+                        {% if LANGUAGE_CODE == 'ar' %}تحديد الكل حاضر{% else %}Mark All Present{% endif %}
+                    </button>
+                    <button type="button" onclick="markAllAbsent()" class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg transition duration-300 text-sm">
+                        {% if LANGUAGE_CODE == 'ar' %}تحديد الكل غائب{% else %}Mark All Absent{% endif %}
+                    </button>
+                </div>
+                <button type="submit" class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-2 rounded-lg transition duration-300">
+                    {% if LANGUAGE_CODE == 'ar' %}حفظ سجل الحضور{% else %}Save Attendance Record{% endif %}
+                </button>
+            </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<script>
+    // Initialize statistics on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        updateStatistics();
+    });
+
+    function toggleAttendance(studentId) {
+        const statusElement = document.getElementById(`status-${studentId}`);
+        const hiddenInput = document.getElementById(`attendance_${studentId}`);
+
+        const currentValue = hiddenInput.value;
+        const newValue = currentValue === 'present' ? 'absent' : 'present';
+
+        hiddenInput.value = newValue;
+        updateStudentStatus(studentId, newValue);
+        updateStatistics();
+    }
+
+    function updateStatistics() {
+        // Get all attendance inputs
+        const attendanceInputs = document.querySelectorAll('input[name^="attendance_"]');
+        const totalStudents = attendanceInputs.length;
+
+        // Count present students
+        let presentCount = 0;
+        attendanceInputs.forEach(input => {
+            if (input.value === 'present') {
+                presentCount++;
+            }
+        });
+
+        const absentCount = totalStudents - presentCount;
+
+        // Update the display
+        const totalElement = document.getElementById('total-students');
+        const presentElement = document.getElementById('present-count');
+        const absentElement = document.getElementById('absent-count');
+
+        if (totalElement) totalElement.textContent = totalStudents;
+        if (presentElement) presentElement.textContent = presentCount;
+        if (absentElement) absentElement.textContent = absentCount;
+
+        // Add visual feedback with animation
+        if (presentElement) {
+            presentElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                presentElement.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        if (absentElement) {
+            absentElement.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                absentElement.style.transform = 'scale(1)';
+            }, 200);
+        }
+    }
+
+    // Add visual feedback for form submission
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const submitButton = document.querySelector('button[type="submit"]');
+        submitButton.innerHTML = '{% if LANGUAGE_CODE == "ar" %}جاري الحفظ...{% else %}Saving...{% endif %}';
+        submitButton.disabled = true;
+    });
+
+    // Bulk attendance functions
+    function markAllPresent() {
+        const attendanceInputs = document.querySelectorAll('input[name^="attendance_"]');
+        attendanceInputs.forEach(input => {
+            const studentId = input.name.replace('attendance_', '');
+            if (input.value !== 'present') {
+                input.value = 'present';
+                updateStudentStatus(studentId, 'present');
+            }
+        });
+        updateStatistics();
+
+        // Add visual feedback
+        showNotification('{% if LANGUAGE_CODE == "ar" %}تم تحديد جميع الطلاب كحاضرين{% else %}All students marked as present{% endif %}', 'success');
+    }
+
+    function markAllAbsent() {
+        const attendanceInputs = document.querySelectorAll('input[name^="attendance_"]');
+        attendanceInputs.forEach(input => {
+            const studentId = input.name.replace('attendance_', '');
+            if (input.value !== 'absent') {
+                input.value = 'absent';
+                updateStudentStatus(studentId, 'absent');
+            }
+        });
+        updateStatistics();
+
+        // Add visual feedback
+        showNotification('{% if LANGUAGE_CODE == "ar" %}تم تحديد جميع الطلاب كغائبين{% else %}All students marked as absent{% endif %}', 'error');
+    }
+
+    function updateStudentStatus(studentId, status) {
+        const statusElement = document.getElementById(`status-${studentId}`);
+
+        if (status === 'present') {
+            statusElement.innerHTML = `
+                <span class="flex items-center text-green-600">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}حاضر{% else %}Present{% endif %}
+                </span>
+            `;
+        } else {
+            statusElement.innerHTML = `
+                <span class="flex items-center text-red-600">
+                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}غائب{% else %}Absent{% endif %}
+                </span>
+            `;
+        }
+    }
+
+    // Add notification function for better user experience
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 transition-all duration-300 transform translate-x-full`;
+
+        if (type === 'success') {
+            notification.classList.add('bg-green-500');
+        } else if (type === 'error') {
+            notification.classList.add('bg-red-500');
+        }
+
+        notification.textContent = message;
+        document.body.appendChild(notification);
+
+        // Animate in
+        setTimeout(() => {
+            notification.classList.remove('translate-x-full');
+        }, 100);
+
+        // Remove after 3 seconds
+        setTimeout(() => {
+            notification.classList.add('translate-x-full');
+            setTimeout(() => {
+                document.body.removeChild(notification);
+            }, 300);
+        }, 3000);
+    }
+
+    // Convert ALL elements with class "time-display"
+    document.querySelectorAll('.time-display').forEach(timeElement => {
+        const time24hr = timeElement.textContent.trim();  // e.g., "13:00"
+
+        // Convert to 12-hour format
+        const [hours, minutes] = time24hr.split(':');
+        const time12hr = new Date(0, 0, 0, hours, minutes).toLocaleTimeString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+
+        timeElement.textContent = time12hr;  // e.g., "1:00 PM"
+    });
+</script>
+
+{% endblock %}

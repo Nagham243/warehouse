@@ -1,0 +1,281 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  /* Animation Classes */
+  .animate-float {
+      animation: float 4s ease-in-out infinite;
+  }
+
+  .animate-fadeIn {
+      animation: fadeIn 0.6s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-fadeInUp {
+      animation: fadeInUp 0.8s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-stagger > * {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+  .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+  .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+  .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+
+  /* Button Effects */
+  .btn-gradient {
+      background-size: 200% auto;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .btn-gradient:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Input Effects */
+  input, select, textarea {
+      transition: all 0.3s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Keyframes */
+  @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+  }
+
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateX(10px); }
+      to { opacity: 1; transform: translateX(0); }
+  }
+
+  @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Background Animation */
+  .animated-bg {
+      animation: gradientBG 15s ease infinite;
+      background-size: 300% 300%;
+  }
+
+  @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+  }
+
+  /* CKEditor Styling */
+  .django-ckeditor-widget {
+      width: 100% !important;
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+  }
+
+  .django-ckeditor-widget:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  }
+
+  /* CKEditor Toolbar Styling */
+  .cke_toolbar {
+      background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%) !important;
+      border-bottom: 1px solid #cbd5e0 !important;
+      padding: 8px !important;
+  }
+
+  .cke_toolbox {
+      border: none !important;
+  }
+
+  .cke_button {
+      border-radius: 4px !important;
+      margin: 2px !important;
+      transition: all 0.2s ease !important;
+  }
+
+  .cke_button:hover {
+      background: #e2e8f0 !important;
+      transform: translateY(-1px);
+  }
+
+  .cke_button_on {
+      background: #3b82f6 !important;
+      color: white !important;
+  }
+
+  /* CKEditor Content Area */
+  .cke_contents {
+      border: none !important;
+      background: white !important;
+  }
+
+  .cke_wysiwyg_frame {
+      border: none !important;
+  }
+
+  /* Form Input Styling */
+  input, select, textarea {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border-radius: 0.5rem;
+      border: 1px solid #e5e7eb;
+      background-color: #fff;
+      color: #1f2937;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+  }
+
+  input[type="file"] {
+      padding: 0.5rem;
+      border: 2px dashed #e5e7eb;
+      background: #f9fafb;
+      border-radius: 0.5rem;
+  }
+
+  input[type="file"]:hover {
+      border-color: #3b82f6;
+      background: #eff6ff;
+  }
+
+  /* Rich Text Editor Container */
+  .editor-container {
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+  }
+
+  .editor-container:hover {
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+</style>
+
+<div class="animated-bg bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} font-sans">
+  <section class="container mx-auto px-4 pt-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3 animate-fadeIn">
+      <div class="p-2 bg-blue-100 rounded-full text-blue-600 animate-float">
+        <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+      </div>
+      {% if LANGUAGE_CODE == 'ar' %}إضافة مقال جديد{% else %}Add New Article{% endif %}
+    </h1>
+
+    <form method="post" enctype="multipart/form-data" class="w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100 animate-fadeInUp">
+      {% csrf_token %}
+      <div class="space-y-6 animate-stagger">
+        <!-- Title Field -->
+        <div>
+          <label for="id_title" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5-9H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" />
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}عنوان المقال{% else %}Article Title{% endif %}
+          </label>
+          {{ form.title }}
+          {% if form.title.errors %}
+          <div class="text-red-600 text-sm mt-1">{{ form.title.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Description Field -->
+        <div>
+          <label for="id_desc" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Description{% endif %}
+          </label>
+          {{ form.desc }}
+          {% if form.desc.errors %}
+          <div class="text-red-600 text-sm mt-1">{{ form.desc.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Image Field -->
+        <div>
+          <label for="id_img" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}صورة المقال{% else %}Article Image{% endif %}
+          </label>
+          {{ form.img }}
+          {% if form.img.errors %}
+          <div class="text-red-600 text-sm mt-1">{{ form.img.errors }}</div>
+          {% endif %}
+        </div>
+
+        <!-- Rich Text Editor Field -->
+        <div>
+          <label for="id_body" class="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-3-3v6m5-9H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2z" />
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}محتوى المقال{% else %}Article Content{% endif %}
+          </label>
+          <div class="editor-container">
+            {{ form.body }}
+          </div>
+          {% if form.body.errors %}
+          <div class="text-red-600 text-sm mt-1">{{ form.body.errors }}</div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Form Buttons -->
+      <div class="flex items-center {% if LANGUAGE_CODE == 'ar' %}justify-end space-x-4 space-x-reverse{% else %}justify-start space-x-4{% endif %} mt-8 animate-fadeInUp">
+        <a href="{% url 'viewArticles' %}"
+           class="btn-gradient bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2 hover:from-red-600 hover:to-red-700 transition-all duration-300">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+          {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+        </a>
+        <button type="submit"
+                class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2 hover:from-blue-600 hover:to-blue-700 transition-all duration-300">
+          <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          {% if LANGUAGE_CODE == 'ar' %}إضافة المقال{% else %}Add Article{% endif %}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<!-- Include CKEditor Media -->
+{{ form.media }}
+
+<script>
+  // Custom CKEditor configuration after loading
+  document.addEventListener('DOMContentLoaded', function() {
+      // Add custom styling to CKEditor when it's ready
+      setTimeout(function() {
+          const ckeditorElements = document.querySelectorAll('.cke');
+          ckeditorElements.forEach(function(element) {
+              element.style.borderRadius = '0.75rem';
+              element.style.overflow = 'hidden';
+          });
+      }, 1000);
+  });
+</script>
+{% endblock %}

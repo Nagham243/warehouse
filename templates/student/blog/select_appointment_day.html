@@ -1,0 +1,206 @@
+{% extends "base_student_dashboard.html" %}
+{% load static %}
+{% block content %}
+<style>
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .day-card {
+        background: var(--white);
+        border-radius: 0.75rem;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        cursor: pointer;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80px;
+    }
+
+    .day-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    input[type="radio"]:checked + .day-card {
+        border-color: #ec4899;
+        background-color: rgba(244, 114, 182, 0.05);
+        box-shadow: 0 10px 15px -3px rgba(244, 114, 182, 0.1), 0 4px 6px -2px rgba(244, 114, 182, 0.05);
+    }
+
+    .error-message {
+        color: #EF4444;
+        font-size: 0.875rem;
+        margin-top: 8px;
+        margin-bottom: 16px;
+        text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .error-message.visible {
+        opacity: 1;
+    }
+
+    /* Adjust for bottom navbar */
+    .main-container {
+        padding-bottom: 80px;
+    }
+</style>
+
+<section class="bg-gradient-to-br from-rose-50 to-amber-50 w-full min-h-screen py-12 px-4 md:px-8 main-container mb-24">
+    <div class="max-w-xl mx-auto">
+        <div class="bg-white shadow-sm hover:shadow-md transition-all duration-300 rounded-lg overflow-hidden border border-rose-100 animate-[fadeInDown_0.8s_ease-out] p-6 md:p-8">
+            <!-- Header -->
+            <div class="bg-gradient-to-r from-rose-600 to-pink-600 text-white px-6 py-4 rounded-lg mb-6">
+                <div class="text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 mx-auto text-white mb-3" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                    </svg>
+                    <h1 class="text-2xl md:text-3xl font-bold mb-2">{% if LANGUAGE_CODE == 'ar' %}
+                        ✨ اختر يوم الموعد
+                        {% else %}
+                        ✨ Select Appointment Day
+                        {% endif %}</h1>
+                    <p class="text-white/80">{% if LANGUAGE_CODE == 'ar' %}
+                        📅 حدد اليوم المناسب للموعد
+                        {% else %}
+                        📅 Choose a suitable day for your appointment
+                        {% endif %}</p>
+                </div>
+            </div>
+
+            <!-- Day Selection Form -->
+            <form id="appointmentForm" method="post" action="{% url 'client_select_appointment_day' %}" class="animate-[fadeIn_0.8s_ease-out_0.1s_both]">
+                {% csrf_token %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                    {% for day in days %}
+                    <label class="cursor-pointer animate-[fadeInRight_0.5s_ease-out_{{ forloop.counter|add:0.2 }}s_both]">
+                        <input type="radio" name="day" value="{{ day }}" class="sr-only peer day-radio">
+                        <div class="day-card p-4 md:p-6 text-center border border-rose-100 peer-checked:bg-rose-50">
+                            <span class="block text-lg font-medium text-rose-600">{{ day }}</span>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                <div id="errorMessage" class="error-message">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    ⚠️ يجب عليك اختيار يوم للموعد
+                    {% else %}
+                    ⚠️ You must select a day for the appointment
+                    {% endif %}
+                </div>
+
+                <div class="flex justify-center mt-6 animate-[fadeInUp_0.6s_ease-out_0.3s_both]">
+                    <button id="continueButton" type="submit" class="bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-700 hover:to-pink-700 text-white px-6 py-3 rounded-full transition duration-200 shadow-sm hover:shadow-md hover:transform hover:-translate-y-1 w-full max-w-xs" disabled>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        ✨ متابعة
+                        {% else %}
+                        ✨ Continue
+                        {% endif %}
+                    </button>
+                </div>
+            </form>
+
+            <!-- Back Link -->
+            <div class="mt-6 text-center animate-[fadeIn_0.8s_ease-out_0.5s_both]">
+                <a href="{% url 'studentViewArticles' %}" class="text-rose-600 hover:text-rose-700 inline-flex items-center transition duration-200">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}
+                     العودة إلى جدول المواعيد
+                    {% else %}
+                     Back to Appointments Schedule
+                    {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dayRadios = document.querySelectorAll('.day-radio');
+        const continueButton = document.getElementById('continueButton');
+        const errorMessage = document.getElementById('errorMessage');
+        const appointmentForm = document.getElementById('appointmentForm');
+
+        // Initially disable the continue button
+        continueButton.disabled = true;
+
+        // Add event listeners to all day radio buttons
+        dayRadios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                // Enable the button when a day is selected
+                continueButton.disabled = false;
+                errorMessage.classList.remove('visible');
+            });
+        });
+
+        // Form submission validation
+        appointmentForm.addEventListener('submit', function(event) {
+            // Check if any day is selected
+            let daySelected = false;
+            dayRadios.forEach(radio => {
+                if (radio.checked) {
+                    daySelected = true;
+                }
+            });
+
+            // If no day is selected, prevent form submission
+            if (!daySelected) {
+                event.preventDefault();
+                errorMessage.classList.add('visible');
+                return false;
+            }
+
+            // If a day is selected, allow form submission
+            return true;
+        });
+    });
+</script>
+{% endblock %}

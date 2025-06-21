@@ -1,0 +1,165 @@
+{% load i18n %} {% load messenger_tags %}
+
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 right-0 bg-white shadow-lg py-4 z-[999] bottom-navigation">
+  <div class="max-w-screen-xl mx-auto px-4">
+    <ul class="flex flex-wrap justify-between items-center h-16">
+      
+      <!-- Home -->
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'studentIndex' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-home text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+      الرئيسية
+      {% else %}
+      Home Page
+      {% endif %}</span>
+        </a>
+      </li>
+      <!-- Store -->
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'StudentViewProducts' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-store text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              المتجر
+            {% else %}
+              Store
+            {% endif %}</span>
+        </a>
+      </li>
+
+      <!-- News (Fixed URL) -->
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'clientviewArticles' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-newspaper text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              الأخبار
+            {% else %}
+              News
+            {% endif %}</span>
+        </a>
+      </li>
+
+
+<!--      &lt;!&ndash; Salon Appointments (Fixed URL) &ndash;&gt;-->
+<!--      <li class="w-1/6 sm:w-auto">-->
+<!--        <a href="{% url 'studentViewArticles' %}" class="flex flex-col items-center text-black hover:text-indigo-600">-->
+<!--          <i class="fas fa-calendar-alt text-xl mb-1"></i>-->
+<!--          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}-->
+<!--              مواعيد النادي-->
+<!--            {% else %}-->
+<!--              Salon Appointments-->
+<!--            {% endif %}</span>-->
+<!--        </a>-->
+<!--      </li>-->
+
+      <!-- Services (Fixed URL) -->
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'studentViewServices' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-concierge-bell text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              الخدمات
+            {% else %}
+              Services
+            {% endif %}</span>
+        </a>
+      </li>
+
+      <li class="w-1/6 sm:w-auto relative">
+        <a href="{% url 'list' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-exchange-alt text-xl mb-1"></i>
+          <span class="text-xs">
+      {% if LANGUAGE_CODE == 'ar' %}
+         المطالبات و النزاعات
+      {% else %}
+        Refunds
+      {% endif %}
+    </span>
+          {% if pending_disputes_count > 0 %}
+          <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+      {{ pending_disputes_count }}
+    </span>
+          {% endif %}
+        </a>
+      </li>
+
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'cart' %}" class="flex flex-col items-center text-black hover:text-indigo-600 relative">
+          <div class="relative">
+            <i class="fas fa-shopping-cart text-xl mb-1"></i>
+            {% if request.user.is_authenticated %}
+            <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center {% if cart_count == 0 %}hidden{% endif %}">
+          {{ cart_count|default:0 }}
+        </span>
+            {% endif %}
+          </div>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              السلة
+            {% else %}
+              Cart
+            {% endif %}</span>
+        </a>
+      </li>
+
+      <!-- Reviews (Updated: Shows All Reviews Instead of "Add Review") -->
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'view_reviews' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-star text-xl text-yellow-500 mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              التقييمات
+            {% else %}
+              Reviews
+            {% endif %}</span>
+        </a>
+      </li>
+
+      <!-- Chat -->
+      <li class="w-1/6 sm:w-auto">
+        {% get_user_club request.user.id as stu_club %}
+        <a href="{% url 'messageRoom' stu_club.id %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-comments text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              الدردشة
+            {% else %}
+              Chat
+            {% endif %}</span>
+        </a>
+      </li>
+
+      <!-- User Profile (Fixed URL) -->
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'student_profile' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-user text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+               الملف الشخصي
+            {% else %}
+              Profile and language
+            {% endif %}</span>
+        </a>
+      </li>
+
+
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'student_orders' %}" class="flex flex-col items-center text-black hover:text-indigo-600">
+          <i class="fas fa-receipt text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+            الطلبات و الاشتراكات
+            {% else %}
+              Orders
+            {% endif %}</span>
+        </a>
+      </li>
+      <li class="w-1/6 sm:w-auto">
+        <a href="{% url 'signout' %}" class="flex flex-col items-center text-black hover:text-red-600">
+          <i class="fas fa-sign-out-alt text-xl mb-1"></i>
+          <span class="text-xs">{% if LANGUAGE_CODE == 'ar' %}
+              تسجيل خروج
+            {% else %}
+              Sign Out
+            {% endif %}</span>
+        </a>
+      </li>
+
+    </ul>
+  </div>
+</nav>

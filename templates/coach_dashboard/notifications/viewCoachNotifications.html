@@ -1,0 +1,181 @@
+{% extends "base_coach_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Card Effects */
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+
+    /* Background Animation */
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+
+</style>
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animated-bg bg-gradient-to-br from-pink-50 to-amber-50 w-full min-h-screen py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-5xl mx-auto">
+        <!-- Header Section -->
+        <div class="text-center mb-10 ">
+            <div class="inline-flex items-center justify-center bg-gradient-to-r from-pink-500 to-amber-600 p-3 rounded-full shadow-md mb-4 transform transition-all hover:scale-105 hover:shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C10.34 2 9 3.34 9 5V6C6.24 6 4 8.24 4 11V16L2 18V19H22V18L20 16V11C20 8.24 17.76 6 15 6V5C15 3.34 13.66 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+                </svg>
+            </div>
+            <h1 class="text-3xl font-extrabold text-gray-800 sm:text-4xl">
+                {% if LANGUAGE_CODE == 'ar' %}الإشعارات{% else %}Notifications{% endif %}
+            </h1>
+            <p class="mt-3 text-lg text-gray-600">
+                {% if LANGUAGE_CODE == 'ar' %}جميع التنبيهات والرسائل المهمة لك{% else %}All your important alerts and messages{% endif %}
+            </p>
+
+            <div class="mt-4 inline-flex items-center px-4 py-2 bg-white rounded-full shadow text-sm font-medium text-gray-600 animate-subtlePulse">
+                {% if notifications %}
+                {% if LANGUAGE_CODE == 'ar' %}
+                لديك {{ notifications|length }} إشعار{{ notifications|length|pluralize:"ات" }}
+                {% else %}
+                You have {{ notifications|length }} notification{% if notifications|length != 1 %}s{% endif %}
+                {% endif %}
+                {% else %}
+                {% if LANGUAGE_CODE == 'ar' %}
+                لا توجد إشعارات حالية
+                {% else %}
+                No current notifications
+                {% endif %}
+                {% endif %}
+            </div>
+
+            {% if notifications %}
+            <div class="mt-4">
+                <form method="POST" action="{% url 'delete_all_notifications' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-gradient inline-flex items-center px-4 py-2 bg-gradient-to-r from-red-500 to-pink-600 text-white rounded-lg text-sm font-medium hover:scale-105">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}حذف جميع الإشعارات{% else %}Delete All Notifications{% endif %}
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Notifications List -->
+        <div class="bg-white overflow-hidden shadow-lg rounded-2xl hover:shadow-2xl  px-6">
+            {% if notifications %}
+            <div class="divide-y divide-gray-200">
+                {% for notification in notifications %}
+                <div class="p-6 stat-card {% if not notification.is_read %}bg-gray-50 border-r-4 border-pink-600{% endif %} hover:bg-pink-50 ">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-4 mt-1">
+                            {% if notification.type == 'warning' %}
+                            <div class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-yellow-100 text-yellow-600 ">
+                                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            {% elif notification.type == 'info' %}
+                            <div class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-pink-100 text-pink-600">
+                                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            {% elif notification.type == 'success' %}
+                            <div class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-green-100 text-green-600">
+                                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            {% else %}
+                            <div class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-gray-200 text-gray-700">
+                                <svg class="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C10.34 2 9 3.34 9 5V6C6.24 6 4 8.24 4 11V16L2 18V19H22V18L20 16V11C20 8.24 17.76 6 15 6V5C15 3.34 13.66 2 12 2ZM12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22Z"/>
+                                </svg>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <p class="text-lg font-medium text-gray-800">
+                                    {{ notification.message }}
+                                </p>
+                                <div class="flex items-center space-x-2">
+                                    {% if not notification.is_read %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-100 text-pink-700 ">
+                                        {% if LANGUAGE_CODE == 'ar' %}جديد{% else %}New{% endif %}
+                                    </span>
+                                    {% endif %}
+                                    <form method="POST" action="{% url 'delete_notification' notification.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="text-red-500 hover:text-red-700 transition-colors duration-200">
+                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="mt-2 flex items-center text-sm text-gray-500">
+                                <svg class="flex-shrink-0 mr-1.5 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                {{ notification.created_at|date:"d M Y, H:i" }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="text-center py-16 px-6 animate-subtlePulse">
+                <svg class="mx-auto h-16 w-16 text-gray-300 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <h3 class="mt-5 text-lg font-medium text-gray-900">
+                    {% if LANGUAGE_CODE == 'ar' %}لا توجد إشعارات{% else %}No notifications{% endif %}
+                </h3>
+                <p class="mt-2 text-sm text-gray-500">
+                    {% if LANGUAGE_CODE == 'ar' %}سيظهر هنا أي إشعارات جديدة تتلقاها.{% else %}Any new notifications you receive will appear here.{% endif %}
+                </p>
+                <div class="mt-6">
+                    <button type="button" class="btn-gradient inline-flex items-center px-4 py-2 bg-gradient-to-r from-pink-500 to-amber-600 text-white rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105">
+                        <svg class="-ml-1 mr-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}تحديث الصفحة{% else %}Refresh page{% endif %}
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

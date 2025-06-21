@@ -1,0 +1,181 @@
+{% extends 'base_student_dashboard.html' %} {% load static %} {% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen flex items-center justify-center mb-16 animate__animated animate__fadeIn">
+  <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 mb-8">
+    <div
+            class="bg-white shadow-2xl rounded-lg overflow-hidden max-w-4xl mx-auto border-l-4 border-rose-400 animate__animated animate__fadeInUp"
+    >
+      <form method="post" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+        <div class="px-6 py-8 sm:px-10">
+          <h2 class="text-3xl font-extrabold text-rose-800 mb-8 text-center animate__animated animate__fadeIn">
+            <span class="inline-block mr-2">✨</span>
+            {% if LANGUAGE_CODE == 'ar' %}
+            تعديل الملف الشخصي للاعب
+            {% else %}
+            Edit Customer Profile
+            {% endif %}
+          </h2>
+          <div
+                  class="flex flex-col lg:flex-row items-start space-y-8 lg:space-y-0 lg:space-x-8 lg:rtl:space-x-reverse"
+          >
+            <div class="flex-shrink-0 w-full lg:w-auto">
+              <label
+                      for="profile_image_base64"
+                      class="block text-sm font-medium text-rose-600 mb-2"
+              >
+                <span class="inline-block mr-1">📷</span>
+                {% if LANGUAGE_CODE == 'ar' %}
+                صورة الملف الشخصي
+                {% else %}
+                Profile Picture
+                {% endif %}
+              </label>
+              <div class="relative">
+                <img
+                        id="profile_image_preview"
+                        class="h-40 w-40 rounded-full border-4 border-rose-300 mx-auto lg:mx-0 transition duration-300 hover:border-rose-400 shadow-lg"
+                        src="{{ student.profile_image_base64|default:'https://via.placeholder.com/160' }}"
+                        alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي للاعب{% else %}Customer profile picture{% endif %}"
+                />
+                <input
+                        type="file"
+                        id="profile_image_base64"
+                        name="profile_image_base64"
+                        accept="image/*"
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        onchange="previewImage(this)"
+                />
+                <div
+                        class="absolute bottom-0 right-0 bg-rose-600 rounded-full p-2 text-white transition duration-300 hover:bg-rose-700 transform hover:scale-110"
+                >
+                  <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          class="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                  >
+                    <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"
+                    />
+                    <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                  </svg>
+                </div>
+              </div>
+            </div>
+            <div class="flex-grow space-y-6 w-full">
+              <div>
+                <label
+                        for="full_name"
+                        class="block text-sm font-medium text-rose-600 mb-1"
+                >
+                  <span class="inline-block mr-1">👤</span>
+                  {% if LANGUAGE_CODE == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}
+                </label>
+                {{form.full_name}}
+              </div>
+              <div>
+                <label
+                        for="phone"
+                        class="block text-sm font-medium text-rose-600 mb-1"
+                >
+                  <span class="inline-block mr-1">📱</span>
+                  {% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+                </label>
+                {{form.phone}}
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="px-6 py-4 bg-pink-50 sm:px-10 hover:bg-pink-100 transition-colors duration-300">
+          <label
+                  for="birthday"
+                  class="block text-sm font-medium text-rose-600 mb-2"
+          >
+            <span class="inline-block mr-1">🎂</span>
+            {% if LANGUAGE_CODE == 'ar' %}تاريخ الميلاد{% else %}Date of Birth{% endif %}
+          </label>
+          {{form.birthday}}
+        </div>
+        <div class="px-6 py-4 bg-pink-50 sm:px-10 hover:bg-pink-100 transition-colors duration-300">
+          <label
+                  for="about"
+                  class="block text-sm font-medium text-rose-600 mb-2"
+          >
+            <span class="inline-block mr-1">✏️</span>
+            {% if LANGUAGE_CODE == 'ar' %}نبذة عني{% else %}About Me{% endif %}
+          </label>
+          {{form.about}}
+        </div>
+        <div class="px-6 py-4 bg-pink-50 sm:px-10 flex justify-end">
+          <button
+                  type="submit"
+                  class="inline-flex justify-center py-2 px-4 border border-transparent shadow-md text-sm font-medium rounded-md text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition duration-300 ease-in-out animate__animated animate__pulse animate__infinite animate__slower"
+          >
+            <span class="inline-block mr-1">💾</span>
+            {% if LANGUAGE_CODE == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add some animations -->
+<style>
+  @keyframes gentle-pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+  }
+
+  .hover-scale:hover {
+      animation: gentle-pulse 1.5s infinite;
+  }
+
+  /* Add sparkle animation to form fields on focus */
+  input:focus, textarea:focus {
+      border-color: rgba(244, 114, 182, 0.5); /* pink-400 with transparency */
+      box-shadow: 0 0 0 3px rgba(244, 114, 182, 0.25);
+      transition: all 0.3s ease;
+  }
+</style>
+
+<script>
+  function previewImage(input) {
+    const file = input.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const imgElement = input.previousElementSibling;
+        imgElement.src = event.target.result;
+
+        // Add a subtle animation
+        imgElement.classList.add('animate-pulse');
+        setTimeout(() => {
+          imgElement.classList.remove('animate-pulse');
+        }, 1000);
+      }
+      reader.readAsDataURL(file);
+    }
+  }
+
+  // Add hover effects to input fields
+  document.addEventListener('DOMContentLoaded', function() {
+    const inputFields = document.querySelectorAll('input, textarea, select');
+    inputFields.forEach(field => {
+      if (!field.classList.contains('opacity-0')) {
+        field.classList.add('transition-all', 'duration-200', 'border', 'border-rose-200', 'focus:border-rose-400', 'focus:ring', 'focus:ring-rose-300', 'focus:ring-opacity-50', 'rounded-lg');
+      }
+    });
+  });
+</script>
+{% endblock %}

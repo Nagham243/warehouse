@@ -1,0 +1,101 @@
+{% extends "base_landing.html" %}
+
+{% block content %}
+
+<div class="flex min-h-screen items-center justify-center bg-indigo-50 px-4 sm:px-6 lg:px-8">
+  <div class="w-full max-w-md space-y-8">
+    <div>
+      <h2 class="mt-6 text-center text-3xl font-extrabold text-black">
+        {% if LANGUAGE_CODE == 'ar' %}
+        مرحبًا بعودتك
+        {% else %}
+        Welcome back
+        {% endif %}
+      </h2>
+      <p class="mt-2 text-center text-sm text-indigo-400">
+        {% if LANGUAGE_CODE == 'ar' %}
+        ليس لديك حساب؟
+        {% else %}
+        Don't have an account?
+        {% endif %}
+        <a
+                href="/auth/signup"
+                class="font-medium text-indigo-600 hover:text-indigo-800"
+        >
+          {% if LANGUAGE_CODE == 'ar' %}
+          إنشاء حساب جديد
+          {% else %}
+          Sign up
+          {% endif %}
+        </a>
+      </p>
+    </div>
+    <form class="mt-8 space-y-6" method="post">
+      {% csrf_token %}
+      <div class="-space-y-px rounded-md shadow-sm">
+        <div>
+          <label for="email-address" class="sr-only">
+            {% if LANGUAGE_CODE == 'ar' %}
+            البريد الإلكتروني
+            {% else %}
+            Email Address
+            {% endif %}
+          </label>
+          <input
+                  id="email-address"
+                  name="email"
+                  type="email"
+                  required
+                  class=" relative block w-full appearance-none rounded-none rounded-t-md border border-indigo-200 px-3 py-2 text-black placeholder-indigo-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  placeholder="{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}"
+          />
+        </div>
+        <div>
+          <label for="password" class="sr-only">
+            {% if LANGUAGE_CODE == 'ar' %}
+            كلمة المرور
+            {% else %}
+            Password
+            {% endif %}
+          </label>
+          <input
+                  id="password"
+                  name="password"
+                  type="password"
+                  required
+                  class=" relative block w-full appearance-none rounded-none rounded-b-md border border-indigo-200 px-3 py-2 text-black placeholder-indigo-500 focus:z-10 focus:border-indigo-500 focus:outline-none focus:ring-indigo-500 sm:text-sm"
+                  placeholder="{% if LANGUAGE_CODE == 'ar' %}كلمة المرور{% else %}Password{% endif %}"            />
+        </div>
+      </div>
+
+      <div class="flex items-center justify-center">
+        <div class="text-sm">
+          <a
+                  href="{% url 'forgot_password' %}"
+                  class="font-medium text-indigo-400 hover:text-indigo-300"
+          >
+            {% if LANGUAGE_CODE == 'ar' %}
+            نسيت كلمة السر؟
+            {% else %}
+            Forgot your password?
+            {% endif %}
+          </a>
+        </div>
+      </div>
+
+      <div>
+        <button
+                type="submit"
+                class="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          {% if LANGUAGE_CODE == 'ar' %}
+          تسجيل الدخول
+          {% else %}
+          Sign In
+          {% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,273 @@
+{% extends 'base_club_dashboard.html' %} {% block content %}
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} overflow-hidden">
+  <section class="container mx-auto px-4 pt-8 animate-fade-in-up mb-20">
+    <h1 class="text-3xl font-bold text-gray-800 mb-8 transform transition-all duration-500 ease-out translate-y-4 opacity-0 animate-title">
+      {% if LANGUAGE_CODE == 'ar' %} تعديل بيانات التاجر {% else %} Edit Staff Info {% endif %}
+    </h1>
+
+    <form method="post" class="w-full p-6 bg-white/90 backdrop-blur-sm rounded-xl shadow-lg transition-all duration-300 hover:shadow-xl transform hover:-translate-y-1">
+      {% csrf_token %}
+      <input type="hidden" name="id" value="{{ coach_profile.id }}" />
+
+      <div class="mb-4 space-y-6">
+        <!-- Username -->
+        <div class="animate-fade-in-up delay-100">
+          <label for="username" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} اسم المستخدم {% else %} Username {% endif %}
+          </label>
+          <input
+                  type="text"
+                  id="username"
+                  name="username"
+                  required
+                  value="{{ coach.username }}"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all duration-300 hover:bg-blue-50 hover:border-blue-400"
+          />
+        </div>
+
+        <!-- Email -->
+        <div class="animate-fade-in-up delay-200">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} البريد الإلكتروني {% else %} Email {% endif %}
+          </label>
+          <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  required
+                  value="{{ coach.email }}"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all duration-300 hover:bg-blue-50 hover:border-blue-400"
+          />
+        </div>
+
+        <!-- Full Name -->
+        <div class="animate-fade-in-up delay-300">
+          <label for="id_full_name" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} الاسم الكامل {% else %} Full Name {% endif %}
+          </label>
+          {{ form.full_name }}
+        </div>
+
+        <!-- Phone Number -->
+        <div class="animate-fade-in-up delay-400">
+          <label for="id_phone" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} رقم الهاتف {% else %} Phone Number {% endif %}
+          </label>
+          {{ form.phone }}
+        </div>
+
+        <!-- Activity Type -->
+        <div class="animate-fade-in-up delay-400">
+          <label for="id_activity_type" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} نوع النشاط {% else %} Activity Type {% endif %}
+          </label>
+          {{ form.activity_type }}
+        </div>
+
+        <!-- Business Name -->
+        <div class="animate-fade-in-up delay-400">
+          <label for="id_business_name" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} اسم النشاط التجاري {% else %} Business Name {% endif %}
+          </label>
+          {{ form.business_name }}
+        </div>
+
+        <!-- Vendor Classification -->
+        <div class="animate-fade-in-up delay-450">
+          <label for="id_vendor_classification" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %}
+            تصنيف البائع
+            <span class="text-xs text-blue-600">(يؤثر على نسبة العمولة)</span>
+            {% else %}
+            Vendor Classification
+            <span class="text-xs text-blue-600">(affects commission rate)</span>
+            {% endif %}
+          </label>
+          {{ form.vendor_classification }}
+
+          <!-- Show current commission rate -->
+          {% if coach_profile %}
+          <div class="mt-2 p-2 bg-blue-50 rounded-md">
+            <p class="text-sm text-blue-700">
+              {% if LANGUAGE_CODE == 'ar' %}
+              العمولة الحالية: {{ coach_profile.get_current_commission_rate }}%
+              {% else %}
+              Current Commission Rate: {{ coach_profile.get_current_commission_rate }}%
+              {% endif %}
+            </p>
+          </div>
+          {% endif %}
+        </div>
+
+        <!-- Description -->
+        <div class="animate-fade-in-up delay-500">
+          <label for="id_description" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} وصف الخدمة {% else %} Description {% endif %}
+          </label>
+          {{ form.description }}
+        </div>
+
+        <!-- Location Fields -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="animate-fade-in-up delay-400">
+            <label for="id_city" class="block text-sm font-medium text-gray-700 mb-1">
+              {% if LANGUAGE_CODE == 'ar' %} المدينة {% else %} City {% endif %}
+            </label>
+            {{ form.city }}
+          </div>
+          <div class="animate-fade-in-up delay-400">
+            <label for="id_district" class="block text-sm font-medium text-gray-700 mb-1">
+              {% if LANGUAGE_CODE == 'ar' %} الحي {% else %} District {% endif %}
+            </label>
+            {{ form.district }}
+          </div>
+          <div class="animate-fade-in-up delay-400">
+            <label for="id_street" class="block text-sm font-medium text-gray-700 mb-1">
+              {% if LANGUAGE_CODE == 'ar' %} الشارع {% else %} Street {% endif %}
+            </label>
+            {{ form.street }}
+          </div>
+        </div>
+
+        <!-- Profile Image Upload -->
+        <div class="animate-fade-in-up delay-500">
+          <label class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} صورة التاجر {% else %} Coach Image {% endif %}
+          </label>
+          <input type="file" id="profile_image" accept="image/*" class="hidden">
+          <div class="flex items-center space-x-4">
+            <div class="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+              {% if coach_profile.profile_image_base64 %}
+              <img id="profile_image_preview" src="{{ coach_profile.profile_image_base64 }}" alt="Preview" class="w-full h-full object-cover">
+              {% else %}
+              <img id="profile_image_preview" src="#" alt="Preview" class="hidden w-full h-full object-cover">
+              <span class="text-gray-500">{% if LANGUAGE_CODE == 'ar' %}صورة{% else %}Image{% endif %}</span>
+              {% endif %}
+            </div>
+            <button type="button" onclick="document.getElementById('profile_image').click()"
+                    class="px-4 py-2 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 transition-all">
+              {% if LANGUAGE_CODE == 'ar' %} اختر صورة {% else %} Select Image {% endif %}
+            </button>
+          </div>
+          {{ form.profile_image_base64 }}
+        </div>
+
+        <!-- Password -->
+        <div class="animate-fade-in-up delay-600">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
+            {% if LANGUAGE_CODE == 'ar' %} كلمة المرور {% else %} Password {% endif %}
+          </label>
+          <input
+                  type="password"
+                  id="password"
+                  name="password"
+                  placeholder="{% if LANGUAGE_CODE == 'ar' %} اتركه فارغاً إذا كنت لا تريد تغييره {% else %} Leave blank to keep unchanged {% endif %}"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white transition-all duration-300 hover:bg-blue-50 hover:border-blue-400"
+          />
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex items-center justify-end {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% else %}space-x-4{% endif %} mt-8 animate-fade-in-up delay-700">
+        <a
+                href="{% url 'viewCoachs' %}"
+                class="ml-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition-all duration-300 transform hover:scale-105"
+        >
+          {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+        </a>
+        <button
+                type="submit"
+                class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-md hover:from-blue-600 hover:to-blue-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-blue-300/40"
+        >
+          {% if LANGUAGE_CODE == 'ar' %} حفظ التعديلات {% else %} Save Changes {% endif %}
+        </button>
+      </div>
+    </form>
+  </section>
+</div>
+
+<script>
+  // Handle profile image upload and preview
+  document.getElementById('profile_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const preview = document.getElementById('profile_image_preview');
+        preview.src = event.target.result;
+        preview.classList.remove('hidden');
+
+        // Hide the placeholder text if it exists
+        const placeholder = preview.nextElementSibling;
+        if (placeholder && placeholder.classList.contains('text-gray-500')) {
+          placeholder.classList.add('hidden');
+        }
+
+        // Convert image to base64 and set it in the hidden field
+        document.getElementById('id_profile_image_base64').value = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Handle vendor classification change to show estimated commission
+  document.getElementById('id_vendor_classification').addEventListener('change', function() {
+    const classification = this.value;
+    // You can add AJAX call here to fetch and display the commission rate for the selected classification
+    // This would provide real-time feedback to the user about commission changes
+  });
+</script>
+
+<style>
+  @keyframes fadeInUp {
+      from {
+          opacity: 0;
+          transform: translateY(20px);
+      }
+      to {
+          opacity: 1;
+          transform: translateY(0);
+      }
+  }
+
+  .animate-fade-in-up {
+      animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-title {
+      animation: fadeInUp 0.8s ease-out 0.3s forwards;
+  }
+
+  .delay-100 {
+      animation-delay: 0.1s;
+  }
+
+  .delay-200 {
+      animation-delay: 0.2s;
+  }
+
+  .delay-300 {
+      animation-delay: 0.3s;
+  }
+
+  .delay-400 {
+      animation-delay: 0.4s;
+  }
+
+  .delay-450 {
+      animation-delay: 0.45s;
+  }
+
+  .delay-500 {
+      animation-delay: 0.5s;
+  }
+
+  .delay-600 {
+      animation-delay: 0.6s;
+  }
+
+  .delay-700 {
+      animation-delay: 0.7s;
+  }
+</style>
+{% endblock %}

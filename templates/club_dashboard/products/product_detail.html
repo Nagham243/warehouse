@@ -1,0 +1,269 @@
+{% extends "base_club_dashboard.html" %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Back button and title -->
+    <div class="flex items-center py-8 gap-4">
+        <a href="{% url 'manage_products' %}" class="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-all duration-200">
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-800">
+            {% if LANGUAGE_CODE == 'ar' %} تفاصيل المنتج {% else %} Product Details {% endif %}
+        </h1>
+    </div>
+
+    <!-- Product Card -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-6">
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- Product Images -->
+                <div class="w-full md:w-1/3">
+                    <div class="bg-gray-100 rounded-lg overflow-hidden mb-4 h-64 flex items-center justify-center">
+                        {% if product_images %}
+                        <img src="{{ product_images.0.img.url }}" alt="{{ product.title }}" class="w-full h-full object-contain">
+                        {% else %}
+                        <svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                        </svg>
+                        {% endif %}
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        {% for image in product_images|slice:"1:4" %}
+                        <div class="bg-gray-100 rounded-md overflow-hidden h-20 flex items-center justify-center">
+                            <img src="{{ image.img.url }}" alt="{{ product.title }}" class="w-full h-full object-cover">
+                        </div>
+                        {% endfor %}
+                        {% if product_images|length < 4 %}
+                        {% for i in "123" %}
+                        {% if forloop.counter > product_images|length %}
+                        <div class="bg-gray-100 rounded-md overflow-hidden h-20 flex items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Product Details -->
+                <div class="w-full md:w-2/3">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">{{ product.title }}</h2>
+                        <span class="px-3 py-1 rounded-full text-sm font-medium
+              {% if product.approval_status == 'pending' %}bg-amber-100 text-amber-800
+              {% elif product.approval_status == 'approved' %}bg-green-100 text-green-800
+              {% elif product.approval_status == 'rejected' %}bg-red-100 text-red-800
+              {% endif %}">
+              {% if product.approval_status == 'pending' %}
+                {% if LANGUAGE_CODE == 'ar' %} قيد المراجعة {% else %} Pending {% endif %}
+              {% elif product.approval_status == 'approved' %}
+                {% if LANGUAGE_CODE == 'ar' %} مقبول {% else %} Approved {% endif %}
+              {% elif product.approval_status == 'rejected' %}
+                {% if LANGUAGE_CODE == 'ar' %} مرفوض {% else %} Rejected {% endif %}
+              {% endif %}
+            </span>
+                    </div>
+
+                    <div class="mb-6">
+                        <p class="text-gray-700">{{ product.description }}</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} السعر {% else %} Price {% endif %}
+                            </h3>
+                            <p class="text-xl font-semibold text-gray-800">${{ product.price }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} الكمية المتاحة {% else %} Available Quantity {% endif %}
+                            </h3>
+                            <p class="text-xl font-semibold text-gray-800">{{ product.stock }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} تاريخ الإنشاء {% else %} Creation Date {% endif %}
+                            </h3>
+                            <p class="text-gray-800">{{ product.creation_date|date:"d M Y" }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} التصنيف {% else %} Category {% endif %}
+                            </h3>
+                            <p class="text-gray-800">
+                                {% for cat in product.classification.all %}
+                                {{ cat.name }}{% if not forloop.last %}, {% endif %}
+                                {% empty %}
+                                {% if LANGUAGE_CODE == 'ar' %} غير مصنف {% else %} Uncategorized {% endif %}
+                                {% endfor %}
+                            </p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} عدد الطلبات {% else %} Number of Orders {% endif %}
+                            </h3>
+                            <p class="text-gray-800">{{ order_count }}</p>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-medium text-gray-500 mb-1">
+                                {% if LANGUAGE_CODE == 'ar' %} الوصف {% else %} Description {% endif %}
+                            </h3>
+                            <p class="text-gray-800">
+                                {{ product.desc }}
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Vendor Info -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <h3 class="text-lg font-medium text-gray-800 mb-3">
+                            {% if LANGUAGE_CODE == 'ar' %} معلومات التاجر {% else %} Vendor Information {% endif %}
+                        </h3>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-800">
+                                    {{ vendor_profile.business_name|default:vendor_profile.full_name }}
+                                </h4>
+                                <p class="text-sm text-gray-500">{{ product.creator.email }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Approval Section -->
+        {% if product.approval_status == 'pending' %}
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+            <div class="flex justify-end gap-4">
+                <button onclick="showApprovalModal({{ product.id }}, '{{ product.title|escapejs }}')" class="bg-gradient-to-r from-green-500 to-green-600 text-white px-6 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-green-300/40">
+                    {% if LANGUAGE_CODE == 'ar' %} قبول المنتج {% else %} Approve Product {% endif %}
+                </button>
+                <button onclick="showRejectionModal({{ product.id }}, '{{ product.title|escapejs }}')" class="bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all duration-300 shadow-md hover:shadow-red-300/40">
+                    {% if LANGUAGE_CODE == 'ar' %} رفض المنتج {% else %} Reject Product {% endif %}
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Approval Notes (if approved/rejected) -->
+    {% if product.approval_status != 'pending' %}
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden mb-8">
+        <div class="p-6">
+            <h2 class="text-lg font-medium text-gray-800 mb-4">
+                {% if product.approval_status == 'approved' %}
+                {% if LANGUAGE_CODE == 'ar' %} ملاحظات القبول {% else %} Approval Notes {% endif %}
+                {% else %}
+                {% if LANGUAGE_CODE == 'ar' %} سبب الرفض {% else %} Rejection Reason {% endif %}
+                {% endif %}
+            </h2>
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <p class="text-gray-700">{{ product.approval_notes|default:"No notes provided" }}</p>
+            </div>
+            <div class="mt-4 text-sm text-gray-500">
+                {% if LANGUAGE_CODE == 'ar' %} تم بواسطة {% else %} By {% endif %}
+                {{ product.approved_by.get_full_name|default:product.approved_by.username }}
+                {% if LANGUAGE_CODE == 'ar' %} في {% else %} on {% endif %}
+                {{ product.approved_at|date:"d M Y" }}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Approval Modal -->
+<div id="approvalModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                {% if LANGUAGE_CODE == 'ar' %} قبول المنتج {% else %} Approve Product {% endif %}
+            </h3>
+            <p class="text-gray-600 mb-6">
+                {% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد من قبول المنتج "<span id="approvalProductTitle"></span>"؟ {% else %} Are you sure you want to approve "<span id="approvalProductTitle"></span>"? {% endif %}
+            </p>
+            <form id="approvalForm" method="POST" action="{% url 'approve_product' 0 %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="approvalProductId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %} ملاحظات (اختياري) {% else %} Notes (optional) {% endif %}
+                    </label>
+                    <textarea name="approval_notes" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" rows="3"></textarea>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="hideModal('approvalModal')" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} تأكيد القبول {% else %} Confirm Approval {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Modal -->
+<div id="rejectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-xl shadow-2xl max-w-md w-full mx-4">
+        <div class="p-6">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">
+                {% if LANGUAGE_CODE == 'ar' %} رفض المنتج {% else %} Reject Product {% endif %}
+            </h3>
+            <p class="text-gray-600 mb-6">
+                {% if LANGUAGE_CODE == 'ar' %} هل أنت متأكد من رفض المنتج "<span id="rejectionProductTitle"></span>"؟ {% else %} Are you sure you want to reject "<span id="rejectionProductTitle"></span>"? {% endif %}
+            </p>
+            <form id="rejectionForm" method="POST" action="{% url 'reject_product' 0 %}">
+                {% csrf_token %}
+                <input type="hidden" name="product_id" id="rejectionProductId">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %} سبب الرفض {% else %} Reason for rejection {% endif %}
+                    </label>
+                    <textarea name="rejection_reason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" rows="3" required></textarea>
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" onclick="hideModal('rejectionModal')" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} إلغاء {% else %} Cancel {% endif %}
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all duration-200">
+                        {% if LANGUAGE_CODE == 'ar' %} تأكيد الرفض {% else %} Confirm Rejection {% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showApprovalModal(productId, productTitle) {
+      document.getElementById('approvalProductTitle').textContent = productTitle;
+      document.getElementById('approvalProductId').value = productId;
+      const form = document.getElementById('approvalForm');
+      form.action = form.action.replace('/0/', `/${productId}/`);
+      document.getElementById('approvalModal').classList.remove('hidden');
+    }
+
+    function showRejectionModal(productId, productTitle) {
+      document.getElementById('rejectionProductTitle').textContent = productTitle;
+      document.getElementById('rejectionProductId').value = productId;
+      const form = document.getElementById('rejectionForm');
+      form.action = form.action.replace('/0/', `/${productId}/`);
+      document.getElementById('rejectionModal').classList.remove('hidden');
+    }
+
+    function hideModal(modalId) {
+      document.getElementById(modalId).classList.add('hidden');
+    }
+</script>
+{% endblock %}

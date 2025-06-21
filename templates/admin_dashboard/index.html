@@ -1,0 +1,94 @@
+{% extends "base_admin_dashboard.html" %} {% load custom_filters %} {% block content %}
+<main class="md:pr-[20%] bg-indigo-50 w-full px-8 min-h-screen">
+  <h1 class="text-3xl font-bold px-8 pt-8 pb-8">لوحة التحكم</h1>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 px-2 md:px-8 mb-8">
+    <div
+      class="justify-center flex flex-col gap-4 rounded-lg bg-white p-6 shadow-md"
+    >
+      <div class="flex items-center justify-center">
+        <h2 class="text-xl font-bold">عدد النوادي</h2>
+      </div>
+      <p class="text-center text-4xl font-bold text-indigo-600">{{clubs.count}}</p>
+      <a
+        href="/admin_dashboard/viewClub"
+        class="w-full rounded-lg bg-indigo-700 text-center text-white py-2 hover:bg-indigo-800 transition duration-300"
+      >
+        النوادي
+      </a>
+    </div>
+    <div
+      class="justify-center flex flex-col gap-4 rounded-lg bg-white p-6 shadow-md"
+    >
+      <div class="flex items-center justify-center">
+        <h2 class="text-xl font-bold">عدد الاداريين</h2>
+      </div>
+      <p class="text-center text-4xl font-bold text-green-600">{{userprofile.count}}</p>
+      <a
+        href="/admin_dashboard/viewDirector"
+        class="w-full rounded-lg bg-green-700 text-center text-white py-2 hover:bg-green-800 transition duration-300"
+      >
+        الاداريين
+      </a>
+    </div>
+    <div
+            class="justify-center flex flex-col gap-4 rounded-lg bg-white p-6 shadow-md"
+    >
+      <div class="flex items-center justify-center">
+        <h2 class="text-xl font-bold">الإيرادات الإجمالية</h2>
+      </div>
+      <p class="text-center text-4xl font-bold text-yellow-600">${{clubs.count|mul:100}}</p>
+      <a
+              href="{% url 'financialDashboard' %}"
+              class="w-full rounded-lg bg-yellow-700 text-center text-white py-2 hover:bg-yellow-800 transition duration-300"
+      >
+        لوحة التحكم المالي
+      </a>
+    </div>
+
+  </div>
+
+  <!-- Recent Activities -->
+  <div class="px-2 md:px-8 mb-8">
+    <h2 class="text-2xl font-bold mb-4">النشاطات الأخيرة</h2>
+    <div class="bg-white rounded-lg shadow-md p-6">
+      <ul class="divide-y divide-gray-200">
+        {% for activity in recent_activities %}
+        <li class="py-3">{{ activity.description }}</li>
+        <span class="text-gray-500 text-sm">{{ activity.timestamp|date:"Y-m-d H:i" }}</span>
+        {% empty %}
+        <li class="py-3">لا توجد نشاطات مسجلة</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Quick Actions -->
+  <div class="px-2 md:px-8 pb-8">
+    <h2 class="text-2xl font-bold mb-4">إجراءات سريعة</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+      <a
+      href="/admin_dashboard/addClub"
+        class="bg-indigo-600 text-white font-bold text-center rounded-lg py-3 px-4 hover:bg-purple-700 transition duration-300"
+      >
+        إضافة نادي جديد
+      </a>
+      <a
+        href="/admin_dashboard/addDirector"
+        class="bg-indigo-600 text-white font-bold text-center rounded-lg py-3 px-4 hover:bg-pink-700 transition duration-300"
+      >
+        تسجيل إداري جديد
+      </a>
+      <a
+              href="{% url 'UpdatePricing' %}"
+              class="bg-indigo-600 text-white font-bold text-center rounded-lg py-3 px-4 hover:bg-orange-700 transition duration-300"
+      >
+        تحديث أسعار باقات النوادي
+      </a>
+    </div>
+  </div>
+
+
+</main>
+{% endblock content %}

@@ -1,0 +1,335 @@
+{% extends "base_student_dashboard.html" %}
+{% load static %}
+{% block content %}
+<style>
+    :root {
+      --primary: #EC4899; /* Pink-500 */
+      --primary-light: #F472B6; /* Pink-400 */
+      --primary-dark: #DB2777; /* Pink-600 */
+      --secondary: #F9A8D4; /* Pink-300 */
+      --gray-light: #F3F4F6;
+      --gray-medium: #E5E7EB;
+      --gray-dark: #6B7280;
+      --success: #10B981;
+      --warning: #F59E0B;
+      --danger: #EF4444;
+      --white: #FFFFFF;
+    }
+
+    .content-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      border-radius: 1rem;
+      box-shadow: 0 10px 25px -5px rgba(236, 72, 153, 0.15), 0 10px 10px -5px rgba(236, 72, 153, 0.1);
+      transition: all 0.3s ease;
+    }
+
+    .content-card:hover {
+      box-shadow: 0 15px 30px -5px rgba(236, 72, 153, 0.2), 0 10px 15px -5px rgba(236, 72, 153, 0.15);
+      transform: translateY(-3px);
+    }
+
+    .info-alert {
+      background: linear-gradient(to right, rgba(236, 72, 153, 0.1), rgba(249, 168, 212, 0.1));
+      border-left: 4px solid var(--primary);
+      border-radius: 0.5rem;
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      color: var(--primary);
+      transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+      color: var(--primary-dark);
+      transform: translateX(-3px);
+    }
+
+    .submit-button {
+      background: linear-gradient(to right, var(--primary), var(--primary-dark));
+      color: white;
+      border-radius: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border: none;
+    }
+
+    .submit-button:hover {
+      background: linear-gradient(to right, var(--primary-dark), var(--primary));
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+    }
+
+    .submit-button:disabled {
+      background: var(--gray-medium);
+      color: var(--gray-dark);
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .time-input {
+      border: 2px solid var(--gray-medium);
+      border-radius: 0.5rem;
+      padding: 0.75rem;
+      font-size: 1rem;
+      width: 100%;
+      transition: all 0.3s ease;
+    }
+
+    .time-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.2);
+      outline: none;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--primary-dark);
+    }
+
+    .period-selector {
+      display: flex;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .period-option {
+      flex: 1;
+      text-align: center;
+      padding: 0.75rem;
+      border: 2px solid var(--gray-medium);
+      border-radius: 0.5rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .period-option:hover {
+      border-color: var(--primary-light);
+      background-color: rgba(249, 168, 212, 0.1);
+    }
+
+    .period-option.selected {
+      background: linear-gradient(to right, var(--primary), var(--primary-light));
+      color: white;
+      border-color: var(--primary);
+    }
+
+    .error-message {
+      color: var(--danger);
+      margin-top: 0.5rem;
+      font-size: 0.875rem;
+    }
+
+    .page-header {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .page-header::after {
+      content: '✨';
+      position: absolute;
+      font-size: 1.5rem;
+      top: 0;
+      right: 0;
+      animation: sparkle 3s infinite;
+      opacity: 0.7;
+    }
+
+    .page-header::before {
+      content: '💖';
+      position: absolute;
+      font-size: 1.5rem;
+      bottom: 0;
+      left: 0;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .duration-badge {
+      background: linear-gradient(to right, var(--primary-light), var(--secondary));
+      color: white;
+      padding: 0.4rem 1rem;
+      border-radius: 9999px;
+      font-weight: 600;
+      box-shadow: 0 2px 6px rgba(236, 72, 153, 0.25);
+      transition: all 0.3s ease;
+    }
+
+    .duration-badge:hover {
+      transform: scale(1.05);
+      box-shadow: 0 3px 8px rgba(236, 72, 153, 0.35);
+    }
+
+    @keyframes sparkle {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); opacity: 0.7; }
+      50% { transform: translate(5px, -5px) rotate(25deg); opacity: 1; }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+</style>
+
+<!-- Adjust main content to account for the bottom navbar -->
+<section class="bg-gradient-to-br from-rose-50 to-amber-50 w-full min-h-screen py-12 px-4 md:px-8 pb-24">
+    <div class="max-w-3xl mx-auto p-4">
+        <div class="content-card p-8 max-w-4xl mx-auto">
+            <!-- Header Section -->
+            <div class="mb-8 text-center page-header">
+                <h1 class="text-3xl font-bold text-pink-800 mb-2">{% if LANGUAGE_CODE == 'ar' %} اختر وقت الموعد {% else %} Select Appointment Time {% endif %}</h1>
+                <p class="text-lg font-medium text-pink-600 mb-1">{% if LANGUAGE_CODE == 'ar' %} اليوم: {% else %} Day: {% endif %} {{ day }}</p>
+                <div class="flex items-center justify-center gap-2">
+                    <span class="text-gray-600">{% if LANGUAGE_CODE == 'ar' %} المدة الإجمالية: {% else %} Total Duration: {% endif %}</span>
+                    <span class="duration-badge">{{ total_duration }}
+                        {% if LANGUAGE_CODE == 'ar' %} دقيقة {% else %} minutes {% endif %}</span>
+                </div>
+            </div>
+
+            <!-- Info Alert -->
+            <div class="info-alert p-4 mb-8 flex">
+                <div class="flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-pink-700">{% if LANGUAGE_CODE == 'ar' %}
+                        يرجى إدخال الوقت الذي ستحضر فيه إلى الصالون. سيتم التحقق من توفر الموعد قبل تأكيد الحجز.
+                        {% else %}
+                        Please enter the time you will arrive at the salon. Appointment availability will be verified before confirming the booking.
+                        {% endif %}</p>
+                </div>
+            </div>
+
+            <form method="POST" action="{% url 'client_verify_and_book_appointment' day=day %}" id="timeSelectionForm">
+                {% csrf_token %}
+
+                <div class="max-w-md mx-auto">
+                    <!-- Time Input Group -->
+                    <div class="form-group">
+                        <label for="time_input" class="form-label">{% if LANGUAGE_CODE == 'ar' %} وقت الموعد {% else %} Appointment Time {% endif %}</label>
+                        <div class="flex flex-col md:flex-row gap-4">
+                            <div class="flex-grow">
+                                <input
+                                        type="text"
+                                        id="time_input"
+                                        name="time_input"
+                                        class="time-input"
+                                        placeholder="{% if LANGUAGE_CODE == 'ar' %} مثال: 3:30 {% else %} Example: 3:30 {% endif %}"
+                                        required
+                                        pattern="^(0?[1-9]|1[0-2]):[0-5][0-9]$|^([01]?[0-9]|2[0-3]):[0-5][0-9]$"
+                                />
+                                <div class="error-message hidden" id="time-error">{% if LANGUAGE_CODE == 'ar' %} يرجى إدخال وقت صحيح (مثال: 3:30) {% else %} Please enter a valid time (e.g., 3:30) {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="md:w-1/3">
+                                <div class="period-selector">
+                                    <div class="period-option" data-period="AM">{% if LANGUAGE_CODE == 'ar' %} صباحاً {% else %} AM {% endif %}</div>
+                                    <div class="period-option" data-period="PM">{% if LANGUAGE_CODE == 'ar' %} مساءً {% else %} PM {% endif %}</div>
+                                </div>
+                                <input type="hidden" name="period" id="period_input" value="AM">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="mt-8 text-center">
+                        <button type="submit" class="submit-button" id="submitButton">
+                            {% if LANGUAGE_CODE == 'ar' %} تحقق وتأكيد الحجز {% else %} Verify and Confirm Booking {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Navigation Buttons -->
+            <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="{% url 'client_book_appointment_details' day=day %}" class="back-button">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %} العودة لتعديل التفاصيل {% else %} Back to Edit Details {% endif %}
+                </a>
+                <span class="text-gray-400 hidden sm:block">|</span>
+                <a href="{% url 'studentViewArticles' %}" class="text-pink-600 hover:text-pink-800 transition-colors">
+                    {% if LANGUAGE_CODE == 'ar' %} العودة إلى جدول المواعيد {% else %} Back to Appointments Schedule {% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Period selector functionality
+        const periodOptions = document.querySelectorAll('.period-option');
+        const periodInput = document.getElementById('period_input');
+
+        // Set default option
+        periodOptions[0].classList.add('selected');
+
+        periodOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                // Remove selected class from all options
+                periodOptions.forEach(opt => opt.classList.remove('selected'));
+
+                // Add selected class to clicked option
+                this.classList.add('selected');
+
+                // Update hidden input value
+                periodInput.value = this.getAttribute('data-period');
+            });
+        });
+
+        // Time input validation
+        const timeInput = document.getElementById('time_input');
+        const timeError = document.getElementById('time-error');
+
+        timeInput.addEventListener('input', function() {
+            const timePattern = /^(0?[1-9]|1[0-2]):[0-5][0-9]$|^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+            if (this.value && !timePattern.test(this.value)) {
+                timeError.classList.remove('hidden');
+                {% if LANGUAGE_CODE == 'ar' %}
+                    this.setCustomValidity('يرجى إدخال وقت صحيح');
+                {% else %}
+                    this.setCustomValidity('Please enter a valid time');
+                {% endif %}
+
+            } else {
+                timeError.classList.add('hidden');
+                this.setCustomValidity('');
+            }
+        });
+
+        // Form submission
+        const form = document.getElementById('timeSelectionForm');
+
+        form.addEventListener('submit', function(e) {
+            const timeValue = timeInput.value.trim();
+            const timePattern = /^(0?[1-9]|1[0-2]):[0-5][0-9]$|^([01]?[0-9]|2[0-3]):[0-5][0-9]$/;
+
+            if (!timeValue || !timePattern.test(timeValue)) {
+                e.preventDefault();
+                timeError.classList.remove('hidden');
+                return false;
+            }
+
+            // Form is valid, let it submit
+            return true;
+        });
+    });
+</script>
+{% endblock %}

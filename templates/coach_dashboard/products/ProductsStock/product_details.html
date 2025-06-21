@@ -1,0 +1,405 @@
+{% extends 'base_coach_dashboard.html' %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Card Effects */
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #fef6ee; /* amber-50 */
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #f59e0b; /* amber-500 */
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #d97706; /* amber-600 */
+    }
+
+    /* Table styling */
+    th, td {
+        padding: 0.75rem 1.5rem;
+        text-align: {% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %};
+    }
+
+    thead {
+        background-color: #fef6ee; /* amber-50 */
+    }
+
+    /* Thumbnail styling */
+    .thumbnail-image {
+        transition: border-color 0.2s ease;
+    }
+
+    .thumbnail-image:hover {
+        border-color: #f59e0b !important; /* amber-500 */
+    }
+</style>
+
+<div class="min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn" style="background-color: #fef6ee;"> <!-- amber-50 -->
+    <section class="container mx-auto px-4 pt-8 pb-16">
+        <!-- Header with Navigation -->
+        <div class="flex justify-between items-center mb-8 animate-fadeIn">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                    <i class="fas fa-box text-amber-600"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}تفاصيل المنتج{% else %}Product Details{% endif %}
+                </h1>
+                <h2 class="text-xl text-amber-600">{{ product.title }}</h2>
+            </div>
+            <div class="flex space-x-4 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %}">
+                {% if product.approval_status == 'approved' or product.approval_status == 'pending' %}
+                <a href="{% url 'coachadd_shipment' %}?product_id={{ product.id }}" class="btn-gradient px-4 py-2 bg-gradient-to-r from-amber-500 to-pink-600 text-white rounded-md hover:from-amber-600 hover:to-pink-700 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة شحنة جديدة{% else %}Add New Shipment{% endif %}">
+                    <i class="fas fa-plus mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}إضافة شحنة جديدة{% else %}Add New Shipment{% endif %}
+                </a>
+
+                <a href="{% url 'coacheditProduct' product.id %}" class="btn-gradient px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}تعديل المنتج{% else %}Edit Product{% endif %}">
+                    <i class="fas fa-edit mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}تعديل المنتج{% else %}Edit Product{% endif %}
+                </a>
+                {% endif %}
+                <a href="{% url 'coachviewProducts' %}" class="btn-gradient px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}">
+                    <i class="fas fa-arrow-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}العودة للمنتجات{% else %}Back to Products{% endif %}
+                </a>
+            </div>
+        </div>
+
+        <!-- Product Info Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8 border border-amber-100 stat-card animate-fadeInUp">
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <!-- Product Image Gallery -->
+                    <div class="md:col-span-1">
+                        <div class="bg-amber-50 rounded-lg overflow-hidden mb-4 border border-amber-200">
+                            {% if product_images %}
+                            <div id="main-image" class="h-64 w-full flex items-center justify-center">
+                                <img src="{{ product_images.0.img.url }}?v={{ product.updated_at|date:'U' }}" alt="{{ product.title }}" class="max-h-full max-w-full object-contain">
+                            </div>
+                            {% if product_images.count > 1 %}
+                            <div class="flex space-x-2 mt-2 overflow-x-auto p-2 {% if LANGUAGE_CODE == 'ar' %}space-x-reverse{% endif %}">
+                                {% for image in product_images %}
+                                <div class="h-16 w-16 flex-shrink-0 rounded-md overflow-hidden border-2 {% if forloop.first %}border-amber-500{% else %}border-transparent{% endif %} thumbnail-image" role="button" aria-label="{% if LANGUAGE_CODE == 'ar' %}عرض الصورة {{ forloop.counter }}{% else %}View image {{ forloop.counter }}{% endif %}">
+                                    <img src="{{ image.img.url }}?v={{ product.updated_at|date:'U' }}" alt="{{ product.title }}" class="h-full w-full object-cover" data-full-img="{{ image.img.url }}?v={{ product.updated_at|date:'U' }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% else %}
+                            <div class="h-64 w-full bg-amber-100 flex items-center justify-center">
+                                <span class="text-amber-400"><i class="fas fa-image text-5xl"></i></span>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Product Details -->
+                    <div class="md:col-span-2">
+                        <div class="flex justify-between items-start mb-6">
+                            <h3 class="text-2xl font-bold text-amber-700">{{ product.title }}</h3>
+                            <div class="flex flex-wrap gap-1">
+                                {% if product.is_enabled %}
+                                <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                    <i class="fas fa-check-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}متاح{% else %}Available{% endif %}
+                                </span>
+                                {% else %}
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                                    <i class="fas fa-times-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}غير متاح{% else %}Unavailable{% endif %}
+                                </span>
+                                {% endif %}
+                                {% if product.stock == 0 %}
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}نفذ{% else %}Out of Stock{% endif %}
+                                </span>
+                                {% elif product.stock <= 10 %}
+                                <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}منخفض{% else %}Low Stock{% endif %}
+                                </span>
+                                {% endif %}
+                                {% if product.is_expired %}
+                                <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+                                    <i class="fas fa-exclamation-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}منتهي الصلاحية{% else %}Expired{% endif %}
+                                </span>
+                                {% elif product.is_expiring_soon %}
+                                <span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-full text-xs">
+                                    <i class="fas fa-clock mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}ينتهي قريباً{% else %}Expiring Soon{% endif %}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div>
+                                <span class="text-amber-600 text-sm">
+                                    <i class="fas fa-barcode mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}الرمز التعريفي:{% else %}ID:{% endif %}
+                                </span>
+                                <span class="font-medium text-gray-800">{{ product.id }}</span>
+                            </div>
+                            <div>
+                                <span class="text-amber-600 text-sm">
+                                    <i class="fas fa-money-bill-wave mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}السعر:{% else %}Price:{% endif %}
+                                </span>
+                                <span class="font-bold text-amber-600">
+                                    {{ product.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-amber-600 text-sm">
+                                    <i class="fas fa-box mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}المخزون الحالي:{% else %}Current Stock:{% endif %}
+                                </span>
+                                <span class="font-medium text-gray-800">
+                                    {{ product.stock }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-amber-600 text-sm">
+                                    <i class="fas fa-calendar-plus mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تاريخ الإنشاء:{% else %}Creation Date:{% endif %}
+                                </span>
+                                <span class="font-medium text-gray-800">{{ product.creation_date|date:"Y-m-d" }}</span>
+                            </div>
+                            {% if product.manufacturing_date %}
+                            <div>
+                                <span class="text-amber-600 text-sm">
+                                    <i class="fas fa-industry mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع:{% else %}Manufacturing Date:{% endif %}
+                                </span>
+                                <span class="font-medium text-gray-800">{{ product.manufacturing_date|date:"Y-m-d" }}</span>
+                            </div>
+                            {% endif %}
+                            {% if product.expiration_date %}
+                            <div>
+                                <span class="text-amber-600 text-sm">
+                                    <i class="fas fa-calendar-times mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تاريخ انتهاء الصلاحية:{% else %}Expiration Date:{% endif %}
+                                </span>
+                                <span class="font-medium {% if product.is_expired %}text-red-600{% elif product.is_expiring_soon %}text-amber-600{% else %}text-gray-800{% endif %}">
+                                    {{ product.expiration_date|date:"Y-m-d" }}
+                                </span>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-6">
+                            <h4 class="text-amber-600 font-medium mb-2 flex items-center">
+                                <i class="fas fa-align-left mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Description{% endif %}
+                            </h4>
+                            <p class="text-gray-700 bg-amber-50 p-3 rounded-lg border border-amber-100">{{ product.desc }}</p>
+                        </div>
+
+                        {% if product.classification.exists %}
+                        <div>
+                            <h4 class="text-amber-600 font-medium mb-2 flex items-center">
+                                <i class="fas fa-tags mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}التصنيفات{% else %}Categories{% endif %}
+                            </h4>
+                            <div class="flex flex-wrap gap-2">
+                                {% for category in product.classification.all %}
+                                <span class="px-3 py-1 bg-amber-100 text-amber-800 rounded-full text-sm">
+                                    <i class="fas fa-tag mr-1"></i>{{ category.name }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Shipments Section -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8 border border-amber-100 stat-card animate-fadeInUp">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-amber-700 flex items-center">
+                        <i class="fas fa-truck mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}سجل الشحنات{% else %}Shipment Records{% endif %}
+                    </h3>
+                    {% if product.approval_status == 'approved' or product.approval_status == 'pending' %}
+                    <a href="{% url 'coachadd_shipment' %}?product_id={{ product.id }}" class="btn-gradient px-3 py-1 bg-gradient-to-r from-amber-500 to-pink-600 text-white rounded-md hover:from-amber-600 hover:to-pink-700 text-sm flex items-center" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة شحنة{% else %}Add Shipment{% endif %}">
+                        <i class="fas fa-plus mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}إضافة شحنة{% else %}Add Shipment{% endif %}
+                    </a>
+                    {% endif %}
+                </div>
+
+                <!-- Shipment Stats -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-amber-50 p-4 rounded-lg border border-amber-200 stat-card">
+                        <h3 class="text-amber-600 text-sm mb-1 flex items-center">
+                            <i class="fas fa-list mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}إجمالي الشحنات{% else %}Total Shipments{% endif %}
+                        </h3>
+                        <div class="text-xl font-bold text-amber-700">{{ stats.total_count }}</div>
+                        <div class="text-sm text-amber-700">
+                            {{ stats.total_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-200 stat-card">
+                        <h3 class="text-green-600 text-sm mb-1 flex items-center">
+                            <i class="fas fa-check-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}شحنات سليمة{% else %}Valid Shipments{% endif %}
+                        </h3>
+                        <div class="text-xl font-bold text-green-700">{{ stats.valid_count }}</div>
+                        <div class="text-sm text-green-700">
+                            {{ stats.valid_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-lg border border-amber-200 stat-card">
+                        <h3 class="text-amber-600 text-sm mb-1 flex items-center">
+                            <i class="fas fa-clock mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تنتهي قريباً{% else %}Expiring Soon{% endif %}
+                        </h3>
+                        <div class="text-xl font-bold text-amber-700">{{ stats.expiring_soon_count }}</div>
+                        <div class="text-sm text-amber-700">
+                            {{ stats.expiring_soon_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}
+                        </div>
+                    </div>
+                    <div class="bg-red-50 p-4 rounded-lg border border-red-200 stat-card">
+                        <h3 class="text-red-600 text-sm mb-1 flex items-center">
+                            <i class="fas fa-exclamation-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}منتهية الصلاحية{% else %}Expired{% endif %}
+                        </h3>
+                        <div class="text-xl font-bold text-red-700">{{ stats.expired_count }}</div>
+                        <div class="text-sm text-red-700">
+                            {{ stats.expired_quantity }} {% if LANGUAGE_CODE == 'ar' %}وحدة{% else %}units{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shipments Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-amber-200" role="grid" aria-label="{% if LANGUAGE_CODE == 'ar' %}سجل شحنات المنتج{% else %}Product Shipment Records{% endif %}">
+                        <thead class="bg-amber-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-calendar-alt mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تاريخ الإضافة{% else %}Date Added{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-box mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Quantity{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-industry mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تاريخ التصنيع{% else %}Manufacturing Date{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-calendar-times mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}تاريخ انتهاء الصلاحية{% else %}Expiration Date{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-info-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}الحالة{% else %}Status{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-comment mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}ملاحظات{% else %}Notes{% endif %}
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-xs font-medium text-amber-700 uppercase tracking-wider">
+                                <i class="fas fa-cog mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}
+                            </th>
+                        </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-amber-100">
+                        {% for shipment in shipments %}
+                        <tr class="stat-card">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.created_at|date:"Y-m-d" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ shipment.quantity }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.manufacturing_date|default:"{% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}Not specified{% endif %}" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.expiration_date|default:"{% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}Not specified{% endif %}" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {% if shipment.is_expired %}
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        <i class="fas fa-exclamation-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}منتهي الصلاحية{% else %}Expired{% endif %}
+                                    </span>
+                                {% elif shipment.is_expiring_soon %}
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-100 text-amber-800">
+                                        <i class="fas fa-clock mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}ينتهي قريباً{% else %}Expiring Soon{% endif %}
+                                    </span>
+                                {% else %}
+                                <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <i class="fas fa-check-circle mr-1"></i> {% if LANGUAGE_CODE == 'ar' %}سليم{% else %}Valid{% endif %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ shipment.notes|truncatechars:30|default:"-" }}
+                            </td>
+                            <td>
+                                <a href="{% url 'coachview_product_shipments' product.id %}" class="text-amber-600 hover:text-amber-800 font-medium flex items-center transition-all duration-200 group" aria-label="{% if LANGUAGE_CODE == 'ar' %}تفاصيل الشحنة{% else %}Shipment Details{% endif %}">
+                                    <i class="fas fa-eye mr-1"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-4 whitespace-nowrap text-sm text-amber-600 text-center">
+                                <i class="fas fa-info-circle mr-2"></i> {% if LANGUAGE_CODE == 'ar' %}لا توجد شحنات متاحة لهذا المنتج{% else %}No shipments available for this product{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<!-- JavaScript for image gallery -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const thumbnails = document.querySelectorAll('.thumbnail-image');
+        const mainImage = document.querySelector('#main-image img');
+
+        if (thumbnails.length > 0 && mainImage) {
+            thumbnails.forEach(thumb => {
+                thumb.addEventListener('click', function() {
+                    const newSrc = this.querySelector('img').getAttribute('data-full-img');
+                    mainImage.src = newSrc;
+                    thumbnails.forEach(container => {
+                        container.classList.remove('border-amber-500');
+                        container.classList.add('border-transparent');
+                    });
+                    this.classList.remove('border-transparent');
+                    this.classList.add('border-amber-500');
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

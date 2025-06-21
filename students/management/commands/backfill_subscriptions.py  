@@ -1,0 +1,35 @@
+from django.core.management.base import BaseCommand
+from django.utils import timezone
+from datetime import timedelta
+from students.models import Order, OrderItem, ServiceOrderModel
+
+class Command(BaseCommand):
+    help = 'Backfill service subscriptions from confirmed orders'
+
+    def handle(self, *args, **kwargs):
+        confirmed_orders = Order.objects.filter(status='confirmed')
+        count = 0
+
+        for order in confirmed_orders:
+            student = order.user
+            order_items = order.items.filter(service__isnull=False)
+
+            for item in order_items:
+                service = item.service
+                subscription_days = service.subscription_days or 30
+                start_date = order.created_at
+                end_date = start_date + timedelta(days=subscription_days)
+
+                service_order, created = ServiceOrderModel.objects.update_or_create(
+                    student=student,
+                    service=service,
+                    defaults={
+                        'price': item.price,
+                        'end_datetime': end_date,
+                        'creation_date': start_date,
+                        'is_complited': False,
+                    }
+                )
+                count += 1 if created else 0
+
+        self.stdout.write(self.style.SUCCESS(f'Processed {count} service subscriptions.'))

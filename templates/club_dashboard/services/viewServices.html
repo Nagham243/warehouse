@@ -1,0 +1,508 @@
+{% extends 'base_club_dashboard.html' %}
+{% load static custom_filters %}
+
+{% block content %}
+<style>
+  /* Animation Classes */
+  .animate-fadeIn {
+      animation: fadeIn 0.8s ease-out forwards;
+      opacity: 0;
+  }
+
+  .animate-fadeInUp {
+      animation: fadeInUp 0.6s ease-out forwards;
+      opacity: 0;
+  }
+
+  @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Button Effects */
+  .btn-gradient {
+      background-size: 200% auto;
+      transition: all 0.2s ease;
+  }
+
+  .btn-gradient:hover {
+      background-position: right center;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Card Effects */
+  .stat-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  }
+
+  /* Form Input Styling */
+  input[type="text"], select {
+      border-color: #93C5FD !important; /* blue-300 */
+      border-radius: 0.5rem !important;
+      transition: all 0.2s ease !important;
+      width: 100%;
+      padding: 0.5rem;
+  }
+
+  input[type="text"]:focus, select:focus {
+      border-color: #3B82F6 !important; /* blue-500 */
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2) !important; /* blue-500 with opacity */
+      outline: none !important;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+      width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+      background: #eff6ff; /* blue-50 */
+  }
+
+  ::-webkit-scrollbar-thumb {
+      background: #3B82F6; /* blue-500 */
+      border-radius: 4px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+      background: #1D4ED8; /* blue-700 */
+  }
+
+  /* Card hover effect */
+  .bg-white:hover {
+      background-color: #eff6ff !important; /* blue-50 */
+      transition: background-color 0.2s ease;
+  }
+
+  /* Pricing badge styling */
+  .pricing-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+  }
+</style>
+
+<div class="bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+  <!-- Header Section -->
+  <div class="py-8 animate-fadeIn">
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+        <div class="p-3 bg-blue-100 rounded-full text-blue-600">
+          <i class="fas fa-concierge-bell"></i>
+        </div>
+        {% if LANGUAGE_CODE == 'ar' %}إدارة الخدمات{% else %}Service Management{% endif %}
+      </h1>
+      <div class="flex gap-2">
+        <a href="{% url 'addServicesClassification' %}" class="btn-gradient px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center shadow-md" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة تصنيف خدمة جديد{% else %}Add New Service Classification{% endif %}">
+          <i class="fas fa-plus mr-2"></i>
+          {% if LANGUAGE_CODE == 'ar' %}إضافة تصنيف جديد{% else %}Add New Service Classification{% endif %}
+        </a>
+        <a href="{% url 'addServices' %}" class="btn-gradient px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-300 flex items-center shadow-md" aria-label="{% if LANGUAGE_CODE == 'ar' %}إضافة خدمة جديدة{% else %}Add New Service{% endif %}">
+          <i class="fas fa-plus mr-2"></i>
+          {% if LANGUAGE_CODE == 'ar' %}إضافة خدمة جديدة{% else %}Add New Service{% endif %}
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+    <!-- Total Services Card -->
+    <div class="animate-fadeInUp stat-card flex flex-col gap-4 rounded-xl bg-white p-6 shadow-lg transition-all duration-300 border border-gray-100">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-700">{% if LANGUAGE_CODE == 'ar' %}إجمالي الخدمات{% else %}Total Services{% endif %}</h2>
+        <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+          <i class="fas fa-box-open"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-gray-800 text-center">{{ services|length }}</p>
+    </div>
+
+    <!-- Average Monthly Price Card -->
+    <div class="animate-fadeInUp stat-card flex flex-col gap-4 rounded-xl bg-white p-6 shadow-lg transition-all duration-300 border border-gray-100" style="animation-delay: 0.1s;">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-700">{% if LANGUAGE_CODE == 'ar' %}متوسط السعر الشهري{% else %}Avg Monthly Price{% endif %}</h2>
+        <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+          <i class="fas fa-coins"></i>
+        </div>
+      </div>
+      <p class="text-3xl font-bold text-gray-800 text-center">
+        {% if avg_monthly_price %}
+        {{ avg_monthly_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+        {% else %}
+        0 {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+        {% endif %}
+      </p>
+      <p class="text-xs text-gray-500 text-center">{% if LANGUAGE_CODE == 'ar' %}شهرياً{% else %}per month{% endif %}</p>
+    </div>
+
+    <!-- Average Duration Card -->
+    <div class="animate-fadeInUp stat-card flex flex-col gap-4 rounded-xl bg-white p-6 shadow-lg transition-all duration-300 border border-gray-100" style="animation-delay: 0.2s;">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-700">{% if LANGUAGE_CODE == 'ar' %}متوسط المدة{% else %}Average Duration{% endif %}</h2>
+        <div class="p-3 rounded-full bg-green-100 text-green-600">
+          <i class="far fa-clock"></i>
+        </div>
+      </div>
+      <p class="text-2xl font-bold text-gray-800 text-center">
+        {% if avg_duration_hours > 0 or avg_duration_minutes > 0 %}
+        {% if LANGUAGE_CODE == 'ar' %}
+        {% if avg_duration_hours > 0 %}
+        {{ avg_duration_hours }} ساعة
+        {% endif %}
+        {% if avg_duration_minutes > 0 %}
+        {{ avg_duration_minutes }} دقيقة
+        {% endif %}
+        {% else %}
+        {% if avg_duration_hours > 0 %}
+        {{ avg_duration_hours }} {% if avg_duration_hours == 1 %}hour{% else %}hours{% endif %}
+        {% endif %}
+        {% if avg_duration_minutes > 0 %}
+        {% if avg_duration_hours > 0 %} {% endif %}
+        {{ avg_duration_minutes }} {% if avg_duration_minutes == 1 %}minute{% else %}minutes{% endif %}
+        {% endif %}
+        {% endif %}
+        {% else %}
+        {% if LANGUAGE_CODE == 'ar' %}
+        0 دقيقة
+        {% else %}
+        0 minutes
+        {% endif %}
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Most Common Period Card -->
+    <div class="animate-fadeInUp stat-card flex flex-col gap-4 rounded-xl bg-white p-6 shadow-lg transition-all duration-300 border border-gray-100" style="animation-delay: 0.3s;">
+      <div class="flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-gray-700">{% if LANGUAGE_CODE == 'ar' %}الفترة الأكثر شيوعاً{% else %}Most Common Period{% endif %}</h2>
+        <div class="p-3 rounded-full bg-orange-100 text-orange-600">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+      </div>
+      <p class="text-2xl font-bold text-gray-800 text-center">
+        {% if most_common_period %}
+        {% if LANGUAGE_CODE == 'ar' %}
+        {{ most_common_period }} {% if most_common_period == 1 %}شهر{% else %}أشهر{% endif %}
+        {% else %}
+        {{ most_common_period }} {% if most_common_period == 1 %}Month{% else %}Months{% endif %}
+        {% endif %}
+        {% else %}
+        {% if LANGUAGE_CODE == 'ar' %}غير محدد{% else %}N/A{% endif %}
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  <!-- Search and Filter Section -->
+  <div class="animate-fadeIn bg-white rounded-xl shadow-xl p-6 mx-2 md:mx-0 mb-8">
+    <div class="flex flex-col md:flex-row gap-4">
+      <div class="md:w-1/4">
+        <div class="relative">
+          <select id="sort-services" class="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-8 transition-colors duration-300 hover:border-gray-300" aria-label="{% if LANGUAGE_CODE == 'ar' %}ترتيب الخدمات{% else %}Sort Services{% endif %}">
+            {% if LANGUAGE_CODE == 'ar' %}
+            <option value="name">ترتيب حسب الاسم</option>
+            <option value="price">ترتيب حسب السعر الشهري</option>
+            <option value="duration">ترتيب حسب المدة</option>
+            <option value="period">ترتيب حسب فترة التسعير</option>
+            {% else %}
+            <option value="name">Sort by Name</option>
+            <option value="price">Sort by Monthly Price</option>
+            <option value="duration">Sort by Duration</option>
+            <option value="period">Sort by Pricing Period</option>
+            {% endif %}
+          </select>
+          <div class="absolute inset-y-0 {% if LANGUAGE_CODE == 'ar' %}left-0 pl-2{% else %}right-0 pr-2{% endif %} flex items-center pointer-events-none">
+            <i class="fas fa-chevron-down text-blue-400"></i>
+          </div>
+        </div>
+      </div>
+
+      <div class="md:w-3/4">
+        <div class="relative">
+          <input
+                  type="text"
+                  id="search-services"
+                  placeholder="{% if LANGUAGE_CODE == 'ar' %}ابحث عن خدمة...{% else %}Search for a service...{% endif %}"
+                  class="w-full p-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 hover:border-gray-300 pl-10"
+                  aria-label="{% if LANGUAGE_CODE == 'ar' %}ابحث عن خدمة{% else %}Search for a service{% endif %}"
+          >
+          <div class="absolute inset-y-0 {% if LANGUAGE_CODE == 'ar' %}right-0 pr-3{% else %}left-0 pl-3{% endif %} flex items-center pointer-events-none">
+            <i class="fas fa-search text-gray-400"></i>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Services Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="services-container">
+    {% for service in services %}
+    <div class="animate-fadeInUp" style="animation-delay: {{ forloop.counter|divisibleby:3|yesno:'0.1s,0.2s,0.3s' }};">
+      <div class="bg-white rounded-xl shadow-lg overflow-hidden transition-all duration-300 h-full flex flex-col">
+        {% if service.image %}
+        <div class="h-48 overflow-hidden relative">
+          <img src="{{ service.image.url }}" alt="{{ service.title }}" class="w-full h-full object-cover transition-transform duration-300 hover:scale-105">
+          <!-- Pricing Period Badge -->
+          <div class="absolute top-3 {% if LANGUAGE_CODE == 'ar' %}left-3{% else %}right-3{% endif %}">
+            <span class="pricing-badge">
+              {% if LANGUAGE_CODE == 'ar' %}
+              {{ service.pricing_period_months }} {% if service.pricing_period_months == 1 %}شهر{% else %}أشهر{% endif %}
+              {% else %}
+              {{ service.pricing_period_months }} {% if service.pricing_period_months == 1 %}Month{% else %}Months{% endif %}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        {% else %}
+        <!-- If no image, show pricing period badge in header -->
+        <div class="p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+          <div class="flex justify-between items-center">
+            <span class="pricing-badge">
+              {% if LANGUAGE_CODE == 'ar' %}
+              {{ service.pricing_period_months }} {% if service.pricing_period_months == 1 %}شهر{% else %}أشهر{% endif %}
+              {% else %}
+              {{ service.pricing_period_months }} {% if service.pricing_period_months == 1 %}Month{% else %}Months{% endif %}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+        {% endif %}
+
+        <div class="p-6 flex-grow">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold text-gray-800">{{ service.title }}</h3>
+            {% if service.is_enabled %}
+            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+              {% if LANGUAGE_CODE == 'ar' %}متاح{% else %}Available{% endif %}
+            </span>
+            {% else %}
+            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">
+              {% if LANGUAGE_CODE == 'ar' %}غير متاح{% else %}Unavailable{% endif %}
+            </span>
+            {% endif %}
+          </div>
+
+          <p class="text-gray-600 mb-4">{{ service.desc|truncatechars:80 }}</p>
+
+          <!-- Display Classifications -->
+          {% if service.classification.all %}
+          <div class="mb-3">
+            {% for classification in service.classification.all %}
+            <span class="inline-block bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
+              {% if LANGUAGE_CODE == 'ar' %}التصنيف: {{ classification.title }}{% else %}{{ classification.title }}{% endif %}
+            </span>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <div class="text-gray-500 text-sm mb-1">
+                <i class="far fa-clock text-blue-500 mr-1"></i>
+                {% if LANGUAGE_CODE == 'ar' %}المدة{% else %}Duration{% endif %}
+              </div>
+              <div class="font-medium text-gray-700">
+                {% if service.duration >= 60 %}
+                {% with hours=service.duration|divisibleby:1|div:60 minutes=service.duration|modulo:60 %}
+                {% if LANGUAGE_CODE == 'ar' %}
+                {% if hours > 0 %}{{ hours }} ساعة {% endif %}{% if minutes > 0 %}{{ minutes }} دقيقة{% endif %}
+                {% else %}
+                {% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% endif %}
+                {% endif %}
+                {% endwith %}
+                {% else %}
+                {% if LANGUAGE_CODE == 'ar' %}
+                {{ service.duration }} دقيقة
+                {% else %}
+                {{ service.duration }}m
+                {% endif %}
+                {% endif %}
+              </div>
+            </div>
+
+            <div class="bg-gray-50 p-3 rounded-lg">
+              <div class="text-gray-500 text-sm mb-1">
+                <i class="fas fa-coins text-blue-500 mr-1"></i>
+                {% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}
+              </div>
+              <div class="font-medium text-gray-700">
+                {% if service.discounted_price %}
+                <div class="flex flex-col">
+                  <span class="line-through text-gray-400 text-xs">{{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                  <span class="text-purple-600 font-bold">{{ service.discounted_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                </div>
+                {% else %}
+                <span class="text-blue-600 font-bold">{{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                {% endif %}
+                <div class="text-xs text-gray-500 mt-1">
+                  {% if LANGUAGE_CODE == 'ar' %}
+                  ({{ service.monthly_price|floatformat:1 }} ر.س/شهر)
+                  {% else %}
+                  ({{ service.monthly_price|floatformat:1 }} SAR/month)
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+
+
+        </div>
+
+        <div class="border-t border-gray-100 flex">
+          <a href="{% url 'viewServiceDetails' service.id %}" class="flex-1 text-center py-2 btn-gradient bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white transition-all duration-300" aria-label="{% if LANGUAGE_CODE == 'ar' %}عرض التفاصيل{% else %}View Details{% endif %}">
+            <i class="fas fa-eye mr-1"></i>
+            {% if LANGUAGE_CODE == 'ar' %}التفاصيل{% else %}Details{% endif %}
+          </a>
+          <a href="{% url 'editServices' service.id %}" class="flex-1 text-center py-2 btn-gradient bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white transition-all duration-300" aria-label="{% if LANGUAGE_CODE == 'ar' %}تعديل الخدمة{% else %}Edit Service{% endif %}">
+            <i class="fas fa-edit mr-1"></i>
+            {% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+          </a>
+          <a href="{% url 'DeleteServices' service.id %}" class="flex-1 text-center py-2 btn-gradient bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white transition-all duration-300 delete-service" data-id="{{ service.id }}" aria-label="{% if LANGUAGE_CODE == 'ar' %}حذف الخدمة{% else %}Delete Service{% endif %}">
+            <i class="fas fa-trash-alt mr-1"></i>
+            {% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-span-full text-center p-8 bg-white rounded-xl shadow-lg animate-fadeIn">
+      <div class="text-gray-400 mb-4">
+        <i class="fas fa-box-open text-4xl"></i>
+      </div>
+      <p class="text-gray-500 text-lg">
+        {% if LANGUAGE_CODE == 'ar' %}لا توجد خدمات متاحة حالياً{% else %}No services available at the moment{% endif %}
+      </p>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script defer>
+  // Debounce function to limit search input updates
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  // Search functionality
+  document.getElementById('search-services').addEventListener('input', debounce(function() {
+    const searchTerm = this.value.toLowerCase();
+    const serviceCards = document.querySelectorAll('#services-container > div');
+
+    serviceCards.forEach(card => {
+      const title = card.querySelector('h3').textContent.toLowerCase();
+      const description = card.querySelector('p').textContent.toLowerCase();
+
+      card.style.display = (title.includes(searchTerm) || description.includes(searchTerm)) ? 'block' : 'none';
+    });
+  }, 300));
+
+  // Sort functionality
+  document.getElementById('sort-services').addEventListener('change', function() {
+    const sortBy = this.value;
+    const container = document.getElementById('services-container');
+    const serviceCards = Array.from(container.children);
+
+    serviceCards.sort((a, b) => {
+      const cardA = a.querySelector('div > div');
+      const cardB = b.querySelector('div > div');
+
+      if (sortBy === 'name') {
+        const nameA = cardA.querySelector('h3').textContent.toLowerCase();
+        const nameB = cardB.querySelector('h3').textContent.toLowerCase();
+        return nameA.localeCompare(nameB);
+      } else if (sortBy === 'price') {
+        const priceA = getMonthlyPriceValue(cardA);
+        const priceB = getMonthlyPriceValue(cardB);
+        return priceA - priceB;
+      } else if (sortBy === 'duration') {
+        const durationA = getDurationValue(cardA);
+        const durationB = getDurationValue(cardB);
+        return durationA - durationB;
+      } else if (sortBy === 'period') {
+        const periodA = getPricingPeriodValue(a);
+        const periodB = getPricingPeriodValue(b);
+        return periodA - periodB;
+      }
+      return 0;
+    });
+
+    // Clear container and re-append sorted cards
+    container.innerHTML = '';
+    serviceCards.forEach((card, index) => {
+      card.style.animation = `fadeInUp 0.6s ease-out ${index * 0.1}s both`;
+      container.appendChild(card);
+    });
+  });
+
+  // Helper function to get the monthly price value for sorting
+  function getMonthlyPriceValue(card) {
+    const monthlyPriceText = card.querySelector('.text-xs.text-gray-500').textContent;
+    const match = monthlyPriceText.match(/(\d+\.?\d*)/);
+    return match ? parseFloat(match[1]) : 0;
+  }
+
+  // Helper function to get the duration value for sorting
+  function getDurationValue(card) {
+    const durationElement = card.querySelector('.bg-gray-50 .font-medium');
+    if (!durationElement) return 0;
+
+    const durationText = durationElement.textContent;
+    let minutes = 0;
+
+    if (durationText.includes('ساعة') || durationText.includes('h')) {
+      const hoursMatch = durationText.match(/(\d+)(?:\s*h|\s*ساعة)/);
+      if (hoursMatch) minutes += parseInt(hoursMatch[1]) * 60;
+
+      const minutesPart = durationText.match(/(\d+)(?:\s*m|\s*دقيقة)/);
+      if (minutesPart) minutes += parseInt(minutesPart[1]);
+    } else {
+      const minutesMatch = durationText.match(/(\d+)(?:\s*m|\s*دقيقة)/);
+      if (minutesMatch) minutes = parseInt(minutesMatch[1]);
+    }
+
+    return minutes;
+  }
+
+  // Helper function to get pricing period value for sorting
+  function getPricingPeriodValue(card) {
+    const periodBadge = card.querySelector('.pricing-badge');
+    if (!periodBadge) return 0;
+
+    const periodText = periodBadge.textContent;
+    const match = periodText.match(/(\d+)/);
+    return match ? parseInt(match[1]) : 0;
+  }
+
+  // Confirm delete
+  document.querySelectorAll('.delete-service').forEach(button => {
+    button.addEventListener('click', function(e) {
+      if (!confirm('{% if LANGUAGE_CODE == "ar" %}هل أنت متأكد من حذف هذه الخدمة؟{% else %}Are you sure you want to delete this service?{% endif %}')) {
+        e.preventDefault();
+      }
+    });
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,240 @@
+{% extends "base_receptionist_dashboard.html" %}
+
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-purple-50 to-indigo-50 animate-gradient-slow w-full px-4 md:px-8 min-h-screen pb-12">
+
+    <!-- Header Section -->
+    <div class="flex justify-between items-center py-8">
+        <div class="flex items-center gap-4">
+            <a href="{% url 'viewStudentss' %}" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-all duration-200">
+                {% if LANGUAGE_CODE == 'ar' %}← رجوع{% else %}← Back{% endif %}
+            </a>
+            <h1 class="text-4xl font-bold text-purple-800 transform transition-all duration-500 hover:scale-105">
+                {% if LANGUAGE_CODE == 'ar' %}اشتراكات اللاعب 💎{% else %}Student Subscriptions 💎{% endif %}
+            </h1>
+        </div>
+    </div>
+
+    <!-- Student Info Card -->
+    <div class="bg-white rounded-xl shadow-lg p-6 mb-8 border border-purple-100">
+        <div class="flex items-center gap-4">
+            <div class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white p-4 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold text-gray-800">{{ student.user.username }}</h2>
+                <p class="text-gray-600">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    {{ student.student_profile.full_name|default:"الاسم الكامل غير متوفر" }}
+                    {% else %}
+                    {{ student.student_profile.full_name|default:"Full name not available" }}
+                    {% endif %}
+                </p>
+                <p class="text-gray-500 text-sm">{{ student.user.email }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add New Subscription Button -->
+    <div class="mb-6">
+        <button onclick="openAddSubscriptionModal()"
+                class="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-md flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}إضافة اشتراك جديد{% else %}Add New Subscription{% endif %}
+        </button>
+    </div>
+
+    <!-- Current Subscriptions -->
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-purple-100 hover:shadow-xl transition-all duration-300">
+        <div class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white px-6 py-4">
+            <h3 class="text-xl font-bold flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}الاشتراكات الحالية{% else %}Current Subscriptions{% endif %}
+            </h3>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-right text-gray-500">
+                <thead class="text-xs text-gray-700 uppercase bg-purple-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        {% if LANGUAGE_CODE == 'ar' %}الخدمة{% else %}Service{% endif %}
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        {% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        {% if LANGUAGE_CODE == 'ar' %}تاريخ البداية{% else %}Start Date{% endif %}
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        {% if LANGUAGE_CODE == 'ar' %}تاريخ الانتهاء{% else %}End Date{% endif %}
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        {% if LANGUAGE_CODE == 'ar' %}الحالة{% else %}Status{% endif %}
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        {% if LANGUAGE_CODE == 'ar' %}المدرب/ون المسؤل/ون{% else %}Coach/Responsible Person{% endif %}
+                    </th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for subscription in subscriptions %}
+                <tr class="bg-white border-b hover:bg-purple-50 transition-colors duration-200">
+                    <td class="px-6 py-4 font-medium text-gray-900">
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        {{ subscription.service.title_ar|default:subscription.service.title }}
+                        {% else %}
+                        {{ subscription.service.title }}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+            <span class="text-green-600 font-semibold">{{ subscription.price }}
+              {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+            </span>
+                    </td>
+                    <td class="px-6 py-4">{{ subscription.creation_date|date:"Y-m-d H:i" }}</td>
+                    <td class="px-6 py-4">{{ subscription.end_datetime|date:"Y-m-d H:i" }}</td>
+                    <td class="px-6 py-4">
+                        {% if subscription.is_complited %}
+                        <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                {% if LANGUAGE_CODE == 'ar' %}منتهي{% else %}Expired{% endif %}
+              </span>
+                        {% else %}
+                        {% if subscription.end_datetime > current_time %}
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  {% if LANGUAGE_CODE == 'ar' %}نشط{% else %}Active{% endif %}
+                </span>
+                        {% else %}
+                        <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded-full">
+                  {% if LANGUAGE_CODE == 'ar' %}منتهي{% else %}Expired{% endif %}
+                </span>
+                        {% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4">
+                        {% if subscription.service.coaches.exists %}
+                        <div class="space-y-1">
+                            {% for coach in subscription.service.coaches.all %}
+                            <span class="inline-block bg-blue-100 text-blue-800 text-sm px-2 py-1 rounded-md mr-1 mb-1">
+                                {{ coach }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <span class="text-gray-500 italic">
+                            {% if LANGUAGE_CODE == 'ar' %}لا يوجد مدربين{% else %}No Coaches{% endif %}
+                        </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr class="bg-white border-b">
+                    <td colspan="5" class="px-6 py-8 text-center">
+                        <div class="flex flex-col items-center justify-center">
+                            <div class="bg-purple-50 rounded-full p-6 mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                                </svg>
+                            </div>
+                            <p class="text-purple-500 font-medium">
+                                {% if LANGUAGE_CODE == 'ar' %}
+                                🚫 لا توجد اشتراكات حالياً
+                                {% else %}
+                                🚫 No subscriptions available
+                                {% endif %}
+                            </p>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Subscription Modal -->
+<div id="addSubscriptionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    {% if LANGUAGE_CODE == 'ar' %}إضافة اشتراك جديد{% else %}Add New Subscription{% endif %}
+                </h3>
+                <button onclick="closeAddSubscriptionModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form method="post" action="{% url 'add_student_subscription' student.user.id %}">
+                {% csrf_token %}
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %}اختر الخدمة{% else %}Select Service{% endif %}
+                    </label>
+                    <select name="service_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <option value="">
+                            {% if LANGUAGE_CODE == 'ar' %}-- اختر خدمة --{% else %}-- Select Service --{% endif %}
+                        </option>
+                        {% for service in available_services %}
+                        <option value="{{ service.id }}">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            {{ service.title_ar|default:service.title }} - {{ service.price }} ر.س
+                            {% else %}
+                            {{ service.title }} - {{ service.price }} SAR
+                            {% endif %}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-gray-700 text-sm font-bold mb-2">
+                        {% if LANGUAGE_CODE == 'ar' %}الكمية{% else %}Quantity{% endif %}
+                    </label>
+                    <input type="number" name="quantity" value="1" min="1" required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <button type="button" onclick="closeAddSubscriptionModal()"
+                            class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                        {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </button>
+                    <button type="submit"
+                            class="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold py-2 px-4 rounded">
+                        {% if LANGUAGE_CODE == 'ar' %}إضافة الاشتراك{% else %}Add Subscription{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openAddSubscriptionModal() {
+        document.getElementById('addSubscriptionModal').classList.remove('hidden');
+    }
+
+    function closeAddSubscriptionModal() {
+        document.getElementById('addSubscriptionModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('addSubscriptionModal');
+        if (event.target == modal) {
+            modal.classList.add('hidden');
+        }
+    }
+</script>
+
+{% endblock %}

@@ -1,0 +1,268 @@
+{% extends "base_landing.html" %} {% load students_tags %} {% load static %} {% load i18n %} {% block content %}
+<link rel="stylesheet" href="{% static 'css/landing.css' %}" />
+
+<main class="bg-indigo-50 text-gray-900">
+  <!-- Hero Section -->
+  <section class="overflow-hidden bg-indigo-50">
+    <div
+      class="flex flex-col lg:min-h-[800px] lg:flex-row-reverse lg:items-stretch"
+    >
+      <div
+        class="relative flex w-full items-center justify-center lg:order-2 lg:w-7/12"
+      >
+        <div
+          class="relative px-4 pb-16 text-center sm:px-6 md:px-24 py-32 lg:text-right 2xl:px-32"
+        >
+          <h1
+            class="flex flex-col gap-2 text-4xl font-extrabold text-indigo-900 sm:text-6xl xl:text-7xl box"
+          >
+            <span>{% if LANGUAGE_CODE == 'ar' %}
+      سوقك الإلكتروني الشامل
+      {% else %}
+      Your Complete Marketplace
+      {% endif %}</span>
+            <span class="text-nowrap text-indigo-600"> {% if LANGUAGE_CODE == 'ar' %}
+  حيث تجد كل ما تحتاجه
+  {% else %}
+  Find Everything You Need
+  {% endif %}</span>
+          </h1>
+          <p class="mt-8 text-xl text-indigo-800 sm:text-2xl box">
+            {% if LANGUAGE_CODE == 'ar' %}
+            منصة تجمع بين أفضل البائعين والمشترين لتوفير تجربة تسوق فريدة بكل سهولة وأمان.
+            {% else %}
+            A platform connecting top sellers with buyers for a unique, easy and secure shopping experience.
+            {% endif %}
+          </p>
+          <div
+            class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 lg:justify-start"
+          >
+            <a
+              href="#about"
+              class="w-full sm:w-auto rounded-full bg-white px-8 py-4 text-lg font-bold text-indigo-600 shadow-md hover:bg-indigo-100 hover:shadow-lg transition duration-300 box"
+            >
+              {% if LANGUAGE_CODE == 'ar' %}
+              تعرف على المنصة
+              {% else %}
+              Discover the Platform
+              {% endif %}
+            </a>
+            <a
+              href="{% url 'signup' %}"
+              class="w-full sm:w-auto rounded-full bg-indigo-600 px-8 py-4 text-lg font-bold text-white shadow-md hover:bg-indigo-700 hover:shadow-lg transition duration-300 box"
+            >
+              {% if LANGUAGE_CODE == 'ar' %}
+              ابدأ التسوق الآن
+              {% else %}
+              Start Shopping Now
+              {% endif %}
+            </a>
+          </div>
+        </div>
+      </div>
+      <div
+        class="relative h-96 w-full overflow-hidden lg:order-1 lg:h-auto lg:w-5/12"
+      >
+        <div class="absolute inset-0">
+          <img
+                  src="https://images.pexels.com/photos/4050388/pexels-photo-4050388.jpeg"
+                  alt="Happy customers shopping online"
+                  class="object-cover object-center w-full h-full"
+          />
+        </div>
+        <div class="absolute inset-0 bg-indigo-600 opacity-30"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="py-20 bg-indigo-50">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center text-indigo-900 mb-12 box">
+        {% if LANGUAGE_CODE == 'ar' %}
+        عن المنصة
+        {% else %}
+        About the Platform
+        {% endif %}
+      </h2>
+      <p
+        class="text-xl text-indigo-800 text-center max-w-3xl mx-auto mb-16 box"
+      >
+        {% if LANGUAGE_CODE == 'ar' %}
+        منصتنا توفر لك مساحة آمنة وسهلة للعثور على كل ما تحتاجه من منتجات وخدمات، مع ضمان الجودة وأفضل الأسعار من بائعين موثوقين.
+        {% else %}
+        Our platform provides a safe and easy space to find all the products and services you need, with quality assurance and the best prices from trusted sellers.
+        {% endif %}
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+        <div class="space-y-8">
+          {% for bullet in bullets %}
+          <div
+            class="flex items-center bg-white p-6 rounded-xl shadow-lg transition duration-300 hover:shadow-xl box"
+          >
+            <p class="text-lg font-semibold text-indigo-900">
+              {% if LANGUAGE_CODE == 'ar' %}
+              {{ bullet.description_ar }}
+              {% else %}
+              {{ bullet.description_en }}
+              {% endif %}
+            </p>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="flex justify-center">
+          <img
+            src="https://images.pexels.com/photos/3184292/pexels-photo-3184292.jpeg"
+            alt="About Image"
+            class="rounded-xl shadow-2xl max-w-full h-auto"
+          />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services Section -->
+  <section class="py-20 bg-indigo-50" id="services">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center text-indigo-900 mb-16 box">
+        {% if LANGUAGE_CODE == 'ar' %}
+        مميزات المنصة
+        {% else %}
+        Platform Features
+        {% endif %}
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        {% for service in services %}
+        <div
+          class="bg-white rounded-xl p-8 text-center shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 box"
+        >
+          <div class="mb-6 flex justify-center text-5xl text-indigo-600">
+            <i class="{{ service.icon }}"></i>
+          </div>
+          <h3 class="mb-4 text-2xl font-semibold text-indigo-900">
+            {% if LANGUAGE_CODE == 'ar' %}
+            {{ service.name_ar }}
+            {% else %}
+            {{ service.name_en }}
+            {% endif %}
+          </h3>
+          <p class="text-indigo-700">
+            {% if LANGUAGE_CODE == 'ar' %}
+            {{ service.description_ar }}
+            {% else %}
+            {{ service.description_en }}
+            {% endif %}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- Pricing Section -->
+  <section class="py-20 bg-indigo-50" id="pricing">
+    <div class="container mx-auto px-4">
+      <h2 class="text-4xl font-bold text-center text-indigo-900 mb-16">
+        {% if LANGUAGE_CODE == 'ar' %}
+        باقات البائعين
+        {% else %}
+        Seller Plans
+        {% endif %}
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        {% for plan in pricing %}
+        <div
+                class="bg-white box rounded-xl overflow-hidden shadow-lg transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 flex flex-col"
+        >
+          <!-- Top: Title & Price -->
+          <div class="bg-indigo-600 p-8 text-white">
+            <h3 class="text-2xl font-bold mb-2">{{ plan.name }}</h3>
+            <div class="flex items-end">
+              <span class="text-4xl font-bold">{{ plan.price }}</span>
+              <span class="text-xl mb-1 mr-1">
+              {% if LANGUAGE_CODE == 'ar' %}
+              /شهريًا
+              {% else %}
+              /monthly
+              {% endif %}
+            </span>
+            </div>
+          </div>
+
+          <!-- Middle: Features and Button (Flex-grow here!) -->
+          <div class="p-8 flex flex-col flex-grow">
+            <ul class="space-y-4 mb-8">
+              {% for feature in plan.features %}
+              <li class="flex items-center">
+                <svg
+                        class="w-5 h-5 mr-2 text-green-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M5 13l4 4L19 7"
+                  ></path>
+                </svg>
+                <span class="text-indigo-900">{{ feature }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+
+            <!-- Push to bottom -->
+            <a
+                    href="{% url 'signup' %}"
+                    class="mt-auto block w-full bg-indigo-600 text-white text-center px-4 py-2 rounded-full font-semibold hover:bg-indigo-700 transition duration-300"
+            >
+              {% if LANGUAGE_CODE == 'ar' %}
+              اختر الباقة
+              {% else %}
+              Choose Plan
+              {% endif %}
+            </a>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+
+  <!-- Call to Action Section -->
+  <section class="py-20 bg-indigo-50">
+    <div class="container mx-auto px-4">
+      <div class="bg-indigo-600 rounded-xl p-12 text-center text-white box">
+        <h2 class="text-3xl md:text-4xl font-bold mb-6">
+          {% if LANGUAGE_CODE == 'ar' %}
+          اكتشف عالمًا من المنتجات والخدمات
+          {% else %}
+          Discover a World of Products & Services
+          {% endif %}
+        </h2>
+        <p class="text-xl md:text-2xl mb-10 max-w-2xl mx-auto">
+          {% if LANGUAGE_CODE == 'ar' %}
+          انضم إلى آلاف العملاء الذين يثقون بنا لتوفير أفضل تجربة تسوق إلكتروني
+          {% else %}
+          Join thousands of customers who trust us for the best e-commerce experience
+          {% endif %}
+        </p>
+        <a
+          href="{% url 'signup' %}"
+          class="inline-block bg-white text-indigo-600 px-8 py-4 rounded-full text-lg font-bold hover:bg-indigo-100 transition duration-300"
+        >
+          {% if LANGUAGE_CODE == 'ar' %}
+          ابدأ الآن مجانًا
+          {% else %}
+          Start for free
+          {% endif %}
+        </a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script src="{% static 'js/landing.js' %}"></script>
+{% endblock content %}

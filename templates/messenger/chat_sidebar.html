@@ -1,0 +1,409 @@
+{% load static %}
+{% load messenger_tags %}
+
+<div class="chat-sidebar bg-gray-50 border-r border-gray-200 h-full w-72 hidden md:block overflow-y-auto mt-16">
+    <div class="flex border-b border-gray-200">
+        <button id="chatsTabButton" class="flex-1 p-4 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-center active">
+            المحادثات
+        </button>
+        {% if user.userprofile.account_type == '2' %}
+        <button id="membersTabButton" class="flex-1 p-4 bg-gray-100 text-gray-700 font-bold text-center">
+            أعضاء النادي
+        </button>
+        {% endif %}
+    </div>
+
+
+    <div id="chatsPanel" class="block">
+
+        <a href="{% url 'messageRoom' club.id %}" class="block p-3 hover:bg-gray-100 transition duration-150 border-b border-gray-200 {% if current_room_id == club.id|stringformat:'s' %}bg-indigo-100{% endif %}">
+            <div class="flex items-center space-x-3">
+                <div class="ml-3">
+                    {% if club.club_profile_image_base64 %}
+                    <img src="data:image/jpeg;base64,{{ club.club_profile_image_base64|safe }}"
+                         alt="صورة النادي"
+                         class="w-12 h-12 rounded-full object-cover border border-gray-300"
+                         style="background-color: white;">
+                    {% else %}
+                    <img src="{% static '/img/default-profile-img-2.png' %}"
+                         alt="صورة النادي"
+                         class="w-12 h-12 rounded-full object-cover border border-gray-300">
+                    {% endif %}
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-medium">الدردشة الجماعية</h3>
+                    <p class="text-sm text-gray-500 truncate">{{ club.name }}</p>
+                </div>
+                {% if group_unread_count > 0 %}
+                <div class="bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {{ group_unread_count }}
+                </div>
+                {% endif %}
+            </div>
+        </a>
+
+
+        <div class="divide-y divide-gray-200">
+            {% for chat in private_chats %}
+            <a href="{% url 'privateMessageRoom' chat.room_id %}" class="block p-3 hover:bg-gray-100 transition duration-150 {% if current_room_id == chat.room_id %}bg-indigo-100{% endif %}">
+                <div class="flex items-center space-x-3">
+                    <div class="ml-3">
+                        {% if chat.other_user_img %}
+                        <img src="{{ chat.other_user_img|safe }}"
+                             alt="صورة المستخدم"
+                             class="w-12 h-12 rounded-full object-cover border border-gray-300"
+                             style="background-color: white;">
+                        {% else %}
+                        <img src="{% static '/img/default-profile-img-2.png' %}"
+                             alt="صورة المستخدم"
+                             class="w-12 h-12 rounded-full object-cover border border-gray-300">
+                        {% endif %}
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="font-medium">{{ chat.other_user_name }}</h3>
+                        <p class="text-sm text-gray-500 truncate">{{ chat.other_user_capacity }}</p>
+                    </div>
+                    {% if chat.unread_count > 0 %}
+                    <div class="bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {{ chat.unread_count }}
+                    </div>
+                    {% endif %}
+                </div>
+                {% if chat.last_message %}
+                <p class="text-sm text-gray-500 mt-1 truncate pr-12">{{ chat.last_message }}</p>
+                {% endif %}
+            </a>
+            {% empty %}
+            <div class="p-4 text-center text-gray-500">
+                لا توجد محادثات خاصة
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    {% if user.userprofile.account_type == '2' %}
+    <div id="membersPanel" class="hidden">
+        <div class="p-3 bg-gray-50 border-b border-gray-200">
+            <input type="text" id="memberSearchInput" placeholder="بحث عن عضو..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        </div>
+        <div id="membersList" class="divide-y divide-gray-100">
+            <!-- Members will be loaded here via AJAX -->
+            <div class="p-3 text-center text-gray-500">
+                <div class="animate-spin inline-block w-4 h-4 border-2 border-gray-300 border-t-indigo-600 rounded-full mr-2"></div>
+                جاري تحميل الأعضاء...
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<button id="mobile-sidebar-toggle" class="md:hidden fixed bottom-20 left-4 z-20 bg-indigo-600 text-white rounded-full p-3 shadow-lg">
+    <i class="bi bi-chat-left-text-fill"></i>
+</button>
+
+<div id="mobile-sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden"></div>
+
+
+<div id="mobile-sidebar" class="fixed top-0 right-0 w-3/4 h-full bg-white z-30 transform translate-x-full transition-transform duration-300">
+    <div class="h-full flex flex-col">
+        <div class="p-4 border-b border-gray-200 bg-indigo-600 text-white flex justify-between items-center">
+            <h2 class="text-xl font-bold">المحادثات</h2>
+            <button id="close-mobile-sidebar" class="text-white">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+
+        <div class="flex border-b border-gray-200">
+            <button id="chatsTabButtonMobile" class="flex-1 p-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold text-center active">
+                المحادثات
+            </button>
+            {% if user.userprofile.account_type == '2' %}
+            <button id="membersTabButtonMobile" class="flex-1 p-3 bg-gray-100 text-gray-700 font-bold text-center">
+                أعضاء النادي
+            </button>
+            {% endif %}
+        </div>
+
+        <div class="overflow-y-auto flex-1">
+
+            <div id="chatsPanelMobile" class="block">
+
+                <a href="{% url 'messageRoom' club.id %}" class="block p-3 hover:bg-gray-100 transition duration-150 border-b border-gray-200 {% if current_room_id == club.id|stringformat:'s' %}bg-indigo-100{% endif %}">
+                    <div class="flex items-center space-x-3">
+                        <div class="ml-3">
+                            {% if club.club_profile_image_base64 %}
+                            <img src="data:image/jpeg;base64,{{ club.club_profile_image_base64|safe }}"
+                                 alt="صورة النادي"
+                                 class="w-12 h-12 rounded-full object-cover border border-gray-300"
+                                 style="background-color: white;">
+                            {% else %}
+                            <img src="{% static '/img/default-profile-img-2.png' %}"
+                                 alt="صورة النادي"
+                                 class="w-12 h-12 rounded-full object-cover border border-gray-300">
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-medium">الدردشة الجماعية</h3>
+                            <p class="text-sm text-gray-500 truncate">{{ club.name }}</p>
+                        </div>
+                    </div>
+                </a>
+
+
+                <div class="divide-y divide-gray-200">
+                    {% for chat in private_chats %}
+                    <a href="{% url 'privateMessageRoom' chat.room_id %}" class="block p-3 hover:bg-gray-100 transition duration-150 {% if current_room_id == chat.room_id %}bg-indigo-100{% endif %}">
+                        <div class="flex items-center space-x-3">
+                            <div class="ml-3">
+                                {% if chat.other_user_img %}
+                                <img src="{{ chat.other_user_img|safe }}"
+                                     alt="صورة المستخدم"
+                                     class="w-12 h-12 rounded-full object-cover border border-gray-300"
+                                     style="background-color: white;">
+                                {% else %}
+                                <img src="{% static '/img/default-profile-img-2.png' %}"
+                                     alt="صورة المستخدم"
+                                     class="w-12 h-12 rounded-full object-cover border border-gray-300">
+                                {% endif %}
+                            </div>
+                            <div>
+                                <h3 class="font-medium">{{ chat.other_user_name }}</h3>
+                                <p class="text-sm text-gray-500 truncate">{{ chat.other_user_capacity }}</p>
+                            </div>
+                            {% if chat.unread_count > 0 %}
+                            <div class="bg-indigo-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                                {{ chat.unread_count }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% if chat.last_message %}
+                        <p class="text-sm text-gray-500 mt-1 truncate pr-12">{{ chat.last_message }}</p>
+                        {% endif %}
+                    </a>
+                    {% empty %}
+                    <div class="p-4 text-center text-gray-500">
+                        لا توجد محادثات خاصة
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            {% if user.userprofile.account_type == '2' %}
+            <div id="membersPanelMobile" class="hidden">
+                <div class="p-3 bg-gray-50 border-b border-gray-200">
+                    <input type="text" id="memberSearchInputMobile" placeholder="بحث عن عضو..." class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div id="membersListMobile" class="divide-y divide-gray-100">
+                    <div class="p-3 text-center text-gray-500">
+                        <div class="animate-spin inline-block w-4 h-4 border-2 border-gray-300 border-t-indigo-600 rounded-full mr-2"></div>
+                        جاري تحميل الأعضاء...
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mobile sidebar functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const mobileSidebarToggle = document.getElementById('mobile-sidebar-toggle');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const mobileSidebarOverlay = document.getElementById('mobile-sidebar-overlay');
+        const closeMobileSidebar = document.getElementById('close-mobile-sidebar');
+
+        function openSidebar() {
+            mobileSidebar.classList.remove('translate-x-full');
+            mobileSidebarOverlay.classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeSidebar() {
+            mobileSidebar.classList.add('translate-x-full');
+            mobileSidebarOverlay.classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
+        }
+
+        mobileSidebarToggle.addEventListener('click', openSidebar);
+        closeMobileSidebar.addEventListener('click', closeSidebar);
+        mobileSidebarOverlay.addEventListener('click', closeSidebar);
+
+        {% if user.userprofile.account_type == '2' %}
+        // Tab switching functionality for desktop
+        const chatsTabButton = document.getElementById('chatsTabButton');
+        const membersTabButton = document.getElementById('membersTabButton');
+        const chatsPanel = document.getElementById('chatsPanel');
+        const membersPanel = document.getElementById('membersPanel');
+        const membersList = document.getElementById('membersList');
+        const memberSearchInput = document.getElementById('memberSearchInput');
+
+        // Tab switching functionality for mobile
+        const chatsTabButtonMobile = document.getElementById('chatsTabButtonMobile');
+        const membersTabButtonMobile = document.getElementById('membersTabButtonMobile');
+        const chatsPanelMobile = document.getElementById('chatsPanelMobile');
+        const membersPanelMobile = document.getElementById('membersPanelMobile');
+        const membersListMobile = document.getElementById('membersListMobile');
+        const memberSearchInputMobile = document.getElementById('memberSearchInputMobile');
+
+        let clubMembers = [];
+        let membersLoaded = false;
+
+        function switchToChatsTab(isDesktop) {
+            if (isDesktop) {
+                chatsPanel.classList.remove('hidden');
+                membersPanel.classList.add('hidden');
+                chatsTabButton.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+                chatsTabButton.classList.remove('bg-gray-100', 'text-gray-700');
+                membersTabButton.classList.add('bg-gray-100', 'text-gray-700');
+                membersTabButton.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+            } else {
+                chatsPanelMobile.classList.remove('hidden');
+                membersPanelMobile.classList.add('hidden');
+                chatsTabButtonMobile.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+                chatsTabButtonMobile.classList.remove('bg-gray-100', 'text-gray-700');
+                membersTabButtonMobile.classList.add('bg-gray-100', 'text-gray-700');
+                membersTabButtonMobile.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+            }
+        }
+
+        function switchToMembersTab(isDesktop) {
+            if (isDesktop) {
+                chatsPanel.classList.add('hidden');
+                membersPanel.classList.remove('hidden');
+                chatsTabButton.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+                chatsTabButton.classList.add('bg-gray-100', 'text-gray-700');
+                membersTabButton.classList.remove('bg-gray-100', 'text-gray-700');
+                membersTabButton.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+            } else {
+                chatsPanelMobile.classList.add('hidden');
+                membersPanelMobile.classList.remove('hidden');
+                chatsTabButtonMobile.classList.remove('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+                chatsTabButtonMobile.classList.add('bg-gray-100', 'text-gray-700');
+                membersTabButtonMobile.classList.remove('bg-gray-100', 'text-gray-700');
+                membersTabButtonMobile.classList.add('bg-gradient-to-r', 'from-purple-600', 'to-indigo-600', 'text-white');
+            }
+
+            // Load members if not already loaded
+            if (!membersLoaded) {
+                loadClubMembers();
+            }
+        }
+
+        if (chatsTabButton && membersTabButton) {
+            chatsTabButton.addEventListener('click', function() {
+                switchToChatsTab(true);
+            });
+
+            membersTabButton.addEventListener('click', function() {
+                switchToMembersTab(true);
+            });
+        }
+
+        if (chatsTabButtonMobile && membersTabButtonMobile) {
+            chatsTabButtonMobile.addEventListener('click', function() {
+                switchToChatsTab(false);
+            });
+
+            membersTabButtonMobile.addEventListener('click', function() {
+                switchToMembersTab(false);
+            });
+        }
+
+        // Search functionality
+        function setupSearch(input, memberListElement) {
+            input.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                renderMembersList(memberListElement, searchTerm);
+            });
+        }
+
+        if (memberSearchInput) {
+            setupSearch(memberSearchInput, membersList);
+        }
+
+        if (memberSearchInputMobile) {
+            setupSearch(memberSearchInputMobile, membersListMobile);
+        }
+
+        // Load club members via AJAX
+        function loadClubMembers() {
+            fetch(`/messenger/api/club-members/{{ club.id }}/`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    // Check if the response is valid before trying to parse it
+                    if (!response.ok) {
+                        // Get the raw text to see what's actually being returned
+                        return response.text().then(text => {
+                            console.error('Error response text:', text);
+                            throw new Error(`Server returned ${response.status}: ${text.substring(0, 100)}...`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Success data:', data);
+                    clubMembers = data.members;
+                    membersLoaded = true;
+                    renderMembersList(membersList);
+                    renderMembersList(membersListMobile);
+                })
+                .catch(error => {
+                    console.error('Error loading club members:', error);
+                    membersList.innerHTML = '<div class="p-3 text-center text-red-500">حدث خطأ أثناء تحميل الأعضاء</div>';
+                    membersListMobile.innerHTML = membersList.innerHTML;
+                });
+        }
+
+        // Render members list with optional filtering
+        function renderMembersList(container, searchTerm = '') {
+            if (!container) return;
+
+            if (clubMembers.length === 0) {
+                container.innerHTML = '<div class="p-3 text-center text-gray-500">لا يوجد أعضاء</div>';
+                return;
+            }
+
+            let html = '';
+            const filteredMembers = searchTerm ?
+                clubMembers.filter(member =>
+                    member.name.toLowerCase().includes(searchTerm) ||
+                    member.capacity.toLowerCase().includes(searchTerm)
+                ) :
+                clubMembers;
+
+            if (filteredMembers.length === 0) {
+                container.innerHTML = '<div class="p-3 text-center text-gray-500">لا توجد نتائج للبحث</div>';
+                return;
+            }
+
+            filteredMembers.forEach(member => {
+                html += `
+                <a href="/messenger/createPrivateChat/${member.id}" class="block p-3 hover:bg-gray-100 transition duration-150">
+                    <div class="flex items-center space-x-3">
+                        <div class="ml-3">
+                            ${member.img ?
+                            `<img src="data:image/jpeg;base64,${member.img}"
+                                 alt="صورة المستخدم"
+                                 class="w-10 h-10 rounded-full object-cover border border-gray-300"
+                                 style="background-color: white;">` :
+                            `<img src="/static/img/default-profile-img-2.png"
+                                 alt="صورة المستخدم"
+                                 class="w-10 h-10 rounded-full object-cover border border-gray-300">`
+                            }
+                        </div>
+                        <div>
+                            <h3 class="font-medium">${member.name}</h3>
+                            <p class="text-sm text-gray-500">${member.capacity}</p>
+                        </div>
+                    </div>
+                </a>`;
+            });
+
+            container.innerHTML = html;
+        }
+        {% endif %}
+    });
+</script>

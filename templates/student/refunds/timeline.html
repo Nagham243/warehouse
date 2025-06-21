@@ -1,0 +1,75 @@
+{% extends "student/refunds/base_refund.html" %}
+
+{% block refund_content %}
+<div class="max-w-4xl mx-auto mb-24">
+    <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-all duration-300 border border-rose-100 p-6 animate-[fadeInUp_0.6s_ease-out]">
+        <h2 class="text-2xl font-bold text-rose-700/80 mb-6">
+            {% if LANGUAGE_CODE == 'ar' %}
+            الجدول الزمني - {{ dispute.title }}
+            {% else %}
+            Timeline - {{ dispute.title }}
+            {% endif %}
+        </h2>
+
+        <div class="relative">
+            <!-- Timeline line -->
+            <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-rose-200"></div>
+
+            {% for event in timeline %}
+            <div class="relative pl-12 pb-8 group">
+                <!-- Timeline dot -->
+                <div class="absolute left-0 top-0 w-8 h-8 rounded-full flex items-center justify-center
+                    {% if event.type == 'created' %}bg-rose-500 text-white
+                    {% elif event.type == 'approved' %}bg-green-500 text-white
+                    {% elif event.type == 'rejected' %}bg-red-500 text-white
+                    {% elif event.type == 'resolved' %}bg-blue-500 text-white
+                    {% else %}bg-purple-500 text-white{% endif %}">
+                    {% if event.type == 'created' %}
+                    <i class="fas fa-plus"></i>
+                    {% elif event.type == 'approved' %}
+                    <i class="fas fa-check"></i>
+                    {% elif event.type == 'rejected' %}
+                    <i class="fas fa-times"></i>
+                    {% elif event.type == 'resolved' %}
+                    <i class="fas fa-flag-checkered"></i>
+                    {% else %}
+                    <i class="fas fa-paperclip"></i>
+                    {% endif %}
+                </div>
+
+                <!-- Event content -->
+                <div class="p-4 rounded-lg border border-rose-100 bg-white shadow-sm group-hover:shadow-md transition">
+                    <div class="flex justify-between items-start">
+                        <h3 class="font-bold text-gray-800">{{ event.event }}</h3>
+                        <span class="text-sm text-gray-500">{{ event.date|date:"M d, Y H:i" }}</span>
+                    </div>
+                    <p class="mt-1 text-gray-600">{{ event.description }}</p>
+                    {% if event.user %}
+                    <div class="mt-2 flex items-center">
+            <span class="text-sm text-gray-500">
+              {% if LANGUAGE_CODE == 'ar' %}
+              بواسطة {{ event.user.get_full_name }}
+              {% else %}
+              By {{ event.user.get_full_name }}
+              {% endif %}
+            </span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-6">
+            <a href="{% url 'clientdetail' dispute.id %}"
+               class="px-4 py-2 bg-rose-600 text-white rounded-md hover:bg-rose-700 transition">
+                {% if LANGUAGE_CODE == 'ar' %}
+                العودة إلى التفاصيل
+                {% else %}
+                Back to Details
+                {% endif %}
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,179 @@
+{
+  "nav_items": [
+    {
+      "name_ar": "الرئيسية",
+      "name_en": "Home",
+      "href": "/"
+    },
+    {
+      "name_ar": "عن المنصة",
+      "name_en": "About Us",
+      "href": "#about"
+    },
+    {
+      "name_ar": "المميزات",
+      "name_en": "Our Services",
+      "href": "#services"
+    },
+    {
+      "name_ar": "باقات البائعين",
+      "name_en": "Pricing",
+      "href": "#pricing"
+    }
+  ],
+  "bullets": [
+    {
+      "title_ar": "سهولة التسوق",
+      "title_en": "Easy Shopping",
+      "description_ar": "تصفح وشراء المنتجات بكل سهولة وسرعة.",
+      "description_en": "Browse and purchase products with ease and speed."
+    },
+    {
+      "title_ar": "دفع آمن",
+      "title_en": "Secure Payments",
+      "description_ar": "أنظمة دفع متعددة ومشفرة لحماية معلوماتك.",
+      "description_en": "Multiple encrypted payment systems to protect your information."
+    },
+    {
+      "title_ar": "توصيل سريع",
+      "title_en": "Fast Delivery",
+      "description_ar": "شبكة توصيل واسعة لتوصيل طلباتك في أسرع وقت.",
+      "description_en": "Wide delivery network to get your orders as fast as possible."
+    },
+    {
+      "title_ar": "ضمان الجودة",
+      "title_en": "Quality Guarantee",
+      "description_ar": "منتجات مميزة من بائعين موثوقين بضمان الجودة.",
+      "description_en": "Premium products from trusted sellers with quality guarantee."
+    }
+  ],
+  "services": [
+    {
+      "name_ar": "تصفح سهل",
+      "name_en": "Easy Browsing",
+      "icon": "fas fa-search",
+      "description_ar": "تصميم بديهي يسهل عليك العثور على ما تريد",
+      "description_en": "Intuitive design makes it easy to find what you want"
+    },
+    {
+      "name_ar": "تقييمات العملاء",
+      "name_en": "Customer Reviews",
+      "icon": "fas fa-star",
+      "description_ar": "اقرأ تقييمات العملاء قبل الشراء",
+      "description_en": "Read customer reviews before purchasing"
+    },
+    {
+      "name_ar": "مقارنة المنتجات",
+      "name_en": "Product Comparison",
+      "icon": "fas fa-balance-scale",
+      "description_ar": "قارن بين المنتجات لاختيار الأفضل",
+      "description_en": "Compare products to choose the best one"
+    },
+    {
+      "name_ar": "تتبع الطلبات",
+      "name_en": "Order Tracking",
+      "icon": "fas fa-truck",
+      "description_ar": "تتبع حالة طلبك خطوة بخطوة",
+      "description_en": "Track your order status step by step"
+    },
+    {
+      "name_ar": "عروض خاصة",
+      "name_en": "Special Offers",
+      "icon": "fas fa-percentage",
+      "description_ar": "استمتع بعروض وتخفيضات حصرية",
+      "description_en": "Enjoy exclusive offers and discounts"
+    },
+    {
+      "name_ar": "دعم العملاء",
+      "name_en": "Customer Support",
+      "icon": "fas fa-headset",
+      "description_ar": "فريق دعم متاح لمساعدتك على مدار الساعة",
+      "description_en": "Support team available to help you 24/7"
+    },
+    {
+      "name_ar": "إرجاع سهل",
+      "name_en": "Easy Returns",
+      "icon": "fas fa-undo",
+      "description_ar": "سياسة إرجاع بسيطة وسهلة",
+      "description_en": "Simple and easy return policy"
+    },
+    {
+      "name_ar": "توصية المنتجات",
+      "name_en": "Product Recommendations",
+      "icon": "fas fa-lightbulb",
+      "description_ar": "اقتراحات ذكية بناءً على اهتماماتك",
+      "description_en": "Smart suggestions based on your interests"
+    },
+    {
+      "name_ar": "أمان البيانات",
+      "name_en": "Data Security",
+      "icon": "fas fa-shield-alt",
+      "description_ar": "حماية قوية لبيانات الفريق والأعضاء",
+      "description_en": "Strong protection for team and member data"
+    },
+    {
+      "name_ar": "أداء سريع",
+      "name_en": "Fast Performance",
+      "icon": "fas fa-bolt",
+      "description_ar": "نظام سريع وفعال لتحسين الإنتاجية",
+      "description_en": "A fast and efficient system to enhance productivity"
+    },
+    {
+      "name_ar": "دعم العملاء",
+      "name_en": "Customer Support",
+      "icon": "fas fa-headset",
+      "description_ar": "دعم فني متميز على مدار الساعة",
+      "description_en": "Outstanding technical support available 24/7"
+    },
+    {
+      "name_ar": "تحديثات مستمرة",
+      "name_en": "Regular Updates",
+      "icon": "fas fa-sync-alt",
+      "description_ar": "تحديثات منتظمة لتحسين الأداء والميزات",
+      "description_en": "Regular updates to enhance performance and features"
+    }
+  ],
+  "pricing": [
+    {
+      "name": "الباقة المجانية",
+      "price": "0",
+      "features": [
+        "مستخدم واحد",
+        "20 لاعب",
+        "تقارير أساسية"
+      ]
+    },
+    {
+      "name": "الباقة الأساسية",
+      "price": "50",
+      "features": [
+        "مستخدم واحد",
+        "حتى 50 لاعب",
+        "تقارير متقدمة",
+        "دعم فني خلال أيام العمل"
+      ]
+    },
+    {
+      "name": "الباقة الاحترافية",
+      "price": "150",
+      "features": [
+        "حتى 3 مستخدمين",
+        "حتى 200 لاعب",
+        "تقارير مفصلة",
+        "دعم فني مباشر",
+        "إمكانية تصدير البيانات"
+      ]
+    },
+    {
+      "name": "الباقة المؤسسية",
+      "price": "350",
+      "features": [
+        "عدد غير محدود من المستخدمين",
+        "عدد غير محدود من اللاعبين",
+        "تقارير مخصصة",
+        "دعم فني على مدار الساعة",
+        "إعداد وتدريب مجاني"
+      ]
+    }
+  ]
+}

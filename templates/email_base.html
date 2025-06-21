@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <style type="text/css">
+        /* Base styles */
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+        }
+
+        /* Email container */
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #ffffff;
+        }
+
+        /* Header */
+        .email-header {
+            text-align: center;
+            padding: 20px 0;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .email-header img {
+            max-width: 150px;
+            height: auto;
+        }
+
+        /* Content */
+        .email-content {
+            padding: 20px;
+        }
+
+        /* Footer */
+        .email-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #999999;
+            border-top: 1px solid #eeeeee;
+        }
+
+        /* Buttons */
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white !important;
+            text-decoration: none;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        /* Responsive */
+        @media screen and (max-width: 600px) {
+            .email-container {
+                width: 100% !important;
+            }
+        }
+
+        /* Custom colors */
+        .text-primary {
+            color: #4CAF50;
+        }
+
+        /* Utility classes */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-20 {
+            margin-top: 20px;
+        }
+
+        .mb-20 {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <!-- Header with logo -->
+    <div class="email-header">
+        <img src="https://yourwebsite.com/static/images/logo.png" alt="Company Logo">
+        <h1 class="text-primary">{% block heading %}{% endblock %}</h1>
+    </div>
+
+    <!-- Main content -->
+    <div class="email-content">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Footer -->
+    <div class="email-footer">
+        <p>
+            &copy; {% now "Y" %} Your Club Name. All rights reserved.<br>
+            <small>
+                If you didn't request this email, please ignore it.<br>
+                <a href="{{ unsubscribe_url }}" style="color: #999999;">Unsubscribe</a>
+            </small>
+        </p>
+    </div>
+</div>
+</body>
+</html>

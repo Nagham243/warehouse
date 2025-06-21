@@ -1,0 +1,111 @@
+{% extends 'base_coach_dashboard.html' %}
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+<div class="bg-gradient-to-br from-pink-50 to-amber-50 min-h-screen {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animate-fadeIn">
+    <section class="container mx-auto px-4 pt-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-3">
+            <div class="p-3 bg-pink-100 rounded-full text-pink-600">
+                <i class="fas fa-tags"></i>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %}تصنيفات الخدمات{% else %}Service Classifications{% endif %}
+        </h1>
+
+        <div class="mb-6 flex gap-2">
+            <a
+                    href="{% url 'coachaddServicesClassification' %}"
+                    class="btn-gradient px-4 py-2 bg-gradient-to-r from-pink-500 to-amber-600 text-white rounded-lg hover:from-pink-600 hover:to-amber-700 transition-all duration-300 flex items-center shadow-md"
+            >
+                <i class="fas fa-plus mr-2"></i>
+                {% if LANGUAGE_CODE == 'ar' %}إضافة تصنيف جديد{% else %}Add New Classification{% endif %}
+            </a>
+            <a
+                    href="{% url 'coachviewServices' %}"
+                    class="btn-gradient px-4 py-2 bg-gradient-to-r from-pink-500 to-amber-600 text-white rounded-lg hover:from-pink-600 hover:to-amber-700 transition-all duration-300 flex items-center shadow-md"
+            >
+                <i class="fas fa-eye mr-2"></i>
+                {% if LANGUAGE_CODE == 'ar' %}عرض الخدمات{% else %}View Services{% endif %}
+            </a>
+        </div>
+
+        <div class="overflow-x-auto bg-white rounded-xl shadow-lg">
+            <table class="w-full">
+                <thead class="bg-gradient-to-r from-pink-500 to-amber-600 text-white">
+                <tr>
+                    <th class="px-6 py-4 text-center">{% if LANGUAGE_CODE == 'ar' %}عنوان التصنيف{% else %}Classification Title{% endif %}</th>
+                    <th class="px-6 py-4 text-center">{% if LANGUAGE_CODE == 'ar' %}تاريخ الإنشاء{% else %}Creation Date{% endif %}</th>
+                    <th class="px-6 py-4 text-center">{% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for classification in classifications %}
+                <tr class="border-b hover:bg-pink-50 text-center transition-colors duration-200">
+                    <td class="px-6 py-4">{{ classification.title }}</td>
+                    <td class="px-6 py-4">
+                        {{ classification.creation_date|date:"Y-m-d H:i" }}
+                    </td>
+                    <td class="px-6 py-4">
+                        <a
+                                href="{% url 'coacheditServicesClassification' classification.id %}"
+                                class="text-pink-600 hover:text-pink-800 mr-4 transition-colors duration-200"
+                        >
+                            <i class="fas fa-edit mr-1"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+                        </a>
+                        <a
+                                href="{% url 'coachDeleteServicesClassification' classification.id %}"
+                                class="text-red-600 hover:text-red-800 transition-colors duration-200 delete-classification"
+                                data-id="{{ classification.id }}"
+                        >
+                            <i class="fas fa-trash-alt mr-1"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}حذف{% else %}Delete{% endif %}
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" class="px-6 py-4 text-center text-gray-500">
+                        {% if LANGUAGE_CODE == 'ar' %}لا توجد تصنيفات متاحة حالياً{% else %}No classifications available at the moment{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+<script>
+    // Confirm delete
+    document.querySelectorAll('.delete-classification').forEach(button => {
+      button.addEventListener('click', function(e) {
+        if (!confirm('{% if LANGUAGE_CODE == "ar" %}هل أنت متأكد من حذف هذا التصنيف؟{% else %}Are you sure you want to delete this classification?{% endif %}')) {
+          e.preventDefault();
+        }
+      });
+    });
+</script>
+{% endblock %}

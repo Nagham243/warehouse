@@ -1,0 +1,768 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Table Row Effects */
+    .table-row:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    }
+
+
+    /* Background Animation */
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* Search Box Styles */
+    .search-container {
+        position: relative;
+        max-width: 300px;
+    }
+
+    .search-input {
+        padding-left: 40px;
+        padding-right: 12px;
+        border-radius: 8px;
+        border: 1px solid #e2e8f0;
+        height: 40px;
+        width: 100%;
+        transition: all 0.3s;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #64748b;
+    }
+</style>
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animated-bg bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 font-sans">
+    <!-- Header Section -->
+    <div class="flex flex-col items-{% if LANGUAGE_CODE == 'ar' %}start{% else %}start{% endif %} py-8 gap-2 animate-fadeIn">
+        <div class="flex flex-wrap justify-between items-center w-full gap-4">
+            <h2 class="text-2xl font-bold text-gray-800 flex items-center gap-2 animate-fadeInUp">
+                <div class="p-2 bg-blue-100 rounded-full text-blue-600 animate-float">
+                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14z"/>
+                        <path d="M7 12h2v5H7v-5zm4-7h2v12h-2V5zm4 4h2v8h-2v-8z"/>
+                    </svg>
+                </div>
+                {% if LANGUAGE_CODE == 'ar' %}إدارة الطلبات{% else %}Order Management{% endif %}
+            </h2>
+
+            <!-- Search Box -->
+            <div class="search-container animate-fadeInUp">
+                <div class="relative">
+                    <svg class="search-icon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    <input type="text" id="orderSearch" class="search-input" placeholder="{% if LANGUAGE_CODE == 'ar' %}ابحث برقم الطلب أو اسم العميل...{% else %}Search by order ID or customer...{% endif %}">
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex flex-wrap gap-2 animate-stagger">
+            <a href="{% url 'club_orders' %}?status=all" class="btn-gradient bg-gradient-to-r {% if status_filter == 'all' %}from-blue-500 to-blue-600{% else %}from-gray-200 to-gray-300{% endif %} text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}الكل{% else %}All{% endif %}
+            </a>
+            <a href="{% url 'club_orders' %}?status=pending" class="btn-gradient bg-gradient-to-r {% if status_filter == 'pending' %}from-yellow-500 to-yellow-600{% else %}from-gray-200 to-gray-300{% endif %} text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}قيد الانتظار{% else %}Pending{% endif %}
+            </a>
+            <a href="{% url 'club_orders' %}?status=confirmed" class="btn-gradient bg-gradient-to-r {% if status_filter == 'confirmed' %}from-purple-500 to-purple-600{% else %}from-gray-200 to-gray-300{% endif %} text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}تم التأكيد{% else %}Confirmed{% endif %}
+            </a>
+            <a href="{% url 'club_orders' %}?status=completed" class="btn-gradient bg-gradient-to-r {% if status_filter == 'completed' %}from-green-500 to-green-600{% else %}from-gray-200 to-gray-300{% endif %} text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}مكتمل{% else %}Completed{% endif %}
+            </a>
+            <a href="{% url 'club_orders' %}?status=cancelled" class="btn-gradient bg-gradient-to-r {% if status_filter == 'cancelled' %}from-red-500 to-red-600{% else %}from-gray-200 to-gray-300{% endif %} text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2">
+                {% if LANGUAGE_CODE == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    {% if orders %}
+    <div class="overflow-x-auto animate-fadeInUp">
+        <table class="min-w-full bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100" id="ordersTable">
+            <thead class="bg-gray-50 text-gray-700 text-sm">
+            <tr>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}رقم الطلب{% else %}Order ID{% endif %}</th>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}العميل{% else %}Customer{% endif %}</th>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}المبلغ{% else %}Amount{% endif %}</th>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}طريقة الدفع{% else %}Payment Method{% endif %}</th>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}التاريخ{% else %}Date{% endif %}</th>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}الحالة{% else %}Status{% endif %}</th>
+                <th class="py-4 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-semibold">{% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+            </tr>
+            </thead>
+            <tbody class="text-gray-700 text-sm">
+            {% for order in orders %}
+            <tr class="table-row border-b bg-white transition-all duration-300 animate-[fadeInUp_0.6s_ease-out_{{ forloop.counter|add:0.1 }}s_both]" data-order-id="{{ order.id }}" data-customer-name="{{ order.first_name }} {{ order.last_name }}">
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %} font-medium">#{{ order.id }}</td>
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{{ order.first_name }} {{ order.last_name }}</td>
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{{ order.total_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</td>
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">
+                    {% if order.payment_method == 'credit_card' %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}بطاقة ائتمان{% else %}Credit Card{% endif %}
+                        </span>
+                    {% elif order.payment_method == 'cash_on_delivery' %}
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}تحويل بنكي{% else %}Cash on Delivery{% endif %}
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">{{ order.created_at|date:"d M Y" }}</td>
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">
+                    {% if order.status == 'pending' %}
+                    <span class="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}قيد الانتظار{% else %}Pending{% endif %}
+                        </span>
+                    {% elif order.status == 'confirmed' %}
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}تم التأكيد{% else %}Confirmed{% endif %}
+                        </span>
+                    {% elif order.status == 'cancelled' %}
+                    <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}ملغي{% else %}Cancelled{% endif %}
+                        </span>
+                    {% elif order.status == 'completed' %}
+                    <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs">
+                            {% if LANGUAGE_CODE == 'ar' %}مكتمل{% else %}Completed{% endif %}
+                        </span>
+                    {% endif %}
+                </td>
+                <td class="py-3 px-6 text-{% if LANGUAGE_CODE == 'ar' %}right{% else %}left{% endif %}">
+                    <div class="flex flex-wrap justify-{% if LANGUAGE_CODE == 'ar' %}end{% else %}start{% endif %} gap-2">
+                        <a href="{% url 'order_full_details' order.id %}" class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 py-1 rounded-md text-xs flex items-center gap-2">
+                            {% if LANGUAGE_CODE == 'ar' %}عرض التفاصيل{% else %}View Details{% endif %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </a>
+                        {% if order.status == 'pending' %}
+                        <button class="confirm-order btn-gradient bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-md text-xs flex items-center gap-2" data-id="{{ order.id }}">
+                            {% if LANGUAGE_CODE == 'ar' %}تأكيد{% else %}Confirm{% endif %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </button>
+                        <button class="cancel-order btn-gradient bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-md text-xs flex items-center gap-2" data-id="{{ order.id }}">
+                            {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        {% elif order.status == 'confirmed' %}
+                        <button class="complete-order btn-gradient bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-1 rounded-md text-xs flex items-center gap-2" data-id="{{ order.id }}">
+                            {% if LANGUAGE_CODE == 'ar' %}تحديث إلى مكتمل{% else %}Mark as Completed{% endif %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </button>
+                        <button class="cancel-order btn-gradient bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1 rounded-md text-xs flex items-center gap-2" data-id="{{ order.id }}">
+                            {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        {% if status_filter == 'confirmed'  %}
+        <!-- Commission Summary Section -->
+        <div class="mt-8 bg-white shadow-lg rounded-xl p-6 animate-fadeInUp">
+            <h3 class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {% if LANGUAGE_CODE == 'ar' %}ملخص العمولات{% else %}Commission Summary{% endif %}
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-stagger">
+                <!-- Total Orders Value -->
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-blue-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}إجمالي قيمة الطلبات{% else %}Total Orders Value{% endif %}</p>
+                            <p class="text-2xl font-bold text-blue-800 mt-1">{{ commission_stats.total_orders_value|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                        </div>
+                        <div class="bg-blue-100 p-2 rounded-full text-blue-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Commissions -->
+                <div class="bg-purple-50 p-4 rounded-lg border border-purple-100">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-purple-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}إجمالي العمولات{% else %}Total Commissions{% endif %}</p>
+                            <p class="text-2xl font-bold text-purple-800 mt-1">{{ commission_stats.total_commissions|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                        </div>
+                        <div class="bg-purple-100 p-2 rounded-full text-purple-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Club Revenue -->
+                <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-sm text-green-600 font-medium">{% if LANGUAGE_CODE == 'ar' %}إيرادات النادي{% else %}Club Revenue{% endif %}</p>
+                            <p class="text-2xl font-bold text-green-800 mt-1">{{ commission_stats.total_club_revenue|floatformat:2 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</p>
+                        </div>
+                        <div class="bg-green-100 p-2 rounded-full text-green-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vendor Commission Report Link -->
+            <div class="mt-6 text-center">
+                <a href="{% url 'vendor_commission_report' %}" class="inline-flex items-center px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all duration-300">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}عرض تقرير العمولات الكامل{% else %}View Full Commission Report{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="text-center py-8 text-gray-500 animate-fadeInUp">
+        <div class="flex flex-col items-center justify-center">
+            <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-lg">
+                {% if LANGUAGE_CODE == 'ar' %}لا توجد طلبات متاحة{% if status_filter != 'all' %} بهذه الحالة{% endif %}{% else %}No orders available{% if status_filter != 'all' %} with this status{% endif %}{% endif %}
+            </p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Order Details Modal -->
+    <div id="orderDetailsModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
+        <div id="orderModalBox" class="bg-white rounded-xl shadow-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto scale-95 opacity-0 transition-all duration-300 border border-gray-100">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">
+                        {% if LANGUAGE_CODE == 'ar' %}تفاصيل الطلب{% else %}Order Details{% endif %}
+                        <span id="modalOrderId"></span>
+                    </h3>
+                    <button id="closeModal" class="text-gray-500 hover:text-gray-700 transition-transform hover:scale-110">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+                <div id="orderDetailsContent">
+                    <div class="text-center py-10">
+                        <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cancellation Modal -->
+    <div id="cancellationModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div id="cancellationModalBox" class="bg-white rounded-xl shadow-xl max-w-md w-full opacity-0 scale-95 transition-all duration-300">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-bold text-gray-800">{% if LANGUAGE_CODE == 'ar' %}إلغاء الطلب{% else %}Cancel Order{% endif %}</h3>
+                    <button id="closeCancellationModal" class="text-gray-500 hover:text-gray-700 transition-transform hover:scale-110">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <p class="text-gray-600 mb-4">{% if LANGUAGE_CODE == 'ar' %}هل أنت متأكد من أنك تريد إلغاء الطلب{% else %}Are you sure you want to cancel order{% endif %} <span id="cancelOrderId" class="font-semibold">#1001</span>?</p>
+
+                    <div class="mb-4">
+                        <label for="cancellationReason" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% if LANGUAGE_CODE == 'ar' %}سبب الإلغاء{% else %}Reason for cancellation{% endif %} <span class="text-red-500">*</span>
+                        </label>
+                        <select id="cancellationReason" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors">
+                            <option value="">{% if LANGUAGE_CODE == 'ar' %}اختر السبب{% else %}Select a reason{% endif %}</option>
+                            <option value="customer_request">{% if LANGUAGE_CODE == 'ar' %}طلب العميل للإلغاء{% else %}Customer requested cancellation{% endif %}</option>
+                            <option value="payment_failed">{% if LANGUAGE_CODE == 'ar' %}فشل الدفع{% else %}Payment failed{% endif %}</option>
+                            <option value="out_of_stock">{% if LANGUAGE_CODE == 'ar' %}المنتج/الخدمة غير متوفرة{% else %}Product/Service out of stock{% endif %}</option>
+                            <option value="duplicate_order">{% if LANGUAGE_CODE == 'ar' %}طلب مكرر{% else %}Duplicate order{% endif %}</option>
+                            <option value="technical_issue">{% if LANGUAGE_CODE == 'ar' %}مشكلة تقنية{% else %}Technical issue{% endif %}</option>
+                            <option value="fraud_suspected">{% if LANGUAGE_CODE == 'ar' %}اشتباه احتيال{% else %}Fraud suspected{% endif %}</option>
+                            <option value="other">{% if LANGUAGE_CODE == 'ar' %}أخرى{% else %}Other{% endif %}</option>
+                        </select>
+                    </div>
+
+                    <div id="customReasonContainer" class="mb-4 hidden">
+                        <label for="customReason" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% if LANGUAGE_CODE == 'ar' %}يرجى التوضيح{% else %}Please specify{% endif %}
+                        </label>
+                        <textarea id="customReason" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none" placeholder="{% if LANGUAGE_CODE == 'ar' %}يرجى تقديم المزيد من التفاصيل...{% else %}Please provide more details...{% endif %}"></textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="additionalNotes" class="block text-sm font-medium text-gray-700 mb-2">
+                            {% if LANGUAGE_CODE == 'ar' %}ملاحظات إضافية (اختيارية){% else %}Additional notes (optional){% endif %}
+                        </label>
+                        <textarea id="additionalNotes" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors resize-none" placeholder="{% if LANGUAGE_CODE == 'ar' %}أي معلومات إضافية...{% else %}Any additional information...{% endif %}"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3">
+                    <button id="cancelCancellation" class="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors">
+                        {% if LANGUAGE_CODE == 'ar' %}الاحتفاظ بالطلب{% else %}Keep Order{% endif %}
+                    </button>
+                    <button id="confirmCancellation" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        {% if LANGUAGE_CODE == 'ar' %}إلغاء الطلب{% else %}Cancel Order{% endif %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% csrf_token %}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing event handlers...');
+
+            const cancellationModal = document.getElementById('cancellationModal');
+            const cancellationModalBox = document.getElementById('cancellationModalBox');
+            const modal = document.getElementById('orderDetailsModal');
+            const modalBox = document.getElementById('orderModalBox');
+            const cancellationReason = document.getElementById('cancellationReason');
+            const customReasonContainer = document.getElementById('customReasonContainer');
+            const confirmCancellationBtn = document.getElementById('confirmCancellation');
+            const orderSearchInput = document.getElementById('orderSearch');
+
+            let currentOrderId = null;
+
+            // Initialize search functionality
+            if (orderSearchInput) {
+                orderSearchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+                    const rows = document.querySelectorAll('#ordersTable tbody tr');
+
+                    rows.forEach(row => {
+                        const orderId = row.getAttribute('data-order-id').toLowerCase();
+                        const customerName = row.getAttribute('data-customer-name').toLowerCase();
+
+                        if (orderId.includes(searchTerm) || customerName.includes(searchTerm)) {
+                            row.style.display = '';
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
+            // Show/hide custom reason field
+            cancellationReason.addEventListener('change', function() {
+                if (this.value === 'other') {
+                    customReasonContainer.classList.remove('hidden');
+                } else {
+                    customReasonContainer.classList.add('hidden');
+                }
+                validateCancellationForm();
+            });
+
+            // Validate cancellation form
+            function validateCancellationForm() {
+                const reason = cancellationReason.value;
+                const customReason = document.getElementById('customReason').value;
+                const isValid = reason && (reason !== 'other' || customReason.trim());
+
+                confirmCancellationBtn.disabled = !isValid;
+            }
+
+            // Add validation listeners
+            cancellationReason.addEventListener('change', validateCancellationForm);
+            document.getElementById('customReason').addEventListener('input', validateCancellationForm);
+
+            // View order details - Fixed event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.view-details')) {
+                    const button = e.target.closest('.view-details');
+                    const orderId = button.getAttribute('data-id');
+                    console.log('View details clicked for order:', orderId);
+                    openOrderDetailsModal(orderId);
+                }
+            });
+
+            // Confirm order - Fixed event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.confirm-order')) {
+                    const button = e.target.closest('.confirm-order');
+                    const orderId = button.getAttribute('data-id');
+                    console.log('Confirm order clicked for order:', orderId);
+                    updateOrderStatus(orderId, 'confirmed');
+                }
+            });
+
+            // Complete order - Fixed event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.complete-order')) {
+                    const button = e.target.closest('.complete-order');
+                    const orderId = button.getAttribute('data-id');
+                    console.log('Complete order clicked for order:', orderId);
+                    updateOrderStatus(orderId, 'completed');
+                }
+            });
+
+            // Cancel order - show cancellation modal - Fixed event delegation
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.cancel-order')) {
+                    const button = e.target.closest('.cancel-order');
+                    currentOrderId = button.getAttribute('data-id');
+                    console.log('Cancel order clicked for order:', currentOrderId);
+                    document.getElementById('cancelOrderId').textContent = '#' + currentOrderId;
+
+                    // Reset form
+                    cancellationReason.value = '';
+                    document.getElementById('customReason').value = '';
+                    document.getElementById('additionalNotes').value = '';
+                    customReasonContainer.classList.add('hidden');
+                    validateCancellationForm();
+
+                    showModal(cancellationModal, cancellationModalBox);
+                }
+            });
+
+            // Confirm cancellation
+            document.getElementById('confirmCancellation').addEventListener('click', function() {
+                if (this.disabled) return;
+
+                const reason = cancellationReason.value;
+                const customReason = document.getElementById('customReason').value;
+                const additionalNotes = document.getElementById('additionalNotes').value;
+
+                console.log('Confirming cancellation:', {
+                    orderId: currentOrderId,
+                    reason: reason,
+                    customReason: customReason,
+                    additionalNotes: additionalNotes
+                });
+
+                // Call API to cancel order
+                cancelOrderWithReason(currentOrderId, reason, customReason, additionalNotes);
+            });
+
+            // Close cancellation modal
+            document.getElementById('closeCancellationModal').addEventListener('click', function() {
+                hideModal(cancellationModal, cancellationModalBox);
+            });
+
+            document.getElementById('cancelCancellation').addEventListener('click', function() {
+                hideModal(cancellationModal, cancellationModalBox);
+            });
+
+            // Close cancellation modal when clicking outside
+            cancellationModal.addEventListener('click', function(e) {
+                if (e.target === cancellationModal) {
+                    hideModal(cancellationModal, cancellationModalBox);
+                }
+            });
+
+            // Close order details modal
+            document.getElementById('closeModal').addEventListener('click', function() {
+                hideModal(modal, modalBox);
+            });
+
+            // Close modal when clicking outside
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    hideModal(modal, modalBox);
+                }
+            });
+        });
+
+        function openOrderDetailsModal(orderId) {
+            const modal = document.getElementById('orderDetailsModal');
+            const modalBox = document.getElementById('orderModalBox');
+
+            document.getElementById('modalOrderId').textContent = '#' + orderId;
+            showModal(modal, modalBox);
+
+            document.getElementById('orderDetailsContent').innerHTML = `
+            <div class="text-center py-10">
+                <svg class="animate-spin h-8 w-8 text-blue-500 mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+            </div>`;
+
+            // Get order details
+            fetch(`/club_dashboard/club/orders/${orderId}/details/`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error({% if LANGUAGE_CODE == 'ar' %}`خطأ في الاستجابة: ${response.status}`{% else %}`Response error: ${response.status}`{% endif %});
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log({% if LANGUAGE_CODE == 'ar' %}"تم استلام البيانات:"{% else %}"Data received:"{% endif %}, data);
+                    if (data.status === 'success') {
+                        document.getElementById('orderDetailsContent').innerHTML = data.html;
+                    } else {
+                        throw new Error(data.message || {% if LANGUAGE_CODE == 'ar' %}"حدث خطأ غير معروف"{% else %}"An unknown error occurred"{% endif %});
+                    }
+                })
+                .catch(error => {
+                    console.error({% if LANGUAGE_CODE == 'ar' %}"خطأ:"{% else %}"Error:"{% endif %}, error);
+                    document.getElementById('orderDetailsContent').innerHTML =
+                        `<div class="text-center py-8 text-red-600">
+                            <p>{% if LANGUAGE_CODE == 'ar' %}حدث خطأ أثناء تحميل تفاصيل الطلب: ${error.message}{% else %}An error occurred while loading order details: ${error.message}{% endif %}</p>
+                        </div>`;
+                });
+        }
+
+        function updateOrderStatus(orderId, status) {
+            // CSRF token from cookie
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('status', status);
+
+            // Send API request
+            fetch(`/club_dashboard/club/orders/${orderId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Show success message
+                    alert(data.message);
+                    // Reload the page to see updated status
+                    window.location.reload();
+                } else {
+                    alert({% if LANGUAGE_CODE == 'ar' %}'حدث خطأ: ' + data.message{% else %}'Error: ' + data.message{% endif %});
+                }
+            })
+            .catch(error => {
+                alert({% if LANGUAGE_CODE == 'ar' %}'حدث خطأ أثناء تحديث حالة الطلب.'{% else %}'An error occurred while updating the order status.'{% endif %});
+            });
+        }
+
+        function cancelOrderWithReason(orderId, reason, customReason, additionalNotes) {
+            // CSRF token from cookie
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('status', 'cancelled');
+            formData.append('reason', reason);
+            formData.append('custom_reason', customReason);
+            formData.append('additional_notes', additionalNotes);
+
+            // Send API request
+            fetch(`/club_dashboard/club/orders/${orderId}/update/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Show success message
+                    alert(data.message);
+                    // Hide modal and reload the page
+                    hideModal(document.getElementById('cancellationModal'), document.getElementById('cancellationModalBox'));
+                    window.location.reload();
+                } else {
+                    alert({% if LANGUAGE_CODE == 'ar' %}'حدث خطأ: ' + data.message{% else %}'Error: ' + data.message{% endif %});
+                }
+            })
+            .catch(error => {
+                alert({% if LANGUAGE_CODE == 'ar' %}'حدث خطأ أثناء إلغاء الطلب.'{% else %}'An error occurred while cancelling the order.'{% endif %});
+            });
+        }
+
+        // Modal helper functions
+        function showModal(modal, modalBox) {
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalBox.classList.remove('opacity-0', 'scale-95');
+                modalBox.classList.add('opacity-100', 'scale-100');
+            }, 10);
+        }
+
+        function hideModal(modal, modalBox) {
+            modalBox.classList.remove('opacity-100', 'scale-100');
+            modalBox.classList.add('opacity-0', 'scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Helper function to get readable cancellation reason
+        function getCancellationReasonText(reason, customReason) {
+            const reasons = {
+                {% if LANGUAGE_CODE == 'ar' %}
+                'customer_request': 'طلب العميل للإلغاء',
+                'payment_failed': 'فشل الدفع',
+                'out_of_stock': 'المنتج/الخدمة غير متوفرة',
+                'duplicate_order': 'طلب مكرر',
+                'technical_issue': 'مشكلة تقنية',
+                'fraud_suspected': 'اشتباه احتيال',
+                {% else %}
+                'customer_request': 'Customer requested cancellation',
+                'payment_failed': 'Payment failed',
+                'out_of_stock': 'Product/Service out of stock',
+                'duplicate_order': 'Duplicate order',
+                'technical_issue': 'Technical issue',
+                'fraud_suspected': 'Fraud suspected',
+                {% endif %}
+                'other': customReason
+            };
+            return reasons[reason] || reason;
+        }
+
+        window.showReceiptModal = function(imageUrl) {
+            console.log('showReceiptModal called with URL:', imageUrl);
+
+            try {
+                let modal = document.getElementById('receiptModal');
+
+                // Create modal if it doesn't exist
+                if (!modal) {
+                    modal = createReceiptModal();
+                }
+
+                const image = modal.querySelector('#receiptImage');
+
+                if (!image) {
+                    throw new Error('Image element not found');
+                }
+
+                console.log('Setting image source to:', imageUrl);
+                image.src = imageUrl;
+
+                console.log('Showing modal...');
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+
+                console.log('Modal should be visible now');
+
+            } catch (error) {
+                console.error('Error in showReceiptModal:', error);
+                alert('Error: ' + error.message);
+            }
+        };
+
+        window.closeReceiptModal = function() {
+            console.log('closeReceiptModal called');
+            const modal = document.getElementById('receiptModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        };
+
+        // Function to create the modal if it doesn't exist
+        function createReceiptModal() {
+            const modalHTML = `
+                <div id="receiptModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-lg max-w-4xl max-h-full overflow-auto">
+                        <div class="p-4 border-b flex justify-between items-center">
+                            <h3 class="text-lg font-semibold">Transfer Receipt</h3>
+                            <button onclick="closeReceiptModal()" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="p-4">
+                            <img id="receiptImage" src="" alt="Transfer Receipt" class="max-w-full h-auto rounded-lg shadow-lg">
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+            const modal = document.getElementById('receiptModal');
+
+            // Add event listeners
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeReceiptModal();
+                }
+            });
+
+            // Close modal with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeReceiptModal();
+                }
+            });
+
+            return modal;
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Receipt modal functions initialized');
+        });
+    </script>
+</div>
+{% endblock %}

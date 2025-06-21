@@ -1,0 +1,586 @@
+{% extends "base_student_dashboard.html" %}
+{% load static %}
+{% load messenger_tags %}
+
+{% block links %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+{% endblock links %}
+
+{% block content %}
+<style>
+  #msg-container-box {
+    overflow-y: scroll;
+  }
+  .chat-toggle-btn {
+    background-color: #2a2a2a !important;
+    margin-bottom: 10px;
+  }
+  .chat-status {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+  }
+  .chat-enabled {
+    background-color: #28a745;
+  }
+  .chat-disabled {
+    background-color: #dc3545;
+  }
+  .chat-layout {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+  }
+
+  .chat-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .message-bubble {
+    position: relative;
+  }
+
+  .message-bubble:hover .message-actions {
+    opacity: 1;
+  }
+
+  .message-actions {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    display: flex;
+    gap: 5px;
+  }
+
+  .message-actions button {
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+  }
+
+  .message-actions button:hover {
+    background: rgba(0, 0, 0, 0.9);
+  }
+
+  .message-deleted {
+    opacity: 0.5;
+    font-style: italic;
+  }
+
+  @media (max-width: 768px) {
+    .chat-sidebar {
+      display: none;
+    }
+  }
+</style>
+<div class="chat-layout">
+  {% include "messenger/chat_sidebar.html" %}
+  <div class="chat-content">
+    <div class="flex-grow flex flex-col">
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white fixed top-0 left-0 right-0 z-10 shadow-lg">
+        <div class="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            {% if profile_image %}
+            <img src="data:image/jpeg;base64,{{ club.club_profile_image_base64|safe }}"
+                 alt="صورة الملف الشخصي للصالون"
+                 class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white ml-4"
+                 style="background-color: white;" />
+            {% else %}
+            <img src="{% static '/img/default-profile-img-2.png' %}" alt="" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white" />
+            {% endif %}
+            <h5 class="text-lg sm:text-xl font-bold">الدردشة الجماعية</h5>
+          </div>
+          {% if is_director %}
+          <div class="flex items-center space-x-3">
+            <button
+                    id="chatToggleBtn"
+                    onclick="toggleChatStatus({{ receiver.id }})"
+                    class="ml-6 flex items-center gap-2 px-4 py-2 rounded-full font-medium shadow-md transition-all duration-300 ease-in-out
+      {% if chat_enabled %}
+      bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-lg transform hover:scale-105
+      {% else %}
+      bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:shadow-lg transform hover:scale-105
+      {% endif %}">
+              <span class="inline-block w-3 h-3 rounded-full bg-white opacity-90"></span>
+              {% if chat_enabled %}
+              <span class="font-bold">إيقاف الدردشة</span>
+              {% else %}
+              <span class="font-bold">تفعيل الدردشة</span>
+              {% endif %}
+            </button>
+            {% endif %}
+            <a href="{% if user.userprofile.account_type == '2' %}{% url 'club_dashboard_index' %}{% elif user.userprofile.account_type == '3' %}{% url 'studentIndex' %}{% elif user.userprofile.account_type == '4' %}{% url 'coachIndex' %}{% elif user.userprofile.account_type == '5' %}{% url 'receptionistIndex' %}{% elif user.userprofile.account_type == '6' %}{% url 'administrator_dashboard_index' %}{% endif %}"
+               class="flex items-center gap-2 px-4 py-2 rounded-full font-medium shadow-md transition-all duration-300 ease-in-out
+            bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:shadow-lg transform hover:scale-105">
+              <i class="bi bi-house-door-fill"></i>
+              <span class="font-bold">الرئيسية</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex-grow overflow-y-auto pt-20 pb-24" id="msg-container-box">
+        <div class="max-w-4xl mx-auto px-4 py-8" id="msg-container-box2">
+          {% for messages in messages_list %}
+          <p class="text-center text-sm text-gray-500 my-6">
+            {{messages.0|date:'Y-m-d'}}
+          </p>
+          {% for message in messages.1 %}
+          {% if message.sender == request.user %}
+          <div class="flex justify-end mb-4">
+            <div class="bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-xs lg:max-w-md shadow-md transform transition-all duration-300 hover:scale-105 message-bubble" data-msg-id="{{ message.id }}">
+              <p class="text-sm">{{message.msg}}</p>
+              <div class="flex items-center justify-end mt-1">
+                <span class="text-xs opacity-75">{{message.creation_date|date:'H:i'}}</span>
+                <i id="msg-status-{{message.id}}" class="bi {% if message.is_readed %}bi-check2-all{% else %}bi-check2{% endif %} ml-1 text-xs"></i>
+              </div>
+              <div class="message-actions">
+                <button onclick="deleteMessage({{ message.id }})" title="حذف الرسالة">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          {% get_user_full_name_temp message.sender.id as full_name %}
+          {% get_user_capacity_temp message.sender.id as user_capacity %}
+          <div class="flex mb-4">
+            <div class="bg-white rounded-lg px-4 py-2 max-w-xs lg:max-w-md shadow-md transform transition-all duration-300 hover:scale-105 message-bubble" data-msg-id="{{ message.id }}">
+              <p class="text-xs font-medium">
+                <span class="text-red-500">{{user_capacity}}</span> -
+                <span class="text-green-600 cursor-pointer user-name" data-user-id="{{message.sender.id}}">{{full_name}}</span>
+              </p>
+              <p class="text-sm mt-1">{{message.msg}}</p>
+              <span class="text-xs text-gray-500 block text-right mt-1">{{message.creation_date|date:'H:i'}}</span>
+              {% if is_director %}
+              <div class="message-actions">
+                <button onclick="deleteMessage({{ message.id }})" title="حذف الرسالة">
+                  <i class="bi bi-trash"></i>
+                </button>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+          {% endif %}
+          {% endfor %}
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-4 py-3">
+        <form id="form" class="flex items-center gap-2 max-w-4xl mx-auto" onsubmit="event.preventDefault(); SendMsg();">
+          <input type="text" id="senderMsg" class="flex-grow mr-2 px-4 py-2 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300 ease-in-out" {% if not chat_enabled and not is_director %}disabled placeholder="تم إيقاف الدردشة"{% else %}placeholder="اكتب رسالة..."{% endif %} />
+          <button type="submit" class="bg-indigo-600 text-white rounded-full px-3 py-1 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition duration-300 ease-in-out transform hover:scale-105" {% if not chat_enabled and not is_director %}disabled{% endif %} >
+            <i class="bi bi-send-fill text-lg transform rotate-45"></i>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <dialog id="user-dialog" class="bg-white rounded-lg shadow-xl p-4 w-64">
+      {% if request.user.userprofile.account_type == '2' or request.user.userprofile.account_type == '4' or request.user.userprofile.account_type == '5' %}
+      <a href="" id="view-profile" class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded mb-2 transition duration-300 ease-in-out">
+        فتح شات خاص
+      </a>
+      {% endif %}
+      <button id="toggleFavorite" class="block w-full text-center bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded mb-2 transition duration-300 ease-in-out">
+        {% if not is_favorite %}اضافة الى مفضلة{% else %}ازالة من المفضلة{% endif %}
+      </button>
+      <button id="toggleBlock" class="block w-full text-center bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+        {% if not is_blocked %}حظر{% else %}الغاء الحظر{% endif %}
+      </button>
+      <button id="close-dialog" class="mt-4 block w-full text-center bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded transition duration-300 ease-in-out">
+        إغلاق
+      </button>
+    </dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <dialog id="delete-dialog" class="bg-white rounded-lg shadow-xl p-6 w-80">
+      <h3 class="text-lg font-bold mb-4 text-gray-800">تأكيد الحذف</h3>
+      <p class="text-gray-600 mb-6">هل أنت متأكد من أنك تريد حذف هذه الرسالة؟</p>
+      <div class="flex gap-3 justify-end">
+        <button id="cancel-delete" class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded transition duration-300 ease-in-out">
+          إلغاء
+        </button>
+        <button id="confirm-delete" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition duration-300 ease-in-out">
+          حذف
+        </button>
+      </div>
+    </dialog>
+  </div>
+</div>
+<script>
+  let messageToDelete = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+
+    const dialog = document.getElementById('user-dialog');
+    const deleteDialog = document.getElementById('delete-dialog');
+    const toggleFavorite = document.getElementById('toggleFavorite');
+    const toggleBlock = document.getElementById('toggleBlock');
+    const viewProfile = document.getElementById('view-profile');
+    const closeDialog = document.getElementById('close-dialog');
+    const cancelDelete = document.getElementById('cancel-delete');
+    const confirmDelete = document.getElementById('confirm-delete');
+    let currentUserId = null;
+
+    // Function to bind click events to user names
+    function bindUserNameEvents() {
+      document.querySelectorAll('.user-name').forEach(element => {
+        // Remove existing event listeners to prevent duplicates
+        element.removeEventListener('click', userNameClickHandler);
+        // Add new event listener
+        element.addEventListener('click', userNameClickHandler);
+      });
+    }
+
+    // Handler function for user name clicks
+    function userNameClickHandler(e) {
+      e.preventDefault();
+      const userId = this.dataset.userId;
+      currentUserId = userId;
+
+      // For directors and coaches, link to private chat
+      if ('{{ request.user.userprofile.account_type }}' === '2' || '{{ request.user.userprofile.account_type }}' === '4' || '{{ request.user.userprofile.account_type }}' === '5') {
+        viewProfile.href = `/messenger/createPrivateChat/${userId}`;
+      } else {
+        // For students, just show profile
+        viewProfile.href = `/profile/${userId}/`;
+      }
+
+      // Check if user is favorite or blocked and update buttons
+      fetch(`/messenger/api/user-status/${userId}/`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            toggleFavorite.textContent = data.is_favorite ? 'ازالة من المفضلة' : 'اضافة الى مفضلة';
+            toggleBlock.textContent = data.is_blocked ? 'الغاء الحظر' : 'حظر';
+          }
+        })
+        .catch(error => console.error('Error fetching user status:', error));
+
+      dialog.showModal();
+    }
+
+    // Initial binding
+    bindUserNameEvents();
+
+    closeDialog.addEventListener('click', function() {
+      dialog.close();
+    });
+
+    cancelDelete.addEventListener('click', function() {
+      deleteDialog.close();
+      messageToDelete = null;
+    });
+
+    confirmDelete.addEventListener('click', function() {
+      if (messageToDelete) {
+        send({
+          'method': 'delete_msg',
+          'msg_id': messageToDelete
+        });
+        deleteDialog.close();
+        messageToDelete = null;
+      }
+    });
+
+    toggleFavorite.addEventListener('click', function() {
+      if (currentUserId) {
+        fetch(`/messenger/toggle_favorite/${currentUserId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.textContent = data.is_favorite ? 'ازالة من المفضلة' : 'اضافة الى مفضلة';
+          }
+        })
+        .catch(error => console.error('Error toggling favorite:', error));
+      }
+    });
+
+    toggleBlock.addEventListener('click', function() {
+      if (currentUserId) {
+        fetch(`/messenger/toggle_block/${currentUserId}/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            this.textContent = data.is_blocked ? 'الغاء الحظر' : 'حظر';
+          }
+        })
+        .catch(error => console.error('Error toggling block:', error));
+      }
+    });
+
+    // Helper function to get CSRF token from cookies
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    function scrollToBottom() {
+      let msgBox = document.querySelector('#msg-container-box');
+      msgBox.scrollTop = msgBox.scrollHeight;
+    }
+
+    scrollToBottom();
+    window.addEventListener("load", init);
+    function init() {
+      document.getElementById("form").addEventListener("submit", function(e) {
+        e.preventDefault();
+        SendMsg()
+      });
+    }
+
+    let user_id = {{request.user.id}}
+
+    let url = `ws://${window.location.host}/ws/socket-server/{{room_id}}/`
+    const chatSocket = new WebSocket(url)
+    function send(query) {
+      chatSocket.send(
+        JSON.stringify(query)
+      )
+    }
+
+    window.send = send;
+
+    chatSocket.onmessage = function(e) {
+      let data = JSON.parse(e.data)
+      if (data.user_id != user_id) {
+        if (data.method === 'ChatDisabled') {
+          // Show message that chat is disabled
+          const messageContainer = document.querySelector('#chat-messages');
+          const errorDiv = document.createElement('div');
+          errorDiv.className = 'alert alert-warning text-center';
+          errorDiv.textContent = 'تم إيقاف الدردشة من قبل المدير';
+          messageContainer.appendChild(errorDiv);
+          return;
+        }
+        else if (data.method == 'send_msg') {
+          ReceiveMsg(data);
+          send({
+            'method': 'msg_readed',
+            'msg_id': data.msg_id
+          });
+        } else if (data.method == 'msg_readed') {
+          let msg_obj = document.querySelector(`#msg-status-${data.msg_id}`)
+          msg_obj.classList.remove('bi-check2')
+          msg_obj.classList.add('bi-check2-all')
+        } else if (data.method == 'msg_read_all') {
+          let msg_objs = document.querySelectorAll(`.sender i`)
+          msg_objs.forEach(msg_obj => {
+            if (!msg_obj.classList.contains('bi-check2-all')) {
+              msg_obj.classList.remove('bi-check2')
+              msg_obj.classList.add('bi-check2-all')
+            }
+          })
+        } else if (data.method == 'msg_deleted') {
+          handleMessageDeleted(data.msg_id);
+        }
+      } else if (data.user_id == user_id) {
+        if (data.method == 'send_msg') {
+          let msg_html = `
+            <div class="flex justify-end mb-4">
+              <div class="bg-indigo-600 text-white rounded-lg px-4 py-2 max-w-xs lg:max-w-md shadow-md transform transition-all duration-300 hover:scale-105 message-bubble" data-msg-id="${data.msg_id}">
+                <p class="text-sm">${data.message}</p>
+                <div class="flex items-center justify-end mt-1">
+                  <span class="text-xs opacity-75">${data.creation_date}</span>
+                  <i id="msg-status-${data.msg_id}" class="bi bi-check2 ml-1 text-xs"></i>
+                </div>
+                <div class="message-actions">
+                  <button onclick="deleteMessage(${data.msg_id})" title="حذف الرسالة">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+          `
+          let msgBox = document.querySelector('#msg-container-box2')
+          msgBox.insertAdjacentHTML('beforeend', msg_html)
+          scrollToBottom()
+
+          if (data.send_toast) {
+            send_noti({
+              'type': 'showToast',
+              'method': 'showToast',
+              'receiver_id': data.receiver_id,
+              'msg_id': data.msg_id,
+            })
+          }
+        } else if (data.method == 'msg_deleted') {
+          handleMessageDeleted(data.msg_id);
+        } else if (data.method == 'delete_error') {
+          alert(data.message);
+        }
+      }
+    }
+
+    function SendMsg() {
+      let msg = document.querySelector('#senderMsg')
+      if (!msg.value) return false
+      send({
+        'method': 'send_msg',
+        'message': msg.value
+      })
+      msg.value = ""
+      return false
+    }
+
+    window.ReceiveMsg = function(data) {
+      let msgBox = document.querySelector('#msg-container-box2');
+      const isDirector = '{{ is_director }}' === 'True';
+      let deleteButton = '';
+
+      if (isDirector) {
+        deleteButton = `
+          <div class="message-actions">
+            <button onclick="deleteMessage(${data.msg_id})" title="حذف الرسالة">
+              <i class="bi bi-trash"></i>
+            </button>
+                    </div>
+        `;
+      }
+
+      let msg_html = `
+        <div class="flex mb-4">
+          <div class="bg-white rounded-lg px-4 py-2 max-w-xs lg:max-w-md shadow-md transform transition-all duration-300 hover:scale-105 message-bubble" data-msg-id="${data.msg_id}">
+            <p class="text-xs font-medium">
+              <span class="text-red-500">${data.user_capacity}</span> -
+              <span class="text-green-600 cursor-pointer user-name" data-user-id="${data.user_id}">${data.full_name}</span>
+            </p>
+            <p class="text-sm mt-1">${data.message}</p>
+            <span class="text-xs text-gray-500 block text-right mt-1">${data.creation_date}</span>
+            ${deleteButton}
+          </div>
+        </div>
+      `;
+
+      msgBox.insertAdjacentHTML('beforeend', msg_html);
+      scrollToBottom();
+      bindUserNameEvents(); // Rebind events for new messages
+    }
+
+    function handleMessageDeleted(msg_id) {
+      const messageElement = document.querySelector(`.message-bubble[data-msg-id="${msg_id}"]`);
+      if (messageElement) {
+        messageElement.classList.add('message-deleted');
+        const messageText = messageElement.querySelector('p:not(.text-xs)');
+        if (messageText) {
+          messageText.textContent = 'تم حذف هذه الرسالة';
+        }
+        const actions = messageElement.querySelector('.message-actions');
+        if (actions) {
+          actions.remove();
+        }
+      }
+    }
+
+    window.deleteMessage = function(msg_id) {
+      messageToDelete = msg_id;
+      deleteDialog.showModal();
+    }
+  });
+
+  function toggleChatStatus(clubId) {
+    fetch(`/messenger/toggle_chat_status/${clubId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': getCookie('csrftoken'),
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(async response => {
+      const contentType = response.headers.get('content-type');
+      const text = await response.text();
+      console.log("Raw response text:", text); // Debug line
+
+      if (!response.ok) {
+        throw new Error(`Server error ${response.status}: ${text}`);
+      }
+
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Expected JSON, got: ${text}`);
+      }
+
+      const data = JSON.parse(text);
+
+      if (data.status) {
+        const btn = document.getElementById('chatToggleBtn');
+        if (data.enabled) {
+          btn.classList.remove('bg-gradient-to-r', 'from-green-500', 'to-emerald-600');
+          btn.classList.add('bg-gradient-to-r', 'from-red-500', 'to-red-600');
+          btn.innerHTML = '<span class="inline-block w-3 h-3 rounded-full bg-white opacity-90"></span><span class="font-bold">إيقاف الدردشة</span>';
+          document.getElementById('senderMsg').disabled = false;
+          document.getElementById('senderMsg').placeholder = 'اكتب رسالة...';
+        } else {
+          btn.classList.remove('bg-gradient-to-r', 'from-red-500', 'to-red-600');
+          btn.classList.add('bg-gradient-to-r', 'from-green-500', 'to-emerald-600');
+          btn.innerHTML = '<span class="inline-block w-3 h-3 rounded-full bg-white opacity-90"></span><span class="font-bold">تفعيل الدردشة</span>';
+          if (!('{{ is_director }}' === 'True')) {
+            document.getElementById('senderMsg').disabled = true;
+            document.getElementById('senderMsg').placeholder = 'تم إيقاف الدردشة';
+          }
+        }
+      }
+    })
+    .catch(error => {
+      console.error('Error toggling chat status:', error);
+    });
+  }
+
+
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        // Check if this cookie string begins with the name we want
+        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+
+</script>
+{% endblock content %}

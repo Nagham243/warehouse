@@ -1,0 +1,77 @@
+{% extends "base_student_dashboard.html" %}
+
+{% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen">
+  <div class="container mx-auto px-4 py-8">
+
+    <!-- Page Title -->
+    <div class="text-center mb-12">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 text-pink-900">
+        {% if LANGUAGE_CODE == 'ar' %}
+        تقييماتك
+        {% else %}
+        Your Reviews
+        {% endif %}
+      </h1>
+      <p class="text-xl text-pink-700 max-w-2xl mx-auto">
+        {% if LANGUAGE_CODE == 'ar' %}
+        استعرض وقم بتعديل تقييماتك السابقة لمدربي النادي.
+        {% else %}
+        View and edit your previous reviews for salon employees.
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- Review List Section -->
+    <div class="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
+      {% if student_reviews %}
+      <ul class="space-y-3">
+        {% for review in student_reviews %}
+        <li class="p-4 border border-pink-100 rounded-lg shadow transition hover:shadow-lg hover:border-pink-200 bg-pink-50">
+          <div class="flex justify-between items-center">
+            <h4 class="font-bold text-pink-800 text-lg">{{ review.coach.full_name }}</h4>
+            <p class="text-sm text-pink-600">✨ {{ review.rating }}</p>
+          </div>
+          <p class="text-gray-800 mt-2">{{ review.comment }}</p>
+          <p class="text-xs text-pink-500 mt-2">📅 {{ review.created_at|date:"Y-m-d H:i" }}</p>
+
+          <!-- Edit Button -->
+          <div class="mt-3 flex justify-end">
+            <a href="{% url 'edit_review' review.id %}"
+               class="px-4 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition transform hover:scale-105 duration-200">
+              {% if LANGUAGE_CODE == 'ar' %}
+              تعديل التقييم
+              {% else %}
+              Edit Review
+              {% endif %}
+            </a>
+          </div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <p class="text-center text-pink-500 text-lg">
+        {% if LANGUAGE_CODE == 'ar' %}
+        💖 لم تقم بإضافة أي تقييمات بعد.
+        {% else %}
+        💖 You haven't added any reviews yet.
+        {% endif %}
+      </p>
+      {% endif %}
+
+      <!-- Add New Review Button -->
+      <div class="mt-6 text-center">
+        <a href="{% url 'add_review' %}"
+           class="px-6 py-2 bg-pink-600 text-white rounded-lg hover:bg-pink-700 transition transform hover:scale-105 duration-200">
+          {% if LANGUAGE_CODE == 'ar' %}
+          ✨ إضافة تقييم جديد
+          {% else %}
+          ✨ Add New Review
+          {% endif %}
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,654 @@
+{% extends "base_admin_dashboard.html" %}
+
+{% block content %}
+<main class="md:pr-[20%] bg-indigo-50 w-full px-8 min-h-screen">
+    <h1 class="text-3xl font-bold px-8 pt-8 pb-8">
+        {% if LANGUAGE_CODE == 'ar' %}إدارة باقات التسعير{% else %}Manage Pricing Plans{% endif %}
+    </h1>
+
+    <div class="px-2 md:px-8">
+        <div class="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h3 class="text-xl font-bold mb-6 flex items-center">
+                <span class="text-2xl mr-3">💰</span>
+                {% if LANGUAGE_CODE == 'ar' %}إدارة باقات التسعير للموقع{% else %}Manage Website Pricing Plans{% endif %}
+            </h3>
+
+            <div class="mb-6 p-4 bg-blue-50 rounded-md border-l-4 border-blue-400">
+                <p class="text-lg text-blue-800 font-semibold">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    إدارة باقات التسعير التي تظهر على الصفحة الرئيسية للموقع
+                    {% else %}
+                    Manage pricing plans displayed on the website's main page
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Add New Plan Button -->
+            <div class="mb-6">
+                <button type="button" onclick="addNewPlan()"
+                        class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300 shadow-md">
+                    {% if LANGUAGE_CODE == 'ar' %}➕ إضافة باقة جديدة{% else %}➕ Add New Plan{% endif %}
+                </button>
+            </div>
+
+            <!-- Pricing Plans Display -->
+            <div id="pricing-plans">
+                {% if pricing_data %}
+                {% for plan in pricing_data %}
+                <div class="mb-6 border border-gray-200 rounded-lg shadow-sm plan-item bg-white" data-plan-id="{{ forloop.counter }}">
+                    <!-- Read-only View -->
+                    <div class="plan-view p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-xl font-bold text-gray-800 mb-2">{{ plan.name }}</h4>
+                                <div class="flex items-end mb-4">
+                                    <span class="text-3xl font-bold text-indigo-600">{{ plan.price }}</span>
+                                    <span class="text-sm text-gray-500 ml-1 mb-1">
+                                        {% if LANGUAGE_CODE == 'ar' %}/شهريًا{% else %}/month{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="editPlan({{ forloop.counter }})"
+                                        class="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}✏️ تعديل{% else %}✏️ Edit{% endif %}
+                                </button>
+                                <button type="button" onclick="removePlan(this)"
+                                        class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}🗑️ حذف{% else %}🗑️ Delete{% endif %}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h5 class="font-semibold text-gray-700 mb-3">
+                                {% if LANGUAGE_CODE == 'ar' %}المميزات:{% else %}Features:{% endif %}
+                            </h5>
+                            <ul class="space-y-2">
+                                {% for feature in plan.features %}
+                                <li class="flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>{{ feature }}</span>
+                                </li>
+                                {% empty %}
+                                <li class="text-gray-500 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}لا توجد مميزات محددة{% else %}No features specified{% endif %}
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Edit Form (Hidden by default) -->
+                    <form class="plan-edit hidden p-6 bg-gray-50" method="POST" onsubmit="savePlanForm(event, {{ forloop.counter }})">
+                        {% csrf_token %}
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800">
+                                {% if LANGUAGE_CODE == 'ar' %}تعديل الباقة{% else %}Edit Plan{% endif %}
+                            </h4>
+                            <div class="flex gap-2">
+                                <button type="submit"
+                                        class="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}💾 حفظ{% else %}💾 Save{% endif %}
+                                </button>
+                                <button type="button" onclick="cancelEdit({{ forloop.counter }})"
+                                        class="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}❌ إلغاء{% else %}❌ Cancel{% endif %}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {% if LANGUAGE_CODE == 'ar' %}اسم الباقة{% else %}Plan Name{% endif %}
+                                </label>
+                                <input type="text" name="name" value="{{ plan.name }}"
+                                       class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}
+                                </label>
+                                <input type="text" name="price" value="{{ plan.price }}"
+                                       class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {% if LANGUAGE_CODE == 'ar' %}المميزات (مفصولة بفواصل){% else %}Features (comma separated){% endif %}
+                            </label>
+                            <textarea name="features" rows="3"
+                                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                      placeholder="{% if LANGUAGE_CODE == 'ar' %}مثال: مستخدم واحد, 20 لاعب, تقارير أساسية{% else %}Example: Single user, 20 players, Basic reports{% endif %}">{{ plan.features|join:", " }}</textarea>
+                        </div>
+
+                        <input type="hidden" name="plan_id" value="{{ forloop.counter }}">
+                        <input type="hidden" name="action" value="save_plan">
+                    </form>
+                </div>
+                {% endfor %}
+                {% else %}
+                <!-- Default plan if no pricing exists -->
+                <div class="mb-6 border border-gray-200 rounded-lg shadow-sm plan-item bg-white" data-plan-id="1">
+                    <!-- Read-only View -->
+                    <div class="plan-view p-6">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex-1">
+                                <h4 class="text-xl font-bold text-gray-800 mb-2">الباقة المجانية</h4>
+                                <div class="flex items-end mb-4">
+                                    <span class="text-3xl font-bold text-indigo-600">0</span>
+                                    <span class="text-sm text-gray-500 ml-1 mb-1">
+                                        {% if LANGUAGE_CODE == 'ar' %}/شهريًا{% else %}/month{% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="editPlan(1)"
+                                        class="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}✏️ تعديل{% else %}✏️ Edit{% endif %}
+                                </button>
+                                <button type="button" onclick="removePlan(this)"
+                                        class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}🗑️ حذف{% else %}🗑️ Delete{% endif %}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h5 class="font-semibold text-gray-700 mb-3">
+                                {% if LANGUAGE_CODE == 'ar' %}المميزات:{% else %}Features:{% endif %}
+                            </h5>
+                            <ul class="space-y-2">
+                                <li class="flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>مستخدم واحد</span>
+                                </li>
+                                <li class="flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>20 لاعب</span>
+                                </li>
+                                <li class="flex items-center text-sm text-gray-600">
+                                    <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    <span>تقارير أساسية</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Edit Form (Hidden by default) -->
+                    <form class="plan-edit hidden p-6 bg-gray-50" method="POST" onsubmit="savePlanForm(event, 1)">
+                        {% csrf_token %}
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="text-lg font-semibold text-gray-800">
+                                {% if LANGUAGE_CODE == 'ar' %}تعديل الباقة{% else %}Edit Plan{% endif %}
+                            </h4>
+                            <div class="flex gap-2">
+                                <button type="submit"
+                                        class="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}💾 حفظ{% else %}💾 Save{% endif %}
+                                </button>
+                                <button type="button" onclick="cancelEdit(1)"
+                                        class="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 text-sm">
+                                    {% if LANGUAGE_CODE == 'ar' %}❌ إلغاء{% else %}❌ Cancel{% endif %}
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {% if LANGUAGE_CODE == 'ar' %}اسم الباقة{% else %}Plan Name{% endif %}
+                                </label>
+                                <input type="text" name="name" value="الباقة المجانية"
+                                       class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       required>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    {% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}
+                                </label>
+                                <input type="text" name="price" value="0"
+                                       class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {% if LANGUAGE_CODE == 'ar' %}المميزات (مفصولة بفواصل){% else %}Features (comma separated){% endif %}
+                            </label>
+                            <textarea name="features" rows="3"
+                                      class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                      placeholder="{% if LANGUAGE_CODE == 'ar' %}مثال: مستخدم واحد, 20 لاعب, تقارير أساسية{% else %}Example: Single user, 20 players, Basic reports{% endif %}">مستخدم واحد, 20 لاعب, تقارير أساسية</textarea>
+                        </div>
+
+                        <input type="hidden" name="plan_id" value="1">
+                        <input type="hidden" name="action" value="save_plan">
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex gap-4 mt-8">
+                <button type="button" onclick="previewPricing()"
+                        class="bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-300 shadow-md">
+                    {% if LANGUAGE_CODE == 'ar' %}👁️ معاينة{% else %}👁️ Preview{% endif %}
+                </button>
+
+                <a href="{% url 'adminIndex' %}"
+                   class="bg-gray-400 text-white px-6 py-3 rounded-lg hover:bg-gray-500 transition-all duration-300 shadow-md">
+                    {% if LANGUAGE_CODE == 'ar' %}🔙 العودة للوحة التحكم{% else %}🔙 Back to Dashboard{% endif %}
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="previewModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg max-w-6xl w-full mx-4 max-h-96 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">
+                    {% if LANGUAGE_CODE == 'ar' %}معاينة الباقات{% else %}Pricing Preview{% endif %}
+                </h3>
+                <button onclick="closePreview()" class="text-gray-500 hover:text-gray-700 text-xl">✕</button>
+            </div>
+            <div id="previewContent" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white p-6 rounded-lg">
+            <div class="flex items-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mr-3"></div>
+                <span class="text-lg">{% if LANGUAGE_CODE == 'ar' %}جاري الحفظ...{% else %}Saving...{% endif %}</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    let planCounter = {% if pricing_data %}{{ pricing_data|length }}{% else %}1{% endif %};
+    let originalPlanData = {}; // Store original data for cancel functionality
+
+    function editPlan(planId) {
+        const planItem = document.querySelector(`[data-plan-id="${planId}"]`);
+        const planView = planItem.querySelector('.plan-view');
+        const planEdit = planItem.querySelector('.plan-edit');
+
+        // Store original data for cancel functionality
+        const nameInput = planEdit.querySelector(`input[name="name"]`);
+        const priceInput = planEdit.querySelector(`input[name="price"]`);
+        const featuresTextarea = planEdit.querySelector(`textarea[name="features"]`);
+
+        originalPlanData[planId] = {
+            name: nameInput.value,
+            price: priceInput.value,
+            features: featuresTextarea.value
+        };
+
+        planView.classList.add('hidden');
+        planEdit.classList.remove('hidden');
+    }
+
+    function cancelEdit(planId) {
+        const planItem = document.querySelector(`[data-plan-id="${planId}"]`);
+        const planView = planItem.querySelector('.plan-view');
+        const planEdit = planItem.querySelector('.plan-edit');
+
+        // Restore original data
+        if (originalPlanData[planId]) {
+            const nameInput = planEdit.querySelector(`input[name="name"]`);
+            const priceInput = planEdit.querySelector(`input[name="price"]`);
+            const featuresTextarea = planEdit.querySelector(`textarea[name="features"]`);
+
+            nameInput.value = originalPlanData[planId].name;
+            priceInput.value = originalPlanData[planId].price;
+            featuresTextarea.value = originalPlanData[planId].features;
+        }
+
+        planEdit.classList.add('hidden');
+        planView.classList.remove('hidden');
+    }
+
+    function savePlanForm(event, planId) {
+        event.preventDefault();
+
+        const form = event.target;
+        const formData = new FormData(form);
+
+        // Show loading overlay
+        document.getElementById('loadingOverlay').classList.remove('hidden');
+        document.getElementById('loadingOverlay').classList.add('flex');
+
+        // Submit form via AJAX
+        fetch(window.location.href, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Hide loading overlay
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('loadingOverlay').classList.remove('flex');
+
+            if (data.success) {
+                // Update the read-only view with new data
+                const nameInput = form.querySelector(`input[name="name"]`);
+                const priceInput = form.querySelector(`input[name="price"]`);
+                const featuresTextarea = form.querySelector(`textarea[name="features"]`);
+
+                updatePlanView(form.closest('.plan-item'), nameInput.value, priceInput.value, featuresTextarea.value);
+
+                // Switch back to view mode
+                const planView = form.closest('.plan-item').querySelector('.plan-view');
+                const planEdit = form.closest('.plan-item').querySelector('.plan-edit');
+
+                planEdit.classList.add('hidden');
+                planView.classList.remove('hidden');
+
+                // Clear stored original data
+                delete originalPlanData[planId];
+
+                // Show success message
+                showNotification('{% if LANGUAGE_CODE == "ar" %}تم حفظ الباقة بنجاح{% else %}Plan saved successfully{% endif %}', 'success');
+            } else {
+                showNotification(data.message || '{% if LANGUAGE_CODE == "ar" %}حدث خطأ أثناء الحفظ{% else %}Error occurred while saving{% endif %}', 'error');
+            }
+        })
+        .catch(error => {
+            // Hide loading overlay
+            document.getElementById('loadingOverlay').classList.add('hidden');
+            document.getElementById('loadingOverlay').classList.remove('flex');
+
+            console.error('Error:', error);
+            showNotification('{% if LANGUAGE_CODE == "ar" %}حدث خطأ أثناء الحفظ{% else %}Error occurred while saving{% endif %}', 'error');
+        });
+    }
+
+    function updatePlanView(planItem, name, price, featuresText) {
+        const planView = planItem.querySelector('.plan-view');
+        const nameElement = planView.querySelector('h4');
+        const priceElement = planView.querySelector('.text-3xl');
+        const featuresList = planView.querySelector('ul');
+
+        nameElement.textContent = name;
+        priceElement.textContent = price;
+
+        // Update features list
+        const features = featuresText.split(',').map(f => f.trim()).filter(f => f);
+        let featuresHtml = '';
+
+        if (features.length > 0) {
+            features.forEach(feature => {
+                featuresHtml += `
+                    <li class="flex items-center text-sm text-gray-600">
+                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span>${feature}</span>
+                    </li>
+                `;
+            });
+        } else {
+            featuresHtml = `
+                <li class="text-gray-500 text-sm">
+                    {% if LANGUAGE_CODE == 'ar' %}لا توجد مميزات محددة{% else %}No features specified{% endif %}
+                </li>
+            `;
+        }
+
+        featuresList.innerHTML = featuresHtml;
+    }
+
+    function addNewPlan() {
+        planCounter++;
+        const planHtml = `
+            <div class="mb-6 border border-gray-200 rounded-lg shadow-sm plan-item bg-white" data-plan-id="${planCounter}">
+                <!-- Read-only View -->
+                <div class="plan-view p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex-1">
+                            <h4 class="text-xl font-bold text-gray-800 mb-2">{% if LANGUAGE_CODE == 'ar' %}باقة جديدة{% else %}New Plan{% endif %}</h4>
+                            <div class="flex items-end mb-4">
+                                <span class="text-3xl font-bold text-indigo-600">0</span>
+                                <span class="text-sm text-gray-500 ml-1 mb-1">
+                                    {% if LANGUAGE_CODE == 'ar' %}/شهريًا{% else %}/month{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="editPlan(${planCounter})"
+                                    class="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-all duration-200 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %}✏️ تعديل{% else %}✏️ Edit{% endif %}
+                            </button>
+                            <button type="button" onclick="removePlan(this)"
+                                    class="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-600 transition-all duration-200 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %}🗑️ حذف{% else %}🗑️ Delete{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h5 class="font-semibold text-gray-700 mb-3">
+                            {% if LANGUAGE_CODE == 'ar' %}المميزات:{% else %}Features:{% endif %}
+                        </h5>
+                        <ul class="space-y-2">
+                            <li class="text-gray-500 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %}لا توجد مميزات محددة{% else %}No features specified{% endif %}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Edit Form (Hidden by default) -->
+                <form class="plan-edit hidden p-6 bg-gray-50" method="POST" onsubmit="savePlanForm(event, ${planCounter})">
+                    {% csrf_token %}
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="text-lg font-semibold text-gray-800">
+                            {% if LANGUAGE_CODE == 'ar' %}تعديل الباقة{% else %}Edit Plan{% endif %}
+                        </h4>
+                        <div class="flex gap-2">
+                            <button type="submit"
+                                    class="bg-green-500 text-white px-3 py-2 rounded-md hover:bg-green-600 transition-all duration-200 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %}💾 حفظ{% else %}💾 Save{% endif %}
+                            </button>
+                            <button type="button" onclick="cancelEdit(${planCounter})"
+                                    class="bg-gray-500 text-white px-3 py-2 rounded-md hover:bg-gray-600 transition-all duration-200 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %}❌ إلغاء{% else %}❌ Cancel{% endif %}
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {% if LANGUAGE_CODE == 'ar' %}اسم الباقة{% else %}Plan Name{% endif %}
+                            </label>
+                            <input type="text" name="name" value=""
+                                   class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                   required>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                {% if LANGUAGE_CODE == 'ar' %}السعر{% else %}Price{% endif %}
+                            </label>
+                            <input type="text" name="price" value=""
+                                   class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                   required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            {% if LANGUAGE_CODE == 'ar' %}المميزات (مفصولة بفواصل){% else %}Features (comma separated){% endif %}
+                        </label>
+                        <textarea name="features" rows="3"
+                                  class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                  placeholder="{% if LANGUAGE_CODE == 'ar' %}مثال: مستخدم واحد, 20 لاعب, تقارير أساسية{% else %}Example: Single user, 20 players, Basic reports{% endif %}"></textarea>
+                    </div>
+
+                    <input type="hidden" name="plan_id" value="${planCounter}">
+                    <input type="hidden" name="action" value="save_plan">
+                </form>
+            </div>
+        `;
+
+        document.getElementById('pricing-plans').insertAdjacentHTML('beforeend', planHtml);
+
+        // Automatically enter edit mode for the new plan
+        editPlan(planCounter);
+    }
+
+    function removePlan(button) {
+        if (confirm('{% if LANGUAGE_CODE == "ar" %}هل أنت متأكد من حذف هذه الباقة؟{% else %}Are you sure you want to delete this plan?{% endif %}')) {
+            const planItem = button.closest('.plan-item');
+            const planId = planItem.getAttribute('data-plan-id');
+
+            // Show loading overlay
+            document.getElementById('loadingOverlay').classList.remove('hidden');
+            document.getElementById('loadingOverlay').classList.add('flex');
+
+            // Create form data for deletion
+            const formData = new FormData();
+            formData.append('action', 'delete_plan');
+            formData.append('plan_id', planId);
+            formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+
+            // Submit deletion via AJAX
+            fetch(window.location.href, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+
+                if (data.success) {
+                    planItem.remove();
+                    showNotification('{% if LANGUAGE_CODE == "ar" %}تم حذف الباقة بنجاح{% else %}Plan deleted successfully{% endif %}', 'success');
+                } else {
+                    showNotification(data.message || '{% if LANGUAGE_CODE == "ar" %}حدث خطأ أثناء الحذف{% else %}Error occurred while deleting{% endif %}', 'error');
+                }
+            })
+            .catch(error => {
+                // Hide loading overlay
+                document.getElementById('loadingOverlay').classList.add('hidden');
+                document.getElementById('loadingOverlay').classList.remove('flex');
+
+                console.error('Error:', error);
+                showNotification('{% if LANGUAGE_CODE == "ar" %}حدث خطأ أثناء الحذف{% else %}Error occurred while deleting{% endif %}', 'error');
+            });
+        }
+    }
+
+    function previewPricing() {
+        const plans = [];
+        document.querySelectorAll('.plan-item').forEach(planItem => {
+            const nameElement = planItem.querySelector('.plan-view h4');
+            const priceElement = planItem.querySelector('.plan-view .text-3xl');
+            const featureElements = planItem.querySelectorAll('.plan-view ul li span');
+
+            const features = Array.from(featureElements).map(span => span.textContent);
+
+            plans.push({
+                name: nameElement.textContent,
+                price: priceElement.textContent,
+                features: features
+            });
+        });
+
+        let previewHtml = '';
+        plans.forEach(plan => {
+            let featuresHtml = '';
+            plan.features.forEach(feature => {
+                if (feature.trim() && !feature.includes('{% if LANGUAGE_CODE == "ar" %}لا توجد مميزات محددة{% else %}No features specified{% endif %}')) {
+                    featuresHtml += `
+                        <li class="flex items-center text-sm text-gray-600 mb-2">
+                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            ${feature}
+                        </li>
+                    `;
+                }
+            });
+
+            previewHtml += `
+                <div class="border border-gray-200 rounded-lg p-4 bg-white shadow-sm">
+                    <div class="text-center mb-4">
+                        <h4 class="text-lg font-bold text-gray-800 mb-2">${plan.name}</h4>
+                        <div class="text-2xl font-bold text-indigo-600">${plan.price}</div>
+                        <div class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}/شهريًا{% else %}/month{% endif %}</div>
+                    </div>
+                    <ul class="space-y-1">
+                        ${featuresHtml || '<li class="text-gray-500 text-sm text-center">{% if LANGUAGE_CODE == "ar" %}لا توجد مميزات{% else %}No features{% endif %}</li>'}
+                    </ul>
+                </div>
+            `;
+        });
+
+        document.getElementById('previewContent').innerHTML = previewHtml;
+        document.getElementById('previewModal').classList.remove('hidden');
+        document.getElementById('previewModal').classList.add('flex');
+    }
+
+    function closePreview() {
+        document.getElementById('previewModal').classList.add('hidden');
+        document.getElementById('previewModal').classList.remove('flex');
+    }
+
+    function showNotification(message, type) {
+        // Create notification element
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Remove notification after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('previewModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closePreview();
+        }
+    });
+
+    // Close loading overlay when clicking outside (safety measure)
+    document.getElementById('loadingOverlay').addEventListener('click', function(e) {
+        if (e.target === this) {
+            // Don't close loading overlay by clicking outside - it should only close programmatically
+        }
+    });
+</script>
+
+{% endblock %}

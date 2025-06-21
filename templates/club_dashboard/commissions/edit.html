@@ -1,0 +1,119 @@
+{% extends "base_club_dashboard.html" %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Title and back button -->
+    <div class="flex justify-between items-center py-8">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %} تعديل العمولة {% else %} Edit Commission {% endif %}
+        </h1>
+        <a href="{% url 'commission_list' %}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center transition-all duration-200">
+            {% if LANGUAGE_CODE == 'ar' %} العودة إلى القائمة {% else %} Back to List {% endif %}
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="bg-white/90 backdrop-blur-sm p-6 rounded-xl shadow-lg max-w-3xl mx-auto">
+        <form method="post" id="commissionForm">
+            {% csrf_token %}
+
+            <!-- Commission Type (disabled for editing) -->
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    {% if LANGUAGE_CODE == 'ar' %}نوع العمولة{% else %}Commission Type{% endif %}
+                </label>
+                <div class="p-3 bg-gray-100 rounded-lg">
+                    {{ commission.get_commission_type_display }}
+                </div>
+                <input type="hidden" name="commission_type" value="{{ commission.commission_type }}">
+            </div>
+
+            <!-- Basic Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Commission Name{% endif %}
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}نسبة العمولة (%){% else %}Commission Rate (%){% endif %}
+                    </label>
+                    {{ form.commission_rate }}
+                    {% if form.commission_rate.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.commission_rate.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Vendor Classification Field (shown for vendor type) -->
+            {% if commission.commission_type == 'vendor' %}
+            <div class="mt-6">
+                <label class="block text-sm font-medium text-gray-700 mb-1">
+                    {% if LANGUAGE_CODE == 'ar' %}تصنيف التاجر{% else %}Vendor Classification{% endif %}
+                </label>
+                {{ form.vendor_classification }}
+                {% if form.vendor_classification.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.vendor_classification.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Time Period Fields (shown for time_period type) -->
+            {% if commission.commission_type == 'time_period' %}
+            <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}تاريخ البداية{% else %}Start Date{% endif %}
+                    </label>
+                    {{ form.start_date }}
+                    {% if form.start_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.start_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        {% if LANGUAGE_CODE == 'ar' %}تاريخ النهاية{% else %}End Date{% endif %}
+                    </label>
+                    {{ form.end_date }}
+                    {% if form.end_date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.end_date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Status Field -->
+            <div class="mt-6 flex items-center">
+                {{ form.is_active }}
+                <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm font-medium text-gray-700">
+                    {% if LANGUAGE_CODE == 'ar' %}تفعيل العمولة{% else %}Activate Commission{% endif %}
+                </label>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="mt-8 flex justify-end space-x-3">
+                <a href="{% url 'commission_list' %}" class="ml-2 px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                </a>
+                <button type="submit" class="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors">
+                    {% if LANGUAGE_CODE == 'ar' %}حفظ التغييرات{% else %}Save Changes{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

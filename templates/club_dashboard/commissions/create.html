@@ -1,0 +1,436 @@
+{% extends "base_club_dashboard.html" %}
+{% load custom_filters %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Enhanced Header with Floating Animation -->
+    <div class="flex justify-between items-center py-8 animate-fadeInDown">
+        <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <div class="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl text-white shadow-lg transform hover:scale-110 transition-all duration-300">
+                <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                </svg>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %} إنشاء عمولة جديدة {% else %} Create New Commission {% endif %}
+        </h1>
+        <a href="{% url 'commission_list' %}" class="group bg-white/80 backdrop-blur-sm px-4 py-2 rounded-lg text-blue-600 hover:text-white hover:bg-blue-600 font-medium flex items-center transition-all duration-300 shadow-md hover:shadow-lg border border-blue-200">
+            {% if LANGUAGE_CODE == 'ar' %} العودة إلى القائمة {% else %} Back to List {% endif %}
+            <svg class="w-4 h-4 ml-2 transform group-hover:-translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Enhanced Form Container -->
+    <div class="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl max-w-4xl mx-auto border border-white/50 animate-fadeInUp">
+        <form method="post" id="commissionForm" class="space-y-8">
+            {% csrf_token %}
+
+            <!-- Enhanced Commission Type Toggle (Only Vendor and Time Period) -->
+            <div class="space-y-4">
+                <label class="block text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    {% if LANGUAGE_CODE == 'ar' %}نوع العمولة{% else %}Commission Type{% endif %}
+                </label>
+                <div class="relative">
+                    <div class="flex rounded-2xl overflow-hidden border-2 border-gray-200 bg-gray-50 p-1">
+                        <label class="flex-1 relative">
+                            <input type="radio" name="commission_type" value="vendor"
+                                   class="hidden peer"
+                                   {% if form.commission_type.value == 'vendor' or not form.commission_type.value %}checked{% endif %}
+                            onchange="toggleCommissionFields()">
+                            <div class="py-4 px-6 text-center cursor-pointer rounded-xl font-medium transition-all duration-300
+                                        peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600
+                                        peer-checked:text-white peer-checked:shadow-lg peer-checked:transform peer-checked:scale-105
+                                        hover:bg-white hover:shadow-md text-gray-700 peer-checked:font-semibold">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    {% if LANGUAGE_CODE == 'ar' %}إضافة تصنيف{% else %}Vendor Commission{% endif %}
+                                </div>
+                            </div>
+                        </label>
+                        <label class="flex-1 relative">
+                            <input type="radio" name="commission_type" value="time_period"
+                                   class="hidden peer"
+                                   {% if form.commission_type.value == 'time_period' %}checked{% endif %}
+                            onchange="toggleCommissionFields()">
+                            <div class="py-4 px-6 text-center cursor-pointer rounded-xl font-medium transition-all duration-300
+                                        peer-checked:bg-gradient-to-r peer-checked:from-blue-500 peer-checked:to-purple-600
+                                        peer-checked:text-white peer-checked:shadow-lg peer-checked:transform peer-checked:scale-105
+                                        hover:bg-white hover:shadow-md text-gray-700 peer-checked:font-semibold">
+                                <div class="flex items-center justify-center gap-2">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-9H19V1h-2v1H7V1H5v1H4.5C3.11 2 2 3.11 2 4.5v14C2 19.89 3.11 21 4.5 21h15c1.39 0 2.5-1.11 2.5-2.5v-14C22 3.11 20.89 2 19.5 2z"/>
+                                    </svg>
+                                    {% if LANGUAGE_CODE == 'ar' %}عرض لفترة زمنية{% else %}Time Period Offer{% endif %}
+                                </div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+                {% if form.commission_type.errors %}
+                <p class="text-sm text-red-500 flex items-center gap-1 mt-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    {{ form.commission_type.errors.0 }}
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Basic Fields with Enhanced Design -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-blue-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Commission Name{% endif %}
+                    </label>
+                    <div class="relative">
+                        {{ form.name|add_class:"w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-blue-500 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 bg-white/80 backdrop-blur-sm" }}
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                            </svg>
+                        </div>
+                    </div>
+                    {% if form.name.errors %}
+                    <p class="text-sm text-red-500 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        {{ form.name.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}نسبة العمولة (%){% else %}Commission Rate (%){% endif %}
+                    </label>
+                    <div class="relative">
+                        {{ form.commission_rate|add_class:"w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-green-500 focus:ring-4 focus:ring-green-500/20 transition-all duration-300 bg-white/80 backdrop-blur-sm" }}
+                        <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 font-medium">%</span>
+                        </div>
+                    </div>
+                    {% if form.commission_rate.errors %}
+                    <p class="text-sm text-red-500 flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                        </svg>
+                        {{ form.commission_rate.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Vendor Classification Field (Enhanced) -->
+            <div id="vendorClassificationField" class="space-y-4 transition-all duration-500">
+                <div class="bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-2xl border border-blue-200">
+                    <label class="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-purple-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}تصنيف التاجر{% else %}Vendor Classification{% endif %}
+                    </label>
+                    <div class="relative">
+                        {{ form.vendor_classification|add_class:"w-full px-4 py-3 border-2 border-purple-200 rounded-xl focus:border-purple-500 focus:ring-4 focus:ring-purple-500/20 transition-all duration-300 bg-white/90 backdrop-blur-sm" }}
+                        {% if form.vendor_classification.errors %}
+                        <p class="mt-2 text-sm text-red-500 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                            {{ form.vendor_classification.errors.0 }}
+                        </p>
+                        {% endif %}
+                        <datalist id="classification_list">
+                            {% for classification in form.existing_classifications %}
+                            <option value="{{ classification }}">
+                                {% endfor %}
+                        </datalist>
+                        <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <p class="text-xs text-blue-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                                {% if LANGUAGE_CODE == 'ar' %}أمثلة: silver, gold, platinum{% else %}Examples: silver, gold, platinum{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Time Period Fields (Enhanced) -->
+            <div id="timePeriodFields" class="space-y-6 transition-all duration-500 hidden opacity-0 transform -translate-y-4">
+                <div class="bg-gradient-to-r from-orange-50 to-red-50 p-6 rounded-2xl border border-orange-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-9H19V1h-2v1H7V1H5v1H4.5C3.11 2 2 3.11 2 4.5v14C2 19.89 3.11 21 4.5 21h15c1.39 0 2.5-1.11 2.5-2.5v-14C22 3.11 20.89 2 19.5 2z"/>
+                        </svg>
+                        {% if LANGUAGE_CODE == 'ar' %}تفاصيل العرض الزمني{% else %}Time Period Offer Details{% endif %}
+                    </h3>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-9H19V1h-2v1H7V1H5v1H4.5C3.11 2 2 3.11 2 4.5v14C2 19.89 3.11 21 4.5 21h15c1.39 0 2.5-1.11 2.5-2.5v-14C22 3.11 20.89 2 19.5 2z"/>
+                                </svg>
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ بداية العرض{% else %}Offer Start Date{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.start_date|add_class:"w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 bg-white/90 backdrop-blur-sm" }}
+                            </div>
+                            {% if form.start_date.errors %}
+                            <p class="text-sm text-red-500 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                                {{ form.start_date.errors.0 }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6zm2.5-9H19V1h-2v1H7V1H5v1H4.5C3.11 2 2 3.11 2 4.5v14C2 19.89 3.11 21 4.5 21h15c1.39 0 2.5-1.11 2.5-2.5v-14C22 3.11 20.89 2 19.5 2z"/>
+                                </svg>
+                                {% if LANGUAGE_CODE == 'ar' %}تاريخ نهاية العرض{% else %}Offer End Date{% endif %}
+                            </label>
+                            <div class="relative">
+                                {{ form.end_date|add_class:"w-full px-4 py-3 border-2 border-orange-200 rounded-xl focus:border-orange-500 focus:ring-4 focus:ring-orange-500/20 transition-all duration-300 bg-white/90 backdrop-blur-sm" }}
+                            </div>
+                            {% if form.end_date.errors %}
+                            <p class="text-sm text-red-500 flex items-center gap-1">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                                </svg>
+                                {{ form.end_date.errors.0 }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-yellow-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                            </svg>
+                            {% if LANGUAGE_CODE == 'ar' %}مقدار الخصم (%){% else %}Discount Amount (%){% endif %}
+                        </label>
+                        <div class="relative">
+                            {{ form.discount_amount|add_class:"w-full px-4 py-3 border-2 border-yellow-200 rounded-xl focus:border-yellow-500 focus:ring-4 focus:ring-yellow-500/20 transition-all duration-300 bg-white/90 backdrop-blur-sm" }}
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 font-medium">%</span>
+                            </div>
+                        </div>
+                        {% if form.discount_amount.errors %}
+                        <p class="text-sm text-red-500 flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                            </svg>
+                            {{ form.discount_amount.errors.0 }}
+                        </p>
+                        {% endif %}
+                        <div class="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+                            <p class="text-xs text-yellow-700 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                                </svg>
+                                {% if LANGUAGE_CODE == 'ar' %}سيتم خصم هذه النسبة من جميع العمولات خلال فترة العرض{% else %}This discount will be applied to all commissions during the offer period{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Active Status -->
+            <div class="flex items-center space-x-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                <div class="relative">
+                    {{ form.is_active|add_class:"w-5 h-5 text-green-600 rounded focus:ring-green-500 focus:ring-2" }}
+                </div>
+                <label class="text-sm font-medium text-gray-700 flex items-center gap-2 cursor-pointer">
+                    <svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}تفعيل العمولة{% else %}Activate Commission{% endif %}
+                </label>
+                {% if form.is_active.errors %}
+                <p class="text-sm text-red-500 flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM13 17h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    {{ form.is_active.errors.0 }}
+                </p>
+                {% endif %}
+            </div>
+
+            <!-- Enhanced Submit Button -->
+            <div class="pt-6">
+                <button type="submit" class="group w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl flex items-center justify-center gap-3 text-lg">
+                    <svg class="w-6 h-6 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}حفظ العمولة{% else %}Save Commission{% endif %}
+                    <div class="absolute inset-0 bg-gradient-to-r from-white/0 via-white/25 to-white/0 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700"></div>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fadeInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fadeInDown {
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out;
+    }
+
+    /* Enhanced focus states */
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    /* Enhanced transitions for form sections */
+    #vendorClassificationField, #timePeriodFields {
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    #vendorClassificationField.hidden, #timePeriodFields.hidden {
+        opacity: 0;
+        transform: translateY(-20px);
+        max-height: 0;
+        overflow: hidden;
+    }
+</style>
+
+<script>
+    function toggleCommissionFields() {
+        const commissionType = document.querySelector('input[name="commission_type"]:checked').value;
+        const vendorField = document.getElementById('vendorClassificationField');
+        const timePeriodFields = document.getElementById('timePeriodFields');
+
+        // Reset all fields
+        vendorField.classList.add('hidden');
+        vendorField.classList.remove('opacity-100');
+        vendorField.classList.add('opacity-0');
+
+        timePeriodFields.classList.add('hidden');
+        timePeriodFields.classList.remove('opacity-100');
+        timePeriodFields.classList.add('opacity-0');
+
+        // Show relevant fields with smooth transition
+        setTimeout(() => {
+            if (commissionType === 'vendor') {
+                vendorField.classList.remove('hidden');
+                setTimeout(() => {
+                    vendorField.classList.remove('opacity-0');
+                    vendorField.classList.add('opacity-100');
+                }, 50);
+            } else if (commissionType === 'time_period') {
+                timePeriodFields.classList.remove('hidden');
+                setTimeout(() => {
+                    timePeriodFields.classList.remove('opacity-0');
+                    timePeriodFields.classList.add('opacity-100');
+                }, 50);
+            }
+        }, 100);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleCommissionFields();
+    });
+
+    // Add form validation feedback
+    document.getElementById('commissionForm').addEventListener('submit', function(e) {
+        const submitButton = this.querySelector('button[type="submit"]');
+                // Add loading state to submit button
+        submitButton.disabled = true;
+        submitButton.innerHTML = `
+            <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            {% if LANGUAGE_CODE == 'ar' %}جاري الحفظ...{% else %}Saving...{% endif %}
+        `;
+    });
+
+    // Date picker enhancements
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize date pickers with min/max constraints
+        const startDateInput = document.querySelector('input[name="start_date"]');
+        const endDateInput = document.querySelector('input[name="end_date"]');
+
+        if (startDateInput && endDateInput) {
+            // Set min date for start date to today
+            const today = new Date().toISOString().split('T')[0];
+            startDateInput.min = today;
+
+            // Update end date min when start date changes
+            startDateInput.addEventListener('change', function() {
+                endDateInput.min = this.value;
+                if (endDateInput.value && endDateInput.value < this.value) {
+                    endDateInput.value = this.value;
+                }
+            });
+
+            // Update start date max when end date changes
+            endDateInput.addEventListener('change', function() {
+                startDateInput.max = this.value;
+                if (startDateInput.value && startDateInput.value > this.value) {
+                    startDateInput.value = this.value;
+                }
+            });
+        }
+    });
+
+    // Input validation for numeric fields
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('input', function() {
+            const min = parseFloat(this.min) || 0;
+            const max = parseFloat(this.max) || 100;
+            let value = parseFloat(this.value) || 0;
+
+            if (value < min) {
+                this.value = min;
+            } else if (value > max) {
+                this.value = max;
+            }
+        });
+    });
+</script>
+
+{% endblock %}

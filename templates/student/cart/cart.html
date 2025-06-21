@@ -1,0 +1,533 @@
+{% extends "base_student_dashboard.html" %}
+{% load students_tags %}
+{% load static %}
+{% block content %}
+
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen py-8 ">
+    <div class="max-w-5xl mx-auto px-4">
+        <!-- Breadcrumbs -->
+        <div class=" items-center mb-6 text-gray-600 flex-row-reverse">
+            <a href="{% url 'studentIndex' %}" class="hover:text-pink-600">
+                {% if LANGUAGE_CODE == 'ar' %}الرئيسية{% else %}Home{% endif %}
+            </a>
+            <span class="mx-2">/</span>
+            <span class="text-pink-600">
+                {% if LANGUAGE_CODE == 'ar' %}سلة التسوق{% else %}Shopping Cart{% endif %}
+            </span>
+        </div>
+
+        <h1 class="text-3xl font-bold text-pink-800 mb-8 {% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %}">
+            <i class="fas fa-shopping-cart {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+            {% if LANGUAGE_CODE == 'ar' %}سلة التسوق{% else %}Shopping Cart{% endif %}
+        </h1>
+
+        {% if product_items or service_items %}
+        <div class="flex flex-col lg:flex-row gap-6 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %} mb-12">
+            <!-- Cart Items -->
+            <div class="lg:w-2/3">
+                <!-- Products Section -->
+                {% if product_items %}
+                <div class="bg-white rounded-lg shadow-md p-6 mb-6 border-l-4 border-pink-400 transition-all hover:shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 {% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %} text-pink-700">
+                        <i class="fas fa-box-open {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}المنتجات ({{ product_items|length }}){% else %}Products ({{ product_items|length }}){% endif %}
+                    </h2>
+
+                    <div class="flex flex-col space-y-4">
+                        {% for item in product_items %}
+                        <div id="product-item-{{ item.id }}" class="flex flex-col md:flex-row border-b pb-4 last:border-0 hover:bg-pink-50 p-2 rounded-lg transition-all {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                            <!-- Product Image -->
+                            <div class="md:w-1/4 mb-4 md:mb-0">
+                                {% if item.product.product_images.all %}
+                                <img src="{{ item.product.product_images.first.img.url }}"
+                                     alt="{{ item.product.title }}"
+                                     class="w-full h-24 object-contain rounded-md shadow-sm">
+                                {% else %}
+                                <div class="h-24 w-full bg-pink-100 flex items-center justify-center rounded-md">
+                                    <span class="text-pink-400"><i class="fas fa-image text-2xl"></i></span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Product Details -->
+                            <div class="md:w-3/4 md:pr-4 flex flex-col justify-between">
+                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                                    <div class="{% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %}">
+                                        <h3 class="font-semibold text-lg text-pink-800">{{ item.product.title }}</h3>
+                                        <p class="text-gray-600 text-sm">
+                                            {{ item.product.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                        </p>
+                                    </div>
+
+                                    <!-- Quantity Control -->
+                                    <div class="flex items-center">
+                                        <button class="update-cart-btn bg-pink-100 text-pink-700 px-3 py-1 {% if LANGUAGE_CODE == 'ar' %}rounded-r-md{% else %}rounded-l-md{% endif %} hover:bg-pink-200 transition-colors"
+                                                data-id="{{ item.id }}"
+                                                data-action="decrease"
+                                                data-type="product">
+                                            <i class="fas fa-minus"></i>
+                                        </button>
+                                        <span class="px-4 py-1 bg-pink-50 text-center product-quantity font-medium" data-id="{{ item.id }}">
+                                            {{ item.quantity }}
+                                        </span>
+                                        <button class="update-cart-btn bg-pink-100 text-pink-700 px-3 py-1 {% if LANGUAGE_CODE == 'ar' %}rounded-l-md{% else %}rounded-r-md{% endif %} hover:bg-pink-200 transition-colors"
+                                                data-id="{{ item.id }}"
+                                                data-action="increase"
+                                                data-type="product">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-4 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                                    <form action="{% url 'delete_product_from_cart' item.id %}" method="post" style="display:inline;">
+                                        {% csrf_token %}
+                                    <button class="update-cart-btn text-red-500 hover:text-red-700 transition-colors flex items-center"
+                                            type="submit">
+                                        <i class="fas fa-trash-alt {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                        {% if LANGUAGE_CODE == 'ar' %}إزالة{% else %}Remove{% endif %}
+                                    </button>
+                                    </form>
+                                    <p class="font-semibold text-lg text-pink-600 product-total" data-id="{{ item.id }}">
+                                        {{ item.total_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Services Section -->
+                {% if service_items %}
+                <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-pink-400 transition-all hover:shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 {% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %} text-pink-700">
+                        <i class="fas fa-concierge-bell {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}الخدمات ({{ service_items|length }}){% else %}Services ({{ service_items|length }}){% endif %}
+                    </h2>
+
+                    <div class="flex flex-col space-y-4">
+                        {% for item in service_items %}
+                        <div id="service-item-{{ item.id }}" class="flex flex-col md:flex-row border-b pb-4 last:border-0 hover:bg-pink-50 p-2 rounded-lg transition-all {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                            <!-- Service Image -->
+                            <div class="md:w-1/4 mb-4 md:mb-0">
+                                {% if item.service.image %}
+                                <img src="{{ item.service.image.url }}"
+                                     alt="{{ item.service.title }}"
+                                     class="w-full h-24 object-contain rounded-md shadow-sm">
+                                {% else %}
+                                <div class="h-24 w-full bg-pink-100 flex items-center justify-center rounded-md">
+                                    <span class="text-pink-400"><i class="fas fa-spa text-2xl"></i></span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Service Details -->
+                            <div class="md:w-3/4 md:pr-4 flex flex-col justify-between">
+                                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-2 md:space-y-0 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                                    <div class="{% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %}">
+                                        <h3 class="font-semibold text-lg text-pink-800">{{ item.service.title }}</h3>
+
+
+                                    </div>
+
+                                    <div class="mt-2 text-xs text-gray-600 bg-pink-50 p-2 rounded-md border border-pink-100 {% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %}">
+                                        <p>
+                                            <i class="far fa-clock {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                            {% if LANGUAGE_CODE == 'ar' %}مدة الخدمة: {{ item.service.duration }} دقيقة{% else %}Duration: {{ item.service.duration }} mins{% endif %}
+                                        </p>
+                                        <p>
+                                            <i class="far fa-calendar-alt {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                            {% if LANGUAGE_CODE == 'ar' %}تاريخ الحجز: {% now "Y-m-d" %}{% else %}Booking Date: {% now "Y-m-d" %}{% endif %}
+                                        </p>
+                                        {% if item.appointment_date %}
+                                        <p>
+                                            <i class="far fa-calendar-check {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                            {% if LANGUAGE_CODE == 'ar' %}تاريخ الموعد: {{ item.appointment_date }}{% else %}Appointment Date: {{ item.appointment_date }}{% endif %}
+                                        </p>
+                                        {% else %}
+                                        <p class="text-amber-600">
+                                            <i class="fas fa-exclamation-circle {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                            {% if LANGUAGE_CODE == 'ar' %}عند استكمال عملية الدفع سيتم تفعيل اشتراكك في الخدمة لمدة {{ item.service.pricing_period_months }} {% if service.pricing_period_months == 1 %}شهر{% else %}أشهر{% endif %}{% else %}Appointment will be canceled if not paid at least one day in advance{% endif %}
+                                        </p>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center mt-4 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                                    <button class="update-cart-btn text-red-500 hover:text-red-700 transition-colors flex items-center"
+                                            data-id="{{ item.id }}"
+                                            data-action="remove"
+                                            data-type="service">
+                                        <i class="fas fa-trash-alt {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                        {% if LANGUAGE_CODE == 'ar' %}إزالة{% else %}Remove{% endif %}
+                                    </button>
+
+                                    <!-- Price Display -->
+                                    <div class="flex items-center {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse justify-end{% else %}justify-start{% endif %}">
+                                        {% if item.service.discounted_price and item.service.discounted_price != item.service.price %}
+                                        <span class="font-semibold text-lg text-green-600 service-total" data-id="{{ item.id }}">
+                                            {{ item.total_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                        </span>
+                                        <div class="flex flex-col {% if LANGUAGE_CODE == 'ar' %}items-start mr-2{% else %}items-end ml-2{% endif %}">
+                                            <span class="text-xs text-gray-500 line-through">
+                                                {% widthratio item.service.price 1 1 as original_price %}
+                                                {{ original_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                            </span>
+                                            <span class="text-xs text-green-600 font-medium">
+                                                {% if LANGUAGE_CODE == 'ar' %}توفير{% else %}Save{% endif %}
+                                                {% widthratio item.service.price|sub:item.service.discounted_price 1 1 as savings %}
+                                                {{ savings }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                            </span>
+                                        </div>
+                                        {% else %}
+                                        <span class="font-semibold text-lg text-pink-600 service-total" data-id="{{ item.id }}">
+                                            {{ item.total_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Summary Section -->
+            <div class="lg:w-1/3 mb-6">
+                <div class="bg-white rounded-lg shadow-md p-6 sticky top-24 border-t-4 border-pink-400 transition-all hover:shadow-lg">
+                    <h2 class="text-xl font-semibold mb-4 {% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %} text-pink-700">
+                        <i class="fas fa-receipt {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}ملخص الطلب{% else %}Order Summary{% endif %}
+                    </h2>
+
+                    <div class="space-y-3 {% if LANGUAGE_CODE == 'ar' %}text-right{% else %}text-left{% endif %}">
+                        {% if product_items %}
+                        <div class="flex justify-between border-b border-pink-100 pb-3 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                            <span class="font-semibold text-gray-700">
+                                {% if LANGUAGE_CODE == 'ar' %}عدد المنتجات:{% else %}Number of Products:{% endif %}
+                            </span>
+                            <span id="total-products-count" class="text-pink-600 font-medium">{{ product_items|length }}</span>
+                        </div>
+                        <div class="flex justify-between border-b border-pink-100 pb-3 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                            <span class="font-semibold text-gray-700">
+                                {% if LANGUAGE_CODE == 'ar' %}إجمالي المنتجات:{% else %}Product Total:{% endif %}
+                            </span>
+                            <span id="total-products-price" class="text-pink-600 font-medium">
+                                {{ product_total }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                            </span>
+                        </div>
+                        {% endif %}
+
+                        {% if service_items %}
+                        <div class="flex justify-between border-b border-pink-100 pb-3 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                            <span class="font-semibold text-gray-700">
+                                {% if LANGUAGE_CODE == 'ar' %}عدد الخدمات:{% else %}Number of Services:{% endif %}
+                            </span>
+                            <span id="total-services-count" class="text-pink-600 font-medium">{{ service_items|length }}</span>
+                        </div>
+
+                        <!-- Service Total Display -->
+                        <div class="border-b border-pink-100 pb-3">
+                            <div class="flex justify-between items-center {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                                <span class="font-semibold text-gray-700">
+                                    {% if LANGUAGE_CODE == 'ar' %}إجمالي الخدمات:{% else %}Service Total:{% endif %}
+                                </span>
+                                <div class="flex flex-col {% if LANGUAGE_CODE == 'ar' %}items-start{% else %}items-end{% endif %}">
+                                    <span id="total-services-price" class="text-green-600 font-semibold">
+                                        {{ service_total }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    </span>
+                                    {% if has_service_discounts and original_service_total %}
+                                    <span class="text-xs text-gray-500 line-through">
+                                        {{ original_service_total }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    </span>
+                                    <span class="text-xs text-green-600 font-medium">
+                                        {% if LANGUAGE_CODE == 'ar' %}توفير{% else %}You Save{% endif %}
+                                        {{ total_service_savings }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    </span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Total Price Display -->
+                        <div class="pt-2 bg-gradient-to-r from-pink-50 to-rose-50 p-3 rounded-lg border border-pink-200">
+                            <div class="flex justify-between items-center {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                                <span class="font-semibold text-gray-800 text-lg">
+                                    {% if LANGUAGE_CODE == 'ar' %}إجمالي السعر:{% else %}Total Price:{% endif %}
+                                </span>
+                                <div class="flex flex-col {% if LANGUAGE_CODE == 'ar' %}items-start{% else %}items-end{% endif %}">
+                                    <span id="total-price" class="text-pink-600 font-bold text-xl">
+                                        {{ total_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                    </span>
+                                    {% if total_savings %}
+                                    <div class="flex items-center {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %} mt-1">
+                                        <i class="fas fa-tag text-green-500 text-xs {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                        <span class="text-xs text-green-600 font-medium">
+                                            {% if LANGUAGE_CODE == 'ar' %}إجمالي التوفير:{% else %}Total Saved:{% endif %}
+                                            {{ total_savings }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="{% url 'checkout' %}"
+                           class="block w-full bg-pink-600 text-white text-center py-3 rounded-md hover:bg-pink-700 transition-colors font-semibold transform hover:scale-105 transition-transform duration-200">
+                            <i class="fas fa-credit-card {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}متابعة عملية الشراء{% else %}Proceed to Checkout{% endif %}
+                        </a>
+
+                        <div class="flex gap-2 mt-3 {% if LANGUAGE_CODE == 'ar' %}flex-row-reverse{% endif %}">
+                            <a href="{% url 'StudentViewProducts' %}"
+                               class="block w-1/2 text-center py-3 text-pink-600 hover:text-pink-800 border border-pink-400 rounded-md hover:bg-pink-50 transition-colors">
+                                <i class="fas fa-box {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}تصفح المنتجات{% else %}Browse Products{% endif %}
+                            </a>
+                            <a href="{% url 'studentViewServices' %}"
+                               class="block w-1/2 text-center py-3 text-pink-600 hover:text-pink-800 border border-pink-400 rounded-md hover:bg-pink-50 transition-colors">
+                                <i class="fas fa-spa {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                                {% if LANGUAGE_CODE == 'ar' %}تصفح الخدمات{% else %}Browse Services{% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <!-- Empty Cart -->
+        <div class="bg-white rounded-lg shadow-md p-12 text-center border-2 border-dashed border-pink-200">
+            <div class="animate-bounce mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto w-6 h-6 mb-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13l-1.2 6M17 13l1.2 6M6 19a2 2 0 104 0 2 2 0 00-4 0zm10 0a2 2 0 104 0 2 2 0 00-4 0z" />
+                </svg>
+            </div>
+            <h2 class="text-2xl font-semibold mb-2 text-pink-700">
+                {% if LANGUAGE_CODE == 'ar' %}سلة التسوق فارغة{% else %}Your cart is empty{% endif %}
+            </h2>
+            <p class="text-gray-500 mb-6">
+                {% if LANGUAGE_CODE == 'ar' %}ابدأ بإضافة منتجات وخدمات إلى سلة التسوق{% else %}Start adding products and services to your cart{% endif %}
+            </p>
+            <div class="flex gap-4 justify-center">
+                <a href="{% url 'StudentViewProducts' %}"
+                   class="px-8 py-3 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors transform hover:scale-105 transition-transform duration-200">
+                    <i class="fas fa-box {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}تصفح المنتجات{% else %}Browse Products{% endif %}
+                </a>
+                <a href="{% url 'studentViewServices' %}"
+                   class="px-8 py-3 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors transform hover:scale-105 transition-transform duration-200">
+                    <i class="fas fa-spa {% if LANGUAGE_CODE == 'ar' %}ml-1{% else %}mr-1{% endif %}"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}تصفح الخدمات{% else %}Browse Services{% endif %}
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update cart functionality
+        const updateCartButtons = document.querySelectorAll('.update-cart-btn');
+
+        updateCartButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const itemId = this.dataset.id;
+                const action = this.dataset.action;
+                const itemType = this.dataset.type; // 'product' or 'service'
+
+                // Add button press animation
+                this.classList.add('animate-pulse');
+                setTimeout(() => {
+                    this.classList.remove('animate-pulse');
+                }, 300);
+
+                let url = '{% url "update_cart" %}';
+                if (itemType === 'service') {
+                    url = '{% url "update_service_cart" %}';
+                }
+
+                // Get the current quantity element
+                const quantityClass = itemType === 'product' ? 'product-quantity' : 'service-quantity';
+                const quantityElement = document.querySelector(`.${quantityClass}[data-id="${itemId}"]`);
+                // Default to 1 for services that don't have quantity displayed
+                let currentQuantity = quantityElement ? parseInt(quantityElement.textContent) : 1;
+
+                // And later in the optimistic UI update, check if element exists
+                if (quantityElement && action === 'increase') {
+                    currentQuantity += 1;
+                    quantityElement.textContent = currentQuantity;
+                    // Add highlight animation
+                    quantityElement.classList.add('bg-pink-200');
+                    setTimeout(() => {
+                        quantityElement.classList.remove('bg-pink-200');
+                    }, 300);
+                } else if (quantityElement && action === 'decrease' && currentQuantity > 1) {
+                    currentQuantity -= 1;
+                    quantityElement.textContent = currentQuantity;
+                    // Add highlight animation
+                    quantityElement.classList.add('bg-pink-200');
+                    setTimeout(() => {
+                        quantityElement.classList.remove('bg-pink-200');
+                    }, 300);
+                }
+
+                // AJAX request to update cart
+                const formData = new FormData();
+                formData.append('item_id', itemId);
+                formData.append('action', action);
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update cart count in navbar
+                        updateNavbarCartCount(data.cart_count);
+
+                        // Handle item removal
+                        if (action === 'remove') {
+                            const cartItemId = `${itemType}-item-${itemId}`;
+                            const cartItem = document.getElementById(cartItemId);
+
+                            // Add fade-out animation
+                            cartItem.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                            setTimeout(() => {
+                                cartItem.remove();
+
+                                // Update summary - check if elements exist before updating
+                                const productCountElement = document.getElementById('total-products-count');
+                                const serviceCountElement = document.getElementById('total-services-count');
+                                const productPriceElement = document.getElementById('total-products-price');
+                                const servicePriceElement = document.getElementById('total-services-price');
+
+                                // Update product counts if applicable
+                                if (itemType === 'product' && productCountElement) {
+                                    const remainingProducts = document.querySelectorAll('[id^="product-item-"]').length;
+                                    productCountElement.textContent = remainingProducts;
+
+                                    if (remainingProducts === 0 && productPriceElement) {
+                                        productPriceElement.parentElement.remove();
+                                    }
+                                }
+
+                                // Update service counts if applicable
+                                if (itemType === 'service' && serviceCountElement) {
+                                    const remainingServices = document.querySelectorAll('[id^="service-item-"]').length;
+                                    serviceCountElement.textContent = remainingServices;
+
+                                    if (remainingServices === 0 && servicePriceElement) {
+                                        servicePriceElement.parentElement.remove();
+                                    }
+                                }
+
+                                // Update total price with animation
+                                const totalPriceElement = document.getElementById('total-price');
+                                if (totalPriceElement) {
+                                    totalPriceElement.classList.add('text-pink-400');
+                                    totalPriceElement.textContent = `${data.total_price} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}`;
+                                    setTimeout(() => {
+                                        totalPriceElement.classList.remove('text-pink-400');
+                                    }, 300);
+                                }
+
+                                // If no items left, reload page to show empty cart
+                                const hasProducts = document.querySelectorAll('[id^="product-item-"]').length > 0;
+                                const hasServices = document.querySelectorAll('[id^="service-item-"]').length > 0;
+
+                                if (!hasProducts && !hasServices) {
+                                    location.reload();
+                                }
+                            }, 300);
+                        } else {
+                            // Update quantity display with server value (if available)
+                            if (data.cart_item_quantity && quantityElement) {
+                                quantityElement.textContent = data.cart_item_quantity;
+                            }
+
+                            // Update item total with animation
+                            const totalClass = itemType === 'product' ? 'product-total' : 'service-total';
+                            const totalElement = document.querySelector(`.${totalClass}[data-id="${itemId}"]`);
+                            if (totalElement && data.item_total) {
+                                totalElement.classList.add('text-pink-400');
+                                totalElement.textContent = `${data.item_total} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}`;
+                                setTimeout(() => {
+                                    totalElement.classList.remove('text-pink-400');
+                                }, 300);
+                            }
+
+                            // Update total price with animation
+                            const totalPriceElement = document.getElementById('total-price');
+                            if (totalPriceElement) {
+                                totalPriceElement.classList.add('text-pink-400');
+                                totalPriceElement.textContent = `${data.total_price} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}`;
+                                setTimeout(() => {
+                                    totalPriceElement.classList.remove('text-pink-400');
+                                }, 300);
+                            }
+
+                            // Update section totals if applicable
+                            if (data.product_total && document.getElementById('total-products-price')) {
+                                const productTotalElement = document.getElementById('total-products-price');
+                                productTotalElement.classList.add('text-pink-400');
+                                productTotalElement.textContent = `${data.product_total} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}`;
+                                setTimeout(() => {
+                                    productTotalElement.classList.remove('text-pink-400');
+                                }, 300);
+                            }
+                            if (data.service_total && document.getElementById('total-services-price')) {
+                                const serviceTotalElement = document.getElementById('total-services-price');
+                                serviceTotalElement.classList.add('text-pink-400');
+                                serviceTotalElement.textContent = `${data.service_total} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}`;
+                                setTimeout(() => {
+                                    serviceTotalElement.classList.remove('text-pink-400');
+                                }, 300);
+                            }
+                        }
+                    } else {
+                        // Show error message and revert the optimistic update
+                        alert(data.message);
+                        // Reload the page to get accurate data
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Reload the page in case of error
+                    location.reload();
+                });
+            });
+        });
+
+        // Function to update cart count in navbar
+        function updateNavbarCartCount(count) {
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = count;
+
+                // Show/hide based on count with animation
+                if (count > 0) {
+                    cartCountElement.classList.remove('hidden');
+                    cartCountElement.classList.add('animate-pulse');
+                    setTimeout(() => {
+                        cartCountElement.classList.remove('animate-pulse');
+                    }, 500);
+                } else {
+                    cartCountElement.classList.add('hidden');
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

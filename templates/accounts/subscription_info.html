@@ -1,0 +1,391 @@
+{% extends "base_landing.html" %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 flex items-center justify-center p-4">
+    <div class="mt-24 max-w-4xl w-full">
+        <div class="bg-white rounded-2xl shadow-2xl p-8 transform transition-all duration-500 ">
+            <!-- Success Icon -->
+            <div class="text-center mb-6">
+                <div class="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
+                    <svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    تم إنشاء حسابك بنجاح!
+                    {% else %}
+                    Account Created Successfully!
+                    {% endif %}
+                </h1>
+                <p class="text-gray-600">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    مرحباً بك في منصة إدارة الأكاديميات
+                    {% else %}
+                    Welcome to the Salon Management Platform
+                    {% endif %}
+                </p>
+            </div>
+
+            <!-- Plan Information -->
+            <div class="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center {% if LANGUAGE_CODE == 'ar' %}ml-4{% else %}mr-4{% endif %}">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-semibold text-blue-800">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            الباقة المجانية
+                            {% else %}
+                            Free Plan
+                            {% endif %}
+                        </h2>
+                        <p class="text-blue-600">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            باقتك الحالية
+                            {% else %}
+                            Your Current Plan
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            مستخدم واحد
+                            {% else %}
+                            Single User
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            20 عميل كحد أقصى
+                            {% else %}
+                            Up to 20 Clients
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            تقارير أساسية
+                            {% else %}
+                            Basic Reports
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <svg class="w-5 h-5 text-green-500 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            دعم فني محدود
+                            {% else %}
+                            Limited Support
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border-r-4 border-blue-500">
+                    <p class="text-gray-700 text-sm">
+                        <strong>
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            ملاحظة:
+                            {% else %}
+                            Note:
+                            {% endif %}
+                        </strong>
+                        {% if LANGUAGE_CODE == 'ar' %}
+                        يمكنك الاستمتاع بالباقة المجانية والبدء في إدارة أكاديميتك على الفور!
+                        {% else %}
+                        You can enjoy the free plan and start managing your salon immediately!
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Upgrade Information -->
+            <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 mb-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center {% if LANGUAGE_CODE == 'ar' %}ml-4{% else %}mr-4{% endif %}">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold text-purple-800">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            هل تريد المزيد من المميزات؟
+                            {% else %}
+                            Want More Features?
+                            {% endif %}
+                        </h3>
+                        <p class="text-purple-600">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            ترقية إلى باقة أفضل
+                            {% else %}
+                            Upgrade to a Better Plan
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">50+</div>
+                        <div class="text-sm text-gray-600">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            عميل
+                            {% else %}
+                            Clients
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">∞</div>
+                        <div class="text-sm text-gray-600">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            مستخدمين
+                            {% else %}
+                            Users
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-2xl font-bold text-purple-600">24/7</div>
+                        <div class="text-sm text-gray-600">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            دعم فني
+                            {% else %}
+                            Support
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg p-4 border-r-4 border-purple-500">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-purple-500 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %} mt-0.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div>
+                            <p class="text-gray-700 text-sm">
+                                <strong>
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    للترقية:
+                                    {% else %}
+                                    To Upgrade:
+                                    {% endif %}
+                                </strong>
+                                {% if LANGUAGE_CODE == 'ar' %}
+                                انتقل إلى
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">ملف النادي</span>
+                                في شريط التنقل بعد تسجيل الدخول
+                                {% else %}
+                                Go to
+                                <span class="bg-purple-100 text-purple-800 px-2 py-1 rounded text-xs font-medium">Club Profile</span>
+                                in the navigation bar after signing in
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Navigation Steps -->
+            <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 text-gray-600 {% if LANGUAGE_CODE == 'ar' %}ml-2{% else %}mr-2{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    خطوات الترقية
+                    {% else %}
+                    Upgrade Steps
+                    {% endif %}
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center">
+                        <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold {% if LANGUAGE_CODE == 'ar' %}ml-3{% else %}mr-3{% endif %}">1</div>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            سجل الدخول إلى حسابك
+                            {% else %}
+                            Sign in to your account
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold {% if LANGUAGE_CODE == 'ar' %}ml-3{% else %}mr-3{% endif %}">2</div>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            اضغط على "ملف النادي" في شريط التنقل
+                            {% else %}
+                            Click on "Club Profile" in the navigation bar
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <div class="w-6 h-6 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs font-semibold {% if LANGUAGE_CODE == 'ar' %}ml-3{% else %}mr-3{% endif %}">3</div>
+                        <span class="text-gray-700">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            اختر الباقة المناسبة واترقي
+                            {% else %}
+                            Choose the suitable plan and upgrade
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Button -->
+            <div class="text-center">
+                <a href="{% url 'signin' %}" class="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-semibold text-lg hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-200 shadow-lg">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    فهمت، انتقل إلى تسجيل الدخول
+                    {% else %}
+                    Got it, Go to Sign In
+                    {% endif %}
+                </a>
+                <p class="text-sm text-gray-500 mt-3">
+                    {% if LANGUAGE_CODE == 'ar' %}
+                    ستتمكن من الوصول إلى لوحة التحكم بعد تسجيل الدخول
+                    {% else %}
+                    You'll be able to access the dashboard after signing in
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap');
+
+    body {
+        font-family: 'Cairo', sans-serif;
+    }
+
+    .animate-pulse {
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .hover\:scale-105:hover {
+        transform: scale(1.05);
+    }
+
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+
+    .shadow-2xl {
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    }
+
+    .shadow-lg {
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    .border-r-4 {
+        border-right-width: 4px;
+    }
+
+    .bg-gradient-to-br {
+        background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+    }
+
+    .bg-gradient-to-r {
+        background-image: linear-gradient(to right, var(--tw-gradient-stops));
+    }
+
+    .from-indigo-100 {
+        --tw-gradient-from: #e0e7ff;
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(224, 231, 255, 0));
+    }
+
+    .via-purple-50 {
+        --tw-gradient-stops: var(--tw-gradient-from), #faf5ff, var(--tw-gradient-to, rgba(250, 245, 255, 0));
+    }
+
+    .to-pink-100 {
+        --tw-gradient-to: #fce7f3;
+    }
+
+    .from-blue-600 {
+        --tw-gradient-from: #2563eb;
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(37, 99, 235, 0));
+    }
+
+    .to-purple-600 {
+        --tw-gradient-to: #9333ea;
+    }
+
+    .from-blue-700 {
+        --tw-gradient-from: #1d4ed8;
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(29, 78, 216, 0));
+    }
+
+    .to-purple-700 {
+        --tw-gradient-to: #7c3aed;
+    }
+
+    .from-purple-500 {
+        --tw-gradient-from: #8b5cf6;
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(139, 92, 246, 0));
+    }
+
+    .to-pink-500 {
+        --tw-gradient-to: #ec4899;
+    }
+
+    .from-purple-50 {
+        --tw-gradient-from: #faf5ff;
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(250, 245, 255, 0));
+    }
+
+    .to-pink-50 {
+        --tw-gradient-to: #fdf2f8;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        .animate-pulse {
+            animation: none;
+        }
+
+        .transition-all {
+            transition: none;
+        }
+
+        .hover\:scale-105:hover {
+            transform: none;
+        }
+    }
+</style>
+{% endblock %}

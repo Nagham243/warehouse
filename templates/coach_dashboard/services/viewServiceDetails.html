@@ -1,0 +1,343 @@
+{% extends 'base_coach_dashboard.html' %}
+{% load static custom_filters %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-fadeIn {
+        animation: fadeIn 0.8s ease-out forwards;
+        opacity: 0;
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Detail section styling */
+    .detail-item {
+        border-bottom: 1px solid #e5e7eb;
+        padding: 1rem 0;
+        transition: background-color 0.2s ease;
+    }
+
+    .detail-item:hover {
+        background-color: #fdf2f8; /* pink-50 */
+        padding-left: 0.5rem;
+        margin-left: -0.5rem;
+        margin-right: -0.5rem;
+        border-radius: 0.5rem;
+    }
+
+    .detail-item:last-child {
+        border-bottom: none;
+    }
+
+    /* Image zoom effect */
+    .service-image:hover {
+        transform: scale(1.02);
+        transition: transform 0.3s ease;
+    }
+
+    /* Badge styling */
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+    .pricing-badge {
+        background: linear-gradient(135deg, #ec4899 0%, #f59e0b 100%); /* pink-500 to amber-500 */
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+</style>
+
+<div class="bg-gradient-to-br from-pink-50 to-amber-50 w-full px-4 md:px-8 min-h-screen pb-12 {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+    <!-- Header Section -->
+    <div class="py-8 animate-fadeIn">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <a href="{% url 'coachviewServices' %}" class="text-pink-600 hover:text-pink-800 mb-2 inline-flex items-center transition-colors duration-200">
+                    <i class="fas fa-arrow-left mr-2 {% if LANGUAGE_CODE == 'ar' %}transform rotate-180{% endif %}"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}العودة للخدمات{% else %}Back to Services{% endif %}
+                </a>
+                <h1 class="text-3xl font-bold text-gray-800 flex items-center gap-3">
+                    <div class="p-3 bg-pink-100 rounded-full text-pink-600">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    {% if LANGUAGE_CODE == 'ar' %}تفاصيل الخدمة{% else %}Service Details{% endif %}
+                </h1>
+            </div>
+            {% if service.approval_status == 'approved' or service.approval_status == 'pending' %}
+            <div class="flex gap-2">
+                <a href="{% url 'coacheditServices' service.id %}" class="btn-gradient px-4 py-2 bg-gradient-to-r from-pink-500 to-amber-600 text-white rounded-lg hover:from-pink-600 hover:to-amber-700 transition-all duration-300 flex items-center shadow-md">
+                    <i class="fas fa-edit mr-2"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}تعديل{% else %}Edit{% endif %}
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Service Header Card -->
+            <div class="animate-fadeInUp bg-white rounded-xl shadow-lg overflow-hidden">
+                {% if service.image %}
+                <div class="h-64 overflow-hidden">
+                    <img src="{{ service.image.url }}" alt="{{ service.title }}" class="w-full h-full object-cover service-image">
+                </div>
+                {% endif %}
+
+                <div class="p-6">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-2xl font-bold text-gray-800">{{ service.title }}</h2>
+                        {% if service.is_enabled %}
+                        <span class="status-badge bg-green-100 text-green-800">
+              <i class="fas fa-check-circle mr-1"></i>
+              {% if LANGUAGE_CODE == 'ar' %}متاح{% else %}Available{% endif %}
+            </span>
+                        {% else %}
+                        <span class="status-badge bg-red-100 text-red-800">
+              <i class="fas fa-times-circle mr-1"></i>
+              {% if LANGUAGE_CODE == 'ar' %}غير متاح{% else %}Unavailable{% endif %}
+            </span>
+                        {% endif %}
+                    </div>
+
+                    {% if service.desc %}
+                    <div class="prose max-w-none">
+                        <h3 class="text-lg font-semibold text-gray-700 mb-2">
+                            <i class="fas fa-align-left text-pink-500 mr-2"></i>
+                            {% if LANGUAGE_CODE == 'ar' %}الوصف{% else %}Description{% endif %}
+                        </h3>
+                        <p class="text-gray-600 leading-relaxed">{{ service.desc }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Service Classifications -->
+            {% if service.classification.all %}
+            <div class="animate-fadeInUp bg-white rounded-xl shadow-lg p-6" style="animation-delay: 0.1s;">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-tags text-amber-500 mr-2"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}التصنيفات{% else %}Classifications{% endif %}
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for classification in service.classification.all %}
+                    <span class="inline-flex items-center bg-amber-100 text-amber-800 text-sm px-3 py-1 rounded-full">
+            <i class="fas fa-tag mr-1"></i>
+            {{ classification.title }}
+          </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Coaches Information -->
+            {% if service.coaches.all %}
+            <div class="animate-fadeInUp bg-white rounded-xl shadow-lg p-6" style="animation-delay: 0.2s;">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-users text-pink-500 mr-2"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}المدربون{% else %}Coaches{% endif %}
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for coach in service.coaches.all %}
+                    <div class="flex items-center bg-gray-50 p-4 rounded-lg">
+                        <div class="w-12 h-12 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center mr-4">
+                            <i class="fas fa-user-tie text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">{{ coach.full_name }}</div>
+                            <div class="text-sm text-gray-500">{% if LANGUAGE_CODE == 'ar' %}مدرب{% else %}Coach{% endif %}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Pricing Information -->
+            <div class="animate-fadeInUp bg-white rounded-xl shadow-lg p-6" style="animation-delay: 0.1s;">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-dollar-sign text-green-500 mr-2"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}معلومات التسعير{% else %}Pricing Information{% endif %}
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% if LANGUAGE_CODE == 'ar' %}السعر الأساسي{% else %}Base Price{% endif %}</span>
+                            <span class="font-bold text-gray-800">{{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                        </div>
+                    </div>
+
+                    {% if service.discounted_price %}
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% if LANGUAGE_CODE == 'ar' %}السعر بعد الخصم{% else %}Discounted Price{% endif %}</span>
+                            <span class="font-bold text-green-600">{{ service.discounted_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-600">{% if LANGUAGE_CODE == 'ar' %}السعر الشهري{% else %}Monthly Price{% endif %}</span>
+                            <span class="font-bold text-pink-600">{{ service.monthly_price|floatformat:1 }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-pink-50 rounded-lg">
+                        <div class="pricing-badge text-center">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            فترة التسعير: {{ service.pricing_period_months }} {% if service.pricing_period_months == 1 %}شهر{% else %}أشهر{% endif %}
+                            {% else %}
+                            Pricing Period: {{ service.pricing_period_months }} {% if service.pricing_period_months == 1 %}Month{% else %}Months{% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Service Details -->
+            <div class="animate-fadeInUp bg-white rounded-xl shadow-lg p-6" style="animation-delay: 0.2s;">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-cog text-gray-500 mr-2"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}تفاصيل الخدمة{% else %}Service Details{% endif %}
+                </h3>
+
+                <div class="space-y-4">
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+              <span class="text-gray-600">
+                <i class="far fa-clock text-pink-500 mr-1"></i>
+                {% if LANGUAGE_CODE == 'ar' %}المدة{% else %}Duration{% endif %}
+              </span>
+                            <span class="font-medium text-gray-800">
+                {% if service.duration >= 60 %}
+                {% with hours=service.duration|divisibleby:1|div:60 minutes=service.duration|modulo:60 %}
+                {% if LANGUAGE_CODE == 'ar' %}
+                {% if hours > 0 %}{{ hours }} ساعة {% endif %}{% if minutes > 0 %}{{ minutes }} دقيقة{% endif %}
+                {% else %}
+                {% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% endif %}
+                {% endif %}
+                {% endwith %}
+                {% else %}
+                {% if LANGUAGE_CODE == 'ar' %}
+                {{ service.duration }} دقيقة
+                {% else %}
+                {{ service.duration }} minutes
+                {% endif %}
+                {% endif %}
+              </span>
+                        </div>
+                    </div>
+
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+              <span class="text-gray-600">
+                <i class="fas fa-calendar-days text-amber-500 mr-1"></i>
+                {% if LANGUAGE_CODE == 'ar' %}أيام الاشتراك{% else %}Subscription Days{% endif %}
+              </span>
+                            <span class="font-medium text-gray-800">{{ service.total_subscription_days }} {% if LANGUAGE_CODE == 'ar' %}يوم{% else %}days{% endif %}</span>
+                        </div>
+                    </div>
+
+                    {% if service.creation_date %}
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+              <span class="text-gray-600">
+                <i class="fas fa-calendar-plus text-green-500 mr-1"></i>
+                {% if LANGUAGE_CODE == 'ar' %}تاريخ الإنشاء{% else %}Created Date{% endif %}
+              </span>
+                            <span class="font-medium text-gray-800">{{ service.creation_date|date:"d M Y" }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    {% if service.creator %}
+                    <div class="detail-item">
+                        <div class="flex justify-between items-center">
+              <span class="text-gray-600">
+                <i class="fas fa-user-plus text-indigo-500 mr-1"></i>
+                {% if LANGUAGE_CODE == 'ar' %}المنشئ{% else %}Creator{% endif %}
+              </span>
+                            <span class="font-medium text-gray-800">{{ service.creator.get_full_name|default:service.creator.username }}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="animate-fadeInUp bg-white rounded-xl shadow-lg p-6" style="animation-delay: 0.3s;">
+                <h3 class="text-lg font-semibold text-gray-700 mb-4">
+                    <i class="fas fa-bolt text-yellow-500 mr-2"></i>
+                    {% if LANGUAGE_CODE == 'ar' %}الإجراءات السريعة{% else %}Quick Actions{% endif %}
+                </h3>
+
+                <div class="space-y-3">
+                    {% if service.approval_status == 'approved' or service.approval_status == 'pending' %}
+                    <a href="{% url 'coacheditServices' service.id %}" class="w-full btn-gradient px-4 py-3 bg-gradient-to-r from-pink-500 to-amber-600 text-white rounded-lg hover:from-pink-600 hover:to-amber-700 transition-all duration-300 flex items-center justify-center">
+                        <i class="fas fa-edit mr-2"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}تعديل الخدمة{% else %}Edit Service{% endif %}
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'coachviewServices' %}" class="w-full px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all duration-300 flex items-center justify-center">
+                        <i class="fas fa-list mr-2"></i>
+                        {% if LANGUAGE_CODE == 'ar' %}جميع الخدمات{% else %}All Services{% endif %}
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script defer>
+    // Add any JavaScript functionality here if needed
+    document.addEventListener('DOMContentLoaded', function() {
+      // Initialize any interactive elements
+      console.log('Service details page loaded');
+    });
+</script>
+{% endblock %}

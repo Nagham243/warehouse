@@ -1,0 +1,147 @@
+{% extends "base_receptionist_dashboard.html" %}
+{% block content %}
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-white animate-gradient-slow w-full px-4 md:px-8 min-h-screen pb-12">
+    <h1 class="text-4xl font-bold text-rose-800 py-16 px-4 md:px-8 transform transition-all duration-500 hover:scale-105">
+        {% if LANGUAGE_CODE == 'ar' %}موظف الاستقبال {{ receptionist.full_name }} 👋{% else %}Receptionist {{ receptionist.full_name }} 👋{% endif %}
+    </h1>
+
+    <!--    <div class="mt-12 bg-white rounded-xl shadow-lg m-8 px-4 md:px-8 py-6">-->
+    <!--        <div class="bg-white shadow rounded-lg p-6">-->
+    <!--            <h2 class="text-xl font-semibold mb-4">{% if LANGUAGE_CODE == 'ar' %}معلومات الموظف{% else %}Employee Information{% endif %}</h2>-->
+    <!--            <p><strong>{% if LANGUAGE_CODE == 'ar' %}الاسم:{% else %}Name:{% endif %}</strong> {{ receptionist.full_name }}</p>-->
+    <!--            <p><strong>{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني:{% else %}Email:{% endif %}</strong> {{ receptionist.email }}</p>-->
+    <!--            <p><strong>{% if LANGUAGE_CODE == 'ar' %}رقم الهاتف:{% else %}Phone:{% endif %}</strong> {{ receptionist.phone }}</p>-->
+    <!--            <p><strong>{% if LANGUAGE_CODE == 'ar' %}النادي:{% else %}Club:{% endif %}</strong> {{ receptionist.club.name }}</p>-->
+    <!--        </div>-->
+    <!--    </div>-->
+
+
+    <!--    &lt;!&ndash; أفضل التقييمات &ndash;&gt;-->
+    <!--    <div class="mt-12 bg-white rounded-xl shadow-lg m-8 px-4 md:px-8 py-6">-->
+    <!--        <div class="flex justify-between items-center mb-6">-->
+    <!--            <h3 class="text-2xl font-bold text-indigo-800">{% if LANGUAGE_CODE == 'ar' %}أفضل التقييمات{% else %}Top Ratings{% endif %}</h3>-->
+    <!--            <a href="#" class="text-indigo-600 hover:text-indigo-800 transition duration-300">{% if LANGUAGE_CODE == 'ar' %}عرض الكل{% else %}View All{% endif %}</a>-->
+    <!--        </div>-->
+    <!--        <div class="overflow-x-auto">-->
+    <!--            <table class="w-full text-sm text-right text-gray-500">-->
+    <!--                <thead class="text-xs text-gray-700 uppercase bg-gray-50">-->
+    <!--                <tr>-->
+    <!--                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}الترتيب{% else %}Rank{% endif %}</th>-->
+    <!--                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}اسم الموظف{% else %}Employee Name{% endif %}</th>-->
+    <!--                    <th scope="col" class="px-6 py-3">{% if LANGUAGE_CODE == 'ar' %}التقييم{% else %}Rating{% endif %}</th>-->
+    <!--                </tr>-->
+    <!--                </thead>-->
+    <!--                <tbody>-->
+    <!--                <tr class="bg-white border-b hover:bg-gray-50">-->
+    <!--                    <td class="px-6 py-4 font-bold text-indigo-600">1</td>-->
+    <!--                    <td class="px-6 py-4 font-medium text-gray-900">{% if LANGUAGE_CODE == 'ar' %}محمد أحمد{% else %}Mohammed Ahmed{% endif %}</td>-->
+    <!--                    <td class="px-6 py-4 flex items-center">-->
+    <!--                        <div class="flex items-center text-yellow-500 ml-2">-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                        </div>-->
+    <!--                        <span class="text-gray-600">5.0</span>-->
+    <!--                    </td>-->
+    <!--                </tr>-->
+    <!--                <tr class="bg-white border-b hover:bg-gray-50">-->
+    <!--                    <td class="px-6 py-4 font-bold text-indigo-600">2</td>-->
+    <!--                    <td class="px-6 py-4 font-medium text-gray-900">{% if LANGUAGE_CODE == 'ar' %}سارة علي{% else %}Sarah Ali{% endif %}</td>-->
+    <!--                    <td class="px-6 py-4 flex items-center">-->
+    <!--                        <div class="flex items-center text-yellow-500 ml-2">-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="far fa-star"></i>-->
+    <!--                        </div>-->
+    <!--                        <span class="text-gray-600">4.0</span>-->
+    <!--                    </td>-->
+    <!--                </tr>-->
+    <!--                <tr class="bg-white border-b hover:bg-gray-50">-->
+    <!--                    <td class="px-6 py-4 font-bold text-indigo-600">3</td>-->
+    <!--                    <td class="px-6 py-4 font-medium text-gray-900">{% if LANGUAGE_CODE == 'ar' %}عمر محمود{% else %}Omar Mahmoud{% endif %}</td>-->
+    <!--                    <td class="px-6 py-4 flex items-center">-->
+    <!--                        <div class="flex items-center text-yellow-500 ml-2">-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star"></i>-->
+    <!--                            <i class="fas fa-star-half-alt"></i>-->
+    <!--                            <i class="far fa-star"></i>-->
+    <!--                        </div>-->
+    <!--                        <span class="text-gray-600">3.5</span>-->
+    <!--                    </td>-->
+    <!--                </tr>-->
+    <!--                </tbody>-->
+    <!--            </table>-->
+    <!--        </div>-->
+    <!--    </div>-->
+
+    <!-- بطاقة العملاء - Students Card -->
+    <div class="mt-12 bg-white rounded-xl shadow-lg m-8 px-4 md:px-8 py-6 border border-rose-100 hover:shadow-xl transition-all duration-300">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-rose-700">{% if LANGUAGE_CODE == 'ar' %}قائمة اللاعبين 👥{% else %}Client List 👥{% endif %}</h3>
+            <a href="{% url 'viewStudentss' %}" class="text-rose-600 hover:text-rose-800 transition duration-300 flex items-center">
+                {% if LANGUAGE_CODE == 'ar' %}عرض الكل{% else %}View All{% endif %}
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+            {% for student in students|slice:":4" %}
+            <div class="bg-white border border-rose-100 rounded-lg shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-1 flex items-center p-4">
+                <div class="h-12 w-12 rounded-full bg-gradient-to-r from-rose-100 to-pink-100 flex items-center justify-center text-rose-600 font-bold text-xl mr-3">
+                    {{ student.student_profile.full_name|default:"{% if LANGUAGE_CODE == 'ar' %}؟{% else %}?{% endif %}"|slice:":1" }}
+                </div>
+
+                <div class="flex-grow">
+                    <div class="flex items-center justify-between">
+                        <h4 class="font-bold text-gray-800">{{ student.user.username }}</h4>
+                        <div class="text-sm text-gray-500">
+                            {% if student.student_profile.phone %}
+                            <i class="fas fa-phone-alt mr-1 text-rose-400"></i> {{ student.student_profile.phone }}
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <p class="text-sm text-gray-600 truncate max-w-xs">{{ student.user.email }}</p>
+                        <div class="flex gap-2">
+                            <a href="{% url 'editStudentt' student.student_profile.id %}" class="text-rose-500 hover:text-rose-700 transition-colors">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'deleteStudentt' student.student_profile.id %}" class="text-red-500 hover:text-red-700 transition-colors">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-2 flex flex-col items-center justify-center py-8 text-center">
+                <div class="bg-rose-50 rounded-full p-6 mb-4">
+                    <i class="fas fa-user-slash text-2xl text-rose-300"></i>
+                </div>
+                <p class="text-rose-500 font-medium">{% if LANGUAGE_CODE == 'ar' %}لا يوجد عملاء حالياً 🤷‍♀️{% else %}No clients available 🤷‍♀️{% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Simple Pagination -->
+        {% if students.count > 4 %}
+        <div class="flex justify-center mt-6">
+            <div class="inline-flex rounded-md shadow-sm">
+                <a href="{% url 'viewStudents' %}" class="inline-flex items-center justify-center px-5 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-md">
+                    {% if LANGUAGE_CODE == 'ar' %}عرض المزيد{% else %}View More{% endif %}
+                    <i class="fas fa-chevron-{% if LANGUAGE_CODE == 'ar' %}left{% else %}right{% endif %} ml-2"></i>
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

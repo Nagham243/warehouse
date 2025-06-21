@@ -1,0 +1,115 @@
+{% extends "base_receptionist_dashboard.html" %}
+
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-rose-50 to-amber-50 animate-gradient-slow w-full px-4 md:px-8 min-h-screen pb-12">
+  <div class="flex justify-between items-center py-8">
+    <h1 class="text-4xl font-bold text-rose-800 transform transition-all duration-500 hover:scale-105">
+      {% if LANGUAGE_CODE == 'ar' %}قائمة اللاعبين 👥{% else %}Client List 👥{% endif %}
+    </h1>
+    <a
+            href="{% url 'addStudentFromReceptionist' %}"
+            class="bg-gradient-to-r from-rose-500 to-pink-500 text-white px-6 py-2 rounded-lg hover:from-rose-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-md flex items-center"
+    >
+      <span class="mr-1">{% if LANGUAGE_CODE == 'ar' %}إضافة لاعب جديد{% else %}Add New Client{% endif %}</span>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+    </a>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-lg overflow-hidden border border-rose-100 hover:shadow-xl transition-all duration-300">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-right text-gray-500">
+        <thead class="text-xs text-gray-700 uppercase bg-rose-50">
+        <tr>
+          <th scope="col" class="px-6 py-3">
+            {% if LANGUAGE_CODE == 'ar' %}الاسم{% else %}Username{% endif %}
+          </th>
+          <th scope="col" class="px-6 py-3">
+            {% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}
+          </th>
+          <th scope="col" class="px-6 py-3">
+            {% if LANGUAGE_CODE == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}
+          </th>
+          <th scope="col" class="px-6 py-3">
+            {% if LANGUAGE_CODE == 'ar' %}الهاتف{% else %}Phone{% endif %}
+          </th>
+          <th scope="col" class="px-6 py-3">
+            {% if LANGUAGE_CODE == 'ar' %}تاريخ الميلاد{% else %}Date of Birth{% endif %}
+          </th>
+          <th scope="col" class="px-6 py-3">
+            {% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}
+          </th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for student in students %}
+        <tr class="bg-white border-b hover:bg-rose-50 transition-colors duration-200">
+          <td class="px-6 py-4 font-medium text-gray-900">
+            {{ student.user.username }}
+          </td>
+          <td class="px-6 py-4">{{ student.user.email }}</td>
+          <td class="px-6 py-4">
+            {% if LANGUAGE_CODE == 'ar' %}
+            {{ student.student_profile.full_name|default:"❌ غير متوفر" }}
+            {% else %}
+            {{ student.student_profile.full_name|default:"❌ Not available" }}
+            {% endif %}
+          </td>
+          <td class="px-6 py-4">
+            {% if LANGUAGE_CODE == 'ar' %}
+            {{ student.student_profile.phone|default:"❌ غير متوفر" }}
+            {% else %}
+            {{ student.student_profile.phone|default:"❌ Not available" }}
+            {% endif %}
+          </td>
+          <td class="px-6 py-4">
+            {% if LANGUAGE_CODE == 'ar' %}
+            {{ student.student_profile.birthday|default:"❌ غير متوفر" }}
+            {% else %}
+            {{ student.student_profile.birthday|default:"❌ Not available" }}
+            {% endif %}
+          </td>
+
+          <!-- Action buttons with professional design -->
+          <td class="px-6 py-4 flex flex-col md:flex-row gap-2">
+            <a href="{% url 'editStudentt' student.student_profile.id %}"
+               class="inline-flex items-center justify-center bg-rose-500 text-white text-xs font-semibold px-4 py-1 rounded-md hover:bg-rose-600 transition-all duration-200 shadow-sm">
+              {% if LANGUAGE_CODE == 'ar' %}✏️ تعديل{% else %}✏️ Edit{% endif %}
+            </a>
+            <a href="{% url 'deleteStudentt' student.student_profile.id %}"
+               class="inline-flex items-center justify-center bg-red-500 text-white text-xs font-semibold px-4 py-1 rounded-md hover:bg-red-600 transition-all duration-200 shadow-sm">
+              {% if LANGUAGE_CODE == 'ar' %}🗑 حذف{% else %}🗑 Delete{% endif %}
+            </a>
+            <a href="{% url 'student_subscriptions' student.user.id %}"
+               class="inline-flex items-center justify-center bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-xs font-semibold px-4 py-1 rounded-md hover:from-purple-600 hover:to-indigo-600 transition-all duration-200 shadow-sm">
+              {% if LANGUAGE_CODE == 'ar' %}💎 الاشتراكات{% else %}💎 Subscriptions{% endif %}
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr class="bg-white border-b">
+          <td colspan="7" class="px-6 py-8 text-center">
+            <div class="flex flex-col items-center justify-center">
+              <div class="bg-rose-50 rounded-full p-6 mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6" />
+                </svg>
+              </div>
+              <p class="text-rose-500 font-medium">
+                {% if LANGUAGE_CODE == 'ar' %}
+                🚫 لا يوجد لاعبين حالياً
+                {% else %}
+                🚫 No clients available
+                {% endif %}
+              </p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

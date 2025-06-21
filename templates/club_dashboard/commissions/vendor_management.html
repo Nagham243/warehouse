@@ -1,0 +1,126 @@
+{% extends "base_club_dashboard.html" %}
+{% block content %}
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-blue-50 to-purple-50 w-full px-4 md:px-8 min-h-screen pb-12 overflow-hidden font-sans">
+    <!-- Title and back button -->
+    <div class="flex justify-between items-center py-8">
+        <h1 class="text-2xl font-bold text-gray-800 flex items-center gap-2">
+            <div class="p-2 bg-blue-100 rounded-full text-blue-600">
+                <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                </svg>
+            </div>
+            {% if LANGUAGE_CODE == 'ar' %} إدارة عمولات البائعين {% else %} Vendor Commission Management {% endif %}
+        </h1>
+        <a href="{% url 'commission_list' %}" class="text-blue-600 hover:text-blue-800 font-medium flex items-center transition-all duration-200">
+            {% if LANGUAGE_CODE == 'ar' %} العودة إلى القائمة {% else %} Back to Commissions {% endif %}
+            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+            </svg>
+        </a>
+    </div>
+
+    <!-- Vendor Commission Stats -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        {% for classification, display_name, count in vendor_classifications %}
+        <div class="bg-white/90 backdrop-blur-sm p-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border-l-4 border-{% if classification == 'bronze' %}orange-500{% elif classification == 'silver' %}gray-400{% elif classification == 'gold' %}yellow-500{% else %}purple-500{% endif %}">
+            <div class="flex justify-between items-center">
+                <h3 class="text-sm font-semibold text-gray-800">{{ display_name }}</h3>
+                <div class="bg-{% if classification == 'bronze' %}orange-100{% elif classification == 'silver' %}gray-100{% elif classification == 'gold' %}yellow-100{% else %}purple-100{% endif %} p-2 rounded-full">
+                    <svg class="w-4 h-4 text-{% if classification == 'bronze' %}orange-600{% elif classification == 'silver' %}gray-600{% elif classification == 'gold' %}yellow-600{% else %}purple-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-xl font-bold text-gray-800 mt-2">
+                {{ count }}
+            </p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Vendor List -->
+    <div class="bg-white/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
+        <table class="w-full text-sm text-gray-700">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+            <tr>
+                <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}اسم البائع{% else %}Vendor Name{% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}نوع النشاط{% else %}Activity Type{% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}التصنيف الحالي{% else %}Current Classification{% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}نسبة العمولة{% else %}Commission Rate{% endif %}</th>
+                <th scope="col" class="px-6 py-3 text-left">{% if LANGUAGE_CODE == 'ar' %}الإجراءات{% else %}Actions{% endif %}</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for vendor in page_obj %}
+            <tr class="bg-white border-b hover:bg-gray-50">
+                <td class="px-6 py-4 font-medium">{{ vendor.full_name }}</td>
+                <td class="px-6 py-4">{{ vendor.get_activity_type_display }}</td>
+                <td class="px-6 py-4">
+                    <span class="px-2 py-1 text-xs rounded-full bg-{% if vendor.vendor_classification == 'bronze' %}orange-100 text-orange-800{% elif vendor.vendor_classification == 'silver' %}gray-100 text-gray-800{% elif vendor.vendor_classification == 'gold' %}yellow-100 text-yellow-800{% else %}purple-100 text-purple-800{% endif %}">
+                        {{ vendor.vendor_classification|capfirst }}
+                    </span>
+                </td>
+                <td class="px-6 py-4 font-bold text-blue-600">
+                    {% if vendor.commission_assignment %}
+                    {{ vendor.commission_assignment.commission.commission_rate }}%
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td class="px-6 py-4">
+                    <form method="post" class="flex items-center space-x-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="vendor_id" value="{{ vendor.id }}">
+                        <select name="commission_id" class="text-sm border rounded px-2 py-1">
+                            <option value="">{% if LANGUAGE_CODE == 'ar' %}اختر عمولة{% else %}Select Commission{% endif %}</option>
+                            {% for commission in available_commissions %}
+                            <option value="{{ commission.id }}" {% if vendor.commission_assignment and vendor.commission_assignment.commission.id == commission.id %}selected{% endif %}>
+                                {{ commission.name }} ({{ commission.commission_rate }}%)
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <button type="submit" class="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600 transition-colors">
+                            {% if LANGUAGE_CODE == 'ar' %}حفظ{% else %}Save{% endif %}
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr class="bg-white border-b">
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                    {% if LANGUAGE_CODE == 'ar' %}لا يوجد بائعين حالياً{% else %}No vendors available{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center mt-8">
+        <nav class="flex items-center space-x-2">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                {% if LANGUAGE_CODE == 'ar' %}السابق{% else %}Previous{% endif %}
+            </a>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <span class="px-3 py-2 bg-blue-500 text-white rounded-lg">{{ num }}</span>
+            {% else %}
+            <a href="?page={{ num }}" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">{{ num }}</a>
+            {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-3 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                {% if LANGUAGE_CODE == 'ar' %}التالي{% else %}Next{% endif %}
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

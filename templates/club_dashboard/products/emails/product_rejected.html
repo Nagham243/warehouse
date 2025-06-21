@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Product Rejected</title>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f44336; color: white; padding: 20px; text-align: center; }
+        .content { padding: 20px; background-color: #f9f9f9; }
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #777; }
+        .button { display: inline-block; background-color: #f44336; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>{% if LANGUAGE_CODE == 'ar' %}تم رفض منتجك{% else %}Your Product Has Been Rejected{% endif %}</h1>
+    </div>
+    <div class="content">
+        <p>{% if LANGUAGE_CODE == 'ar' %}مرحباً {{ vendor.full_name }}{% else %}Hello {{ vendor.full_name }}{% endif %},</p>
+        <p>
+            {% if LANGUAGE_CODE == 'ar' %}
+            نأسف لإعلامك أن منتجك "{{ product.title }}" تم رفضه من قبل نادي {{ club.name }}.
+            {% else %}
+            We regret to inform you that your product "{{ product.title }}" has been rejected by {{ club.name }}.
+            {% endif %}
+        </p>
+
+        <p><strong>{% if LANGUAGE_CODE == 'ar' %}سبب الرفض:{% else %}Reason for rejection:{% endif %}</strong></p>
+        <p>{{ rejection_reason }}</p>
+
+        <p style="text-align: center; margin: 30px 0;">
+            <a href="{{ edit_product_url }}" class="button">
+                {% if LANGUAGE_CODE == 'ar' %}تعديل المنتج{% else %}Edit Product{% endif %}
+            </a>
+        </p>
+
+        <p>
+            {% if LANGUAGE_CODE == 'ar' %}
+            يمكنك تعديل المنتج وفقاً للملاحظات وإعادة تقديمه للمراجعة. إذا كان لديك أي استفسارات، لا تتردد في التواصل معنا.
+            {% else %}
+            You can edit the product according to the feedback and resubmit it for review. If you have any questions, feel free to contact us.
+            {% endif %}
+        </p>
+    </div>
+    <div class="footer">
+        <p>© {% now "Y" %} {{ club.name }}. {% if LANGUAGE_CODE == 'ar' %}جميع الحقوق محفوظة.{% else %}All rights reserved.{% endif %}</p>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,176 @@
+{% extends "base_club_dashboard.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    /* Animation Classes */
+    .animate-float {
+        animation: float 4s ease-in-out infinite;
+    }
+    
+    .animate-fadeIn {
+        animation: fadeIn 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-stagger > * {
+        animation: fadeInUp 0.6s ease-out forwards;
+        opacity: 0;
+    }
+    
+    .animate-stagger > *:nth-child(1) { animation-delay: 0.1s; }
+    .animate-stagger > *:nth-child(2) { animation-delay: 0.2s; }
+    .animate-stagger > *:nth-child(3) { animation-delay: 0.3s; }
+    .animate-stagger > *:nth-child(4) { animation-delay: 0.4s; }
+    .animate-stagger > *:nth-child(5) { animation-delay: 0.5s; }
+    .animate-stagger > *:nth-child(6) { animation-delay: 0.6s; }
+    
+    /* Button Effects */
+    .btn-gradient {
+        background-size: 200% auto;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .btn-gradient:hover {
+        background-position: right center;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    }
+    
+    /* Input Effects */
+    input, select, textarea {
+        transition: all 0.3s ease;
+    }
+    
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+    }
+    
+    /* Keyframes */
+    @keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-8px); }
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateX(10px); }
+        to { opacity: 1; transform: translateX(0); }
+    }
+    
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    /* Background Animation */
+    .animated-bg {
+        animation: gradientBG 15s ease infinite;
+        background-size: 300% 300%;
+    }
+    
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+</style>
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} animated-bg bg-gradient-to-br from-blue-50 to-purple-50 min-h-screen px-4 pt-8 font-sans">
+    <section class="container mx-auto">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8 flex items-center gap-2 animate-fadeIn">
+            <span class="text-2xl animate-float">👋</span>
+            {% if LANGUAGE_CODE == 'ar' %}إضافة موظف استقبال جديد{% else %}Add New Receptionist{% endif %}
+        </h1>
+
+        <div class="bg-white p-8 rounded-xl shadow-lg border border-gray-100 animate-fadeInUp">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                <div class="animate-stagger">
+                    <div class="space-y-2">
+                        <label for="{{ form.username.id_for_label }}" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span class="text-xl">🔑</span>
+                            {% if LANGUAGE_CODE == 'ar' %}اسم الموظف{% else %}Employee Username{% endif %}
+                        </label>
+                        <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                required
+                                placeholder="{% if LANGUAGE_CODE == 'ar' %}اسم موظف الاستقبال{% else %}Receptionist username{% endif %}"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent hover:border-blue-300"
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span class="text-xl">✉️</span>
+                            {% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email Address{% endif %}
+                        </label>
+                        <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                required
+                                placeholder="{% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email address{% endif %}"
+                                class="w-full px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-300 focus:border-transparent hover:border-blue-300"
+                        />
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="{{ form.full_name.id_for_label }}" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span class="text-xl">👤</span>
+                            {% if LANGUAGE_CODE == 'ar' %}الاسم الكامل{% else %}Full Name{% endif %}
+                        </label>
+                        {{ form.full_name }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span class="text-xl">📱</span>
+                            {% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+                        </label>
+                        {{ form.phone }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="{{ form.about.id_for_label }}" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span class="text-xl">✍️</span>
+                            {% if LANGUAGE_CODE == 'ar' %}نبذة عن الموظف{% else %}About the Employee{% endif %}
+                        </label>
+                        {{ form.about }}
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="{{ form.password.id_for_label }}" class="block text-sm font-medium text-gray-700 flex items-center gap-2">
+                            <span class="text-xl">🔒</span>
+                            {% if LANGUAGE_CODE == 'ar' %}كلمة المرور{% else %}Password{% endif %}
+                        </label>
+                        {{ form.password }}
+                    </div>
+                </div>
+
+                <div class="flex items-center {% if LANGUAGE_CODE == 'ar' %}justify-end space-x-4 space-x-reverse{% else %}justify-start space-x-4{% endif %} mt-8">
+                    <a href="{% url 'viewReceptionists' %}"
+                       class="btn-gradient bg-gradient-to-r from-red-500 to-red-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2">
+                        <span class="text-xl">❌</span>
+                        {% if LANGUAGE_CODE == 'ar' %}إلغاء{% else %}Cancel{% endif %}
+                    </a>
+                    <button type="submit"
+                            class="btn-gradient bg-gradient-to-r from-blue-500 to-blue-600 text-white px-6 py-3 rounded-lg shadow-md flex items-center gap-2">
+                        <span class="text-xl">✅</span>
+                        {% if LANGUAGE_CODE == 'ar' %}إضافة موظف الاستقبال{% else %}Add Receptionist{% endif %}
+                    </button>
+                </div>
+                <input type="hidden" name="club" value="{{ user.userprofile.director_profile.club.id }}">
+            </form>
+        </div>
+    </section>
+</div>
+{% endblock %}

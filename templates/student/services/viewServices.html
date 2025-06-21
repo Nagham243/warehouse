@@ -1,0 +1,495 @@
+{% extends "base_student_dashboard.html" %}
+{% load students_tags %}
+{% load static %}
+{% block content %}
+
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen">
+    <section class="container mx-auto px-4 pt-8 pb-12">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-pink-800 relative">
+                {% if LANGUAGE_CODE == 'ar' %}
+                خدمات النادي 💖
+                {% else %}
+                Salon Services 💖
+                {% endif %}
+                <span class="absolute -top-2 -right-4 text-xl animate-pulse">✨</span>
+            </h1>
+        </div>
+
+        <!-- Stats Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow-lg p-6 text-center transform transition-all duration-300 hover:translate-y-[-5px] hover:shadow-xl">
+                <div class="text-gray-500 mb-2">{% if LANGUAGE_CODE == 'ar' %}
+                    إجمالي الخدمات
+                    {% else %}
+                    Total Services
+                    {% endif %}</div>
+                <div class="text-pink-600 text-3xl font-bold" id="services-count">{{ services|length }}</div>
+            </div>
+        </div>
+
+        <!-- Search and Filter Controls -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+            <div class="md:w-1/5">
+                <div class="relative">
+                    <select id="sort-services" class="w-full p-2 border border-pink-200 rounded-md appearance-none pr-8 focus:border-pink-400 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300">
+                        <option value="name">{% if LANGUAGE_CODE == 'ar' %}
+                            ترتيب حسب الاسم
+                            {% else %}
+                            Sort by Name
+                            {% endif %}</option>
+                        <option value="monthly-price">{% if LANGUAGE_CODE == 'ar' %}
+                            ترتيب حسب السعر الشهري
+                            {% else %}
+                            Sort by Monthly Price
+                            {% endif %}</option>
+                        <option value="total-price">{% if LANGUAGE_CODE == 'ar' %}
+                            ترتيب حسب السعر الإجمالي
+                            {% else %}
+                            Sort by Total Price
+                            {% endif %}</option>
+                        <option value="period">{% if LANGUAGE_CODE == 'ar' %}
+                            ترتيب حسب فترة الاشتراك
+                            {% else %}
+                            Sort by Subscription Period
+                            {% endif %}</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-chevron-down text-pink-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:w-1/5">
+                <div class="relative">
+                    <select id="filter-classification" class="w-full p-2 border border-pink-200 rounded-md appearance-none pr-8 focus:border-pink-400 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300">
+                        <option value="all">{% if LANGUAGE_CODE == 'ar' %}
+                            جميع التصنيفات
+                            {% else %}
+                            All Categories
+                            {% endif %}</option>
+                        {% regroup services by classification.all as grouped_services %}
+                        {% for classification_group in grouped_services %}
+                        {% for classification in classification_group.list.0.classification.all %}
+                        <option value="{{ classification.id }}">{{ classification.title }}</option>
+                        {% endfor %}
+                        {% endfor %}
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-filter text-pink-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:w-1/5">
+                <div class="relative">
+                    <select id="filter-pricing-period" class="w-full p-2 border border-pink-200 rounded-md appearance-none pr-8 focus:border-pink-400 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300">
+                        <option value="all">{% if LANGUAGE_CODE == 'ar' %}
+                            جميع فترات الاشتراك
+                            {% else %}
+                            All Subscription Periods
+                            {% endif %}</option>
+                        {% for period_value, period_label in PRICING_PERIOD_CHOICES %}
+                        <option value="{{ period_value }}">{{ period_label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-calendar text-pink-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:w-1/5">
+                <div class="relative">
+                    <select id="filter-price" class="w-full p-2 border border-pink-200 rounded-md appearance-none pr-8 focus:border-pink-400 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300">
+                        <option value="all">{% if LANGUAGE_CODE == 'ar' %}
+                            جميع الأسعار (شهري)
+                            {% else %}
+                            All Prices (Monthly)
+                            {% endif %}</option>
+                        <option value="under-50">{% if LANGUAGE_CODE == 'ar' %}
+                            أقل من 50 ريال شهرياً
+                            {% else %}
+                            Under 50 SAR/month
+                            {% endif %}</option>
+                        <option value="50-100">{% if LANGUAGE_CODE == 'ar' %}
+                            50 - 100 ريال شهرياً
+                            {% else %}
+                            50 - 100 SAR/month
+                            {% endif %}</option>
+                        <option value="over-100">{% if LANGUAGE_CODE == 'ar' %}
+                            أكثر من 100 ريال شهرياً
+                            {% else %}
+                            Over 100 SAR/month
+                            {% endif %}</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                        <i class="fas fa-tags text-pink-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:w-1/5">
+                <input
+                        type="text"
+                        id="search-services"
+                        placeholder="{% if LANGUAGE_CODE == 'ar' %}ابحث عن خدمة...{% else %}Search for a service...{% endif %}"
+                        class="w-full p-2 border border-pink-200 rounded-md focus:border-pink-400 focus:ring focus:ring-pink-200 focus:ring-opacity-50 transition-all duration-300"
+                >
+            </div>
+        </div>
+
+        <!-- Services Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-24" id="services-container">
+            {% for service in services %}
+            <div class="mb-8 bg-white rounded-lg shadow-lg overflow-hidden service-card transform transition-all duration-300 hover:translate-y-[-5px] hover:shadow-xl"
+                 data-total-price="{{ service.discounted_price|default:service.price }}"
+                 data-monthly-price="{{ service.monthly_price }}"
+                 data-pricing-period="{{ service.pricing_period_months }}"
+                 data-classifications="{% for classification in service.classification.all %}{{ classification.id }}{% if not forloop.last %},{% endif %}{% endfor %}"
+                 data-title="{{ service.title|lower }}"
+                 data-description="{{ service.desc|default:''|lower }}">
+                <div class="p-4 text-center">
+                    {% if service.image %}
+                    <div class="mb-3 service-image-container">
+                        <img src="{{ service.image.url }}" alt="{{ service.title }}">
+                    </div>
+                    {% endif %}
+                    <h3 class="text-pink-600 text-xl font-bold mb-2 service-title">{{ service.title }}</h3>
+
+
+                    <!-- Subscription Period Badge -->
+                    <div class="mb-3">
+                        <span class="inline-block bg-blue-100 text-blue-800 text-sm px-3 py-1 rounded-full font-medium">
+                            {% if LANGUAGE_CODE == 'ar' %}
+                                فترة الاشتراك: {{ service.pricing_period_months }}
+                                {% if service.pricing_period_months == 1 %}شهر{% else %}أشهر{% endif %}
+                            {% else %}
+                                {% for period_value, period_label in PRICING_PERIOD_CHOICES %}
+                                    {% if period_value == service.pricing_period_months %}{{ period_label }}{% endif %}
+                                {% endfor %}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    {% if service.duration %}
+                    <div class="flex justify-center items-center gap-2 mb-2">
+                        <i class="far fa-clock text-pink-400"></i>
+                        <span>
+              {% if service.duration >= 60 %}
+                                    {% with hours=service.duration|divisibleby:1|div:60 minutes=service.duration|modulo:60 %}
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    {% if hours > 0 %}{{ hours }} ساعة {% endif %}{% if minutes > 0 %}{{ minutes }} دقيقة{% endif %}
+                                    {% else %}
+                                    {% if hours > 0 %}{{ hours }}h {% endif %}{% if minutes > 0 %}{{ minutes }}m{% endif %}
+                                    {% endif %}
+                                    {% endwith %}
+                                    {% else %}
+                                    {% if LANGUAGE_CODE == 'ar' %}
+                                    {{ service.duration }} دقيقة
+                                    {% else %}
+                                    {{ service.duration }}m
+                                    {% endif %}
+                                    {% endif %}
+            </span>
+                    </div>
+                    {% endif %}
+
+                    <!-- Enhanced Pricing Display -->
+                    <div class="bg-gray-50 p-4 rounded-lg mb-2">
+                        <div class="flex justify-center items-center gap-2 mb-2">
+                            <i class="fas fa-coins text-yellow-500"></i>
+                            <span class="text-gray-600 text-sm">
+                                {% if LANGUAGE_CODE == 'ar' %}السعر الإجمالي{% else %}Total Price{% endif %}
+                            </span>
+                        </div>
+                        <div class="text-center">
+                            {% if service.discounted_price %}
+                            <span class="line-through text-gray-500 text-sm">{{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</span>
+                            <div class="text-pink-600 font-bold text-xl">{{ service.discounted_price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</div>
+                            {% else %}
+                            <div class="text-pink-600 font-bold text-xl">{{ service.price }} {% if LANGUAGE_CODE == 'ar' %}ر.س{% else %}SAR{% endif %}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 transition-all duration-300 text-white w-full py-3 text-center">
+                    <a href="{% url 'viewServicesSpecific' service.id %}" class="block w-full h-full text-white font-medium">{% if LANGUAGE_CODE == 'ar' %}
+                        عرض التفاصيل
+                        {% else %}
+                        View Details
+                        {% endif %}</a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center p-8 bg-white rounded-lg shadow-lg">
+                <p class="text-gray-500">{% if LANGUAGE_CODE == 'ar' %}
+                    لا توجد خدمات متاحة حالياً
+                    {% else %}
+                    No services available currently
+                    {% endif %}</p>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- No Results Message -->
+        <div id="no-results-message" class="col-span-full text-center p-8 bg-white rounded-lg shadow-lg" style="display: none;">
+            <p class="text-gray-500">
+                {% if LANGUAGE_CODE == 'ar' %}
+                لا توجد خدمات تطابق معايير البحث
+                {% else %}
+                No services match your search criteria
+                {% endif %}
+            </p>
+        </div>
+    </section>
+</div>
+
+<style>
+    .swiper-button-next,
+    .swiper-button-prev {
+      background-color: #ffffff;
+      border-radius: 50%;
+      border: 1px solid #fbcfe8;
+      color: #ec4899;
+      font-size: 8px;
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.15);
+      transition: all 0.3s ease;
+      padding: 12px;
+      width: 15px;
+      height: 15px;
+    }
+
+    .swiper-button-next:hover,
+    .swiper-button-prev:hover {
+      background-color: #fdf2f8;
+      color: #db2777;
+      box-shadow: 0 4px 12px rgba(236, 72, 153, 0.25);
+      transform: scale(1.1);
+    }
+
+    .swiper-button-next:after,
+    .swiper-button-prev:after {
+      font-size: 8px;
+    }
+
+    .service-image-container {
+      height: 250px;
+      overflow: hidden;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px rgba(236, 72, 153, 0.1);
+    }
+
+    .service-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .service-image-container img:hover {
+      transform: scale(1.08);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; transform: scale(1.1); }
+    }
+
+    .animate-pulse {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    /* Custom scrollbar for the page */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #fdf2f8;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #f472b6;
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ec4899;
+    }
+
+    .service-card {
+        display: flex;
+        flex-direction: column;
+        height: 93%; /* Make cards fill their container height */
+    }
+
+    .service-card > div:first-child {
+        flex: 1; /* This makes the content area grow to fill available space */
+        display: flex;
+        flex-direction: column;
+    }
+
+    .service-image-container {
+        height: 180px; /* Fixed height for images */
+        overflow: hidden;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(236, 72, 153, 0.1);
+    }
+
+    .service-image-container img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+<script>
+    // Initialize Swiper for each service
+    document.querySelectorAll('.service-swiper').forEach(swiperContainer => {
+      new Swiper(swiperContainer, {
+        pagination: {
+          el: swiperContainer.querySelector('.swiper-pagination'),
+          clickable: true,
+        },
+        navigation: {
+          nextEl: swiperContainer.querySelector('.swiper-button-next'),
+          prevEl: swiperContainer.querySelector('.swiper-button-prev'),
+        },
+      });
+    });
+
+    // Search functionality
+    document.getElementById('search-services').addEventListener('input', function() {
+      filterServices();
+    });
+
+    // Sort functionality
+    document.getElementById('sort-services').addEventListener('change', function() {
+      sortServices();
+    });
+
+    // Classification filter
+    document.getElementById('filter-classification').addEventListener('change', function() {
+      filterServices();
+    });
+
+    // Pricing period filter
+    document.getElementById('filter-pricing-period').addEventListener('change', function() {
+      filterServices();
+    });
+
+    // Price filter (now based on monthly price)
+    document.getElementById('filter-price').addEventListener('change', function() {
+      filterServices();
+    });
+
+    function updateServicesCount() {
+      const visibleCards = document.querySelectorAll('.service-card[style=""], .service-card:not([style*="display: none"])');
+      document.getElementById('services-count').textContent = visibleCards.length;
+    }
+
+    function filterServices() {
+      const searchTerm = document.getElementById('search-services').value.toLowerCase().trim();
+      const selectedClassification = document.getElementById('filter-classification').value;
+      const selectedPricingPeriod = document.getElementById('filter-pricing-period').value;
+      const priceRange = document.getElementById('filter-price').value;
+      const serviceCards = document.querySelectorAll('.service-card');
+      let visibleCount = 0;
+
+      serviceCards.forEach(card => {
+        // Get search data
+        const title = card.dataset.title || '';
+        const description = card.dataset.description || '';
+
+        // Get filter data
+        const cardMonthlyPrice = parseFloat(card.dataset.monthlyPrice) || 0;
+        const cardPricingPeriod = card.dataset.pricingPeriod;
+        const cardClassifications = card.dataset.classifications ?
+          card.dataset.classifications.split(',').filter(id => id.trim() !== '') : [];
+
+        // Apply filters
+        let showBySearch = true;
+        if (searchTerm) {
+          showBySearch = title.includes(searchTerm) || description.includes(searchTerm);
+        }
+
+        let showByClassification = selectedClassification === 'all' ||
+          cardClassifications.includes(selectedClassification);
+
+        let showByPricingPeriod = selectedPricingPeriod === 'all' ||
+          cardPricingPeriod === selectedPricingPeriod;
+
+        let showByPrice = true;
+        if (priceRange === 'under-50') {
+          showByPrice = cardMonthlyPrice < 50;
+        } else if (priceRange === '50-100') {
+          showByPrice = cardMonthlyPrice >= 50 && cardMonthlyPrice <= 100;
+        } else if (priceRange === 'over-100') {
+          showByPrice = cardMonthlyPrice > 100;
+        }
+
+        // Show/hide card
+        if (showBySearch && showByClassification && showByPricingPeriod && showByPrice) {
+          card.style.display = '';
+          visibleCount++;
+        } else {
+          card.style.display = 'none';
+        }
+      });
+
+      // Show/hide no results message
+      const noResultsMessage = document.getElementById('no-results-message');
+      if (visibleCount === 0) {
+        noResultsMessage.style.display = 'block';
+      } else {
+        noResultsMessage.style.display = 'none';
+      }
+
+      // Update services count
+      updateServicesCount();
+    }
+
+    function sortServices() {
+      const sortBy = document.getElementById('sort-services').value;
+      const container = document.getElementById('services-container');
+      const serviceCards = Array.from(document.querySelectorAll('.service-card'));
+
+      serviceCards.sort((a, b) => {
+        if (sortBy === 'name') {
+          const nameA = (a.dataset.title || '').toLowerCase();
+          const nameB = (b.dataset.title || '').toLowerCase();
+          return nameA.localeCompare(nameB);
+        } else if (sortBy === 'monthly-price') {
+          const priceA = parseFloat(a.dataset.monthlyPrice) || 0;
+          const priceB = parseFloat(b.dataset.monthlyPrice) || 0;
+          return priceA - priceB;
+        } else if (sortBy === 'total-price') {
+          const priceA = parseFloat(a.dataset.totalPrice) || 0;
+          const priceB = parseFloat(b.dataset.totalPrice) || 0;
+          return priceA - priceB;
+        } else if (sortBy === 'period') {
+          const periodA = parseInt(a.dataset.pricingPeriod) || 0;
+          const periodB = parseInt(b.dataset.pricingPeriod) || 0;
+          return periodA - periodB;
+        }
+        return 0;
+      });
+
+      // Remove all current cards
+      serviceCards.forEach(card => card.remove());
+
+      // Add sorted cards back
+      serviceCards.forEach(card => container.appendChild(card));
+    }
+
+    // Initialize count on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      updateServicesCount();
+    });
+</script>
+
+{% endblock %}

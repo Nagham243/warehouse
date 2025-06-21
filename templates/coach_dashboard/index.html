@@ -1,0 +1,11 @@
+{% extends "base_coach_dashboard.html" %}
+{% block content %}
+
+<div class="{% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %} bg-gradient-to-br from-pink-50 to-amber-50 w-full px-4 md:px-8 min-h-screen pb-12">
+  <h1 class="text-4xl font-bold text-pink-800 py-4 px-4 md:px-8">
+    {% if LANGUAGE_CODE == 'ar' %}التاجر {{ coachName }}{% else %}Employee {{ coachName }}{% endif %}
+  </h1>
+
+
+</div>
+{% endblock %}

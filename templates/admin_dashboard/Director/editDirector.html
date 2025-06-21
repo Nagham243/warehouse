@@ -1,0 +1,167 @@
+{% extends "base_admin_dashboard.html" %} {% load static %} {% block content %}
+
+<section class="bg-indigo-50 w-full min-h-screen p-4 md:p-8">
+  <div class="max-w-6xl mx-auto md:pr-[20%]">
+    <h1 class="text-3xl font-bold mb-8 text-gray-800 pt-12">تعديل المدير</h1>
+    <div
+      class="p-6 md:p-8"
+      x-data="{ showNotification: false }"
+    >
+      <form method="post"
+        @submit.prevent="showNotification = true; setTimeout(() => showNotification = false, 3000)"
+        class="space-y-6"
+      >
+      {% csrf_token %}
+
+
+      
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <div>
+            <label
+              for="full_name"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >اسم المستخدم</label
+            >
+            <input
+              type="text"
+              name="username"
+              id="full_name"
+              value="{{username}}"
+              required
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            />
+          </div>
+
+
+          <div>
+            <label
+              for="full_name"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >البريدالالكتروني</label
+            >
+            <input
+              type="text"
+              name="email"
+              id="full_name"
+              required
+              value="{{email}}"
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            />
+          </div>
+
+
+          <div>
+            <label
+              for="full_name"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >الاسم الكامل</label
+            >
+            <input
+              type="text"
+              name="full_name"
+              id="full_name"
+              value="{{full_name}}"
+              required
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            />
+          </div>
+          <div>
+            <label
+              for="phone"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >رقم الهاتف</label
+            >
+            <input
+              type="tel"
+              name="phone"
+              id="phone"
+              value="{{phone}}"
+              required
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            />
+          </div>
+          <div>
+            <label
+              for="club"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >النادي</label
+            >
+            <select
+              name="club"
+              id="club"
+              required
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            >
+              {% for cl in clubs %}
+              <option value="{{cl.id}}" {% if club.id == cl.id %}selected{% endif %}>
+                {{cl.name}}
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+
+          <div>
+            <label
+              for="full_name"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >كلمة المرور</label
+            >
+            <input
+              type="password"
+              name="password"
+              id="full_name"
+              required
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            />
+          </div>
+          {% comment %} <div>
+            <label
+              for="creation_date"
+              class="block text-sm font-medium text-gray-700 mb-1"
+              >تاريخ التعيين</label
+            >
+            <input
+              type="date"
+              name="creation_date"
+              id="creation_date"
+              value="2023-01-01"
+              required
+              class="w-full px-4 py-2 rounded-md border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 focus:ring-opacity-50 transition duration-150 ease-in-out bg-gray-50"
+            />
+          </div> {% endcomment %}
+        </div>
+        <div class="flex justify-end space-x-4 rtl:space-x-reverse">
+          <button
+            type="button"
+            class="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition duration-150 ease-in-out"
+          >
+            إلغاء
+          </button>
+          <button
+            type="submit"
+            class="px-6 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-150 ease-in-out"
+          >
+            حفظ التغييرات
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div
+    x-show="showNotification"
+    x-transition:enter="transition ease-out duration-300"
+    x-transition:enter-start="opacity-0 transform scale-90"
+    x-transition:enter-end="opacity-100 transform scale-100"
+    x-transition:leave="transition ease-in duration-300"
+    x-transition:leave-start="opacity-100 transform scale-100"
+    x-transition:leave-end="opacity-0 transform scale-90"
+    class="fixed bottom-4 right-4 bg-green-500 text-white p-4 rounded-md shadow-lg"
+  >
+    تم تحديث بيانات المدير بنجاح!
+  </div>
+</section>
+
+{% endblock content %}

@@ -1,0 +1,7 @@
+html[dir="rtl"] {
+    text-align: right;
+}
+
+html[dir="rtl"] .navbar-nav {
+    flex-direction: row-reverse;
+}

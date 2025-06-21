@@ -1,0 +1,249 @@
+{% extends 'base_coach_dashboard.html' %}
+{% load static %}
+{% block content %}
+<div class="bg-gradient-to-br from-rose-50 to-amber-50 min-h-screen flex items-center">
+    <div class="container mx-auto py-12 px-4 sm:px-6 lg:px-8 {% if LANGUAGE_CODE == 'ar' %}xl:pr-[20%]{% else %}xl:pl-[20%]{% endif %}">
+        <div class="bg-white shadow-xl rounded-lg overflow-hidden backdrop-filter backdrop-blur-sm bg-opacity-90">
+            <!-- Header Section with Profile Image and Basic Info -->
+            <div class="px-4 py-5 sm:px-6">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <img
+                                class="h-32 w-32 rounded-full border-4 border-rose-100 shadow-md transition-transform duration-300 hover:scale-105"
+                                src="data:image/jpeg;base64,{{ coach.profile_image_base64|default:'https://via.placeholder.com/128' }}"
+                                alt="{% if LANGUAGE_CODE == 'ar' %}صورة الملف الشخصي للتاجر{% else %}Coach Profile Picture{% endif %}"
+                        />
+                    </div>
+                    <div class="{% if LANGUAGE_CODE == 'ar' %}mr-6{% else %}ml-6{% endif %}">
+                        <h1 class="text-3xl font-bold text-rose-900">{{coach.full_name}}</h1>
+                        <p class="text-xl text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}تاجر في منصة {{coach.club.name}}{% else %}Coach at {{coach.club.name}} Club{% endif %}
+                        </p>
+                        <p class="text-lg text-amber-600 font-medium">
+                            {{coach.business_name}}
+                        </p>
+                        <!-- Approval Status Badge -->
+                        <div class="mt-2">
+                            {% if coach.approval_status == 'approved' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                                    {% if LANGUAGE_CODE == 'ar' %}مقبول{% else %}Approved{% endif %}
+                                </span>
+                            {% elif coach.approval_status == 'pending' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                                    {% if LANGUAGE_CODE == 'ar' %}قيد الانتظار{% else %}Pending{% endif %}
+                                </span>
+                            {% elif coach.approval_status == 'rejected' %}
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                    {% if LANGUAGE_CODE == 'ar' %}مرفوض{% else %}Rejected{% endif %}
+                                </span>
+                            {% endif %}
+                        </div>
+                        <!-- Vendor Classification -->
+                        <div class="mt-1">
+                            <span class="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
+                                {% if LANGUAGE_CODE == 'ar' %}تصنيف: {{coach.vendor_classification|title}}{% else %}Classification: {{coach.vendor_classification|title}}{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            {% if coach.description %}
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-rose-800">
+                    {% if LANGUAGE_CODE == 'ar' %}وصف الخدمة{% else %}Service Description{% endif %}
+                </h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-700">
+                    {{coach.description}}
+                </p>
+            </div>
+            {% endif %}
+
+            <!-- Details Section -->
+            <div class="border-t border-rose-100">
+                <dl>
+                    <!-- Contact Information -->
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}البريد الإلكتروني{% else %}Email{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.email}}
+                        </dd>
+                    </div>
+
+                    <div class="bg-rose-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}رقم الهاتف{% else %}Phone Number{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.phone}}
+                        </dd>
+                    </div>
+
+                    <!-- Activity Type -->
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}نوع النشاط{% else %}Activity Type{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% for key, value in activity_types.items %}
+                            {% if key == coach.activity_type %}
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            {{value}}
+                            {% else %}
+                            {{key|title}}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </dd>
+                    </div>
+
+                    <!-- Location Information -->
+                    <div class="bg-rose-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}المدينة{% else %}City{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.city}}
+                        </dd>
+                    </div>
+
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}الحي{% else %}District{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.district}}
+                        </dd>
+                    </div>
+
+                    <div class="bg-rose-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}الشارع{% else %}Street{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.street}}
+                        </dd>
+                    </div>
+
+                    <!-- Business Document Type -->
+                    {% if coach.business_document_type %}
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}نوع وثيقة النشاط التجاري{% else %}Business Document Type{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {% for key, value in business_document_types.items %}
+                            {% if key == coach.business_document_type %}
+                            {% if LANGUAGE_CODE == 'ar' %}
+                            {{value}}
+                            {% else %}
+                            {% if key == 'freelance' %}Freelance Document
+                            {% elif key == 'commercial_register' %}Commercial Register
+                            {% else %}{{key|title}}{% endif %}
+                            {% endif %}
+                            {% endif %}
+                            {% endfor %}
+                        </dd>
+                    </div>
+                    {% endif %}
+
+                    <!-- Timestamps -->
+                    <div class="bg-rose-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}تاريخ التسجيل{% else %}Registration Date{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.created_at|date:"F d, Y"}}
+                        </dd>
+                    </div>
+
+                    {% if coach.approved_at %}
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}تاريخ الموافقة{% else %}Approval Date{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.approved_at|date:"F d, Y"}}
+                        </dd>
+                    </div>
+                    {% endif %}
+
+                    {% if coach.approved_by %}
+                    <div class="bg-rose-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}تمت الموافقة بواسطة{% else %}Approved By{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.approved_by.username}}
+                        </dd>
+                    </div>
+                    {% endif %}
+
+                    {% if coach.approval_notes %}
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-rose-600">
+                            {% if LANGUAGE_CODE == 'ar' %}ملاحظات المدير{% else %}Admin Notes{% endif %}
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            {{coach.approval_notes}}
+                        </dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="px-6 py-4 bg-gradient-to-r from-rose-50 to-amber-50 sm:px-10 flex justify-end space-x-3">
+                <a
+                        href="{% url 'editCoachProfile' %}"
+                        class="ml-2 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-rose-500 hover:bg-rose-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition duration-300 ease-in-out transform hover:-translate-y-1"
+                >
+                    {% if LANGUAGE_CODE == 'ar' %}تعديل الحساب{% else %}Edit Profile{% endif %}
+                </a>
+
+                {% if coach.business_document_file %}
+                <button
+                        onclick="viewDocument()"
+                        class="inline-flex justify-center py-2 px-4 border border-rose-300 shadow-sm text-sm font-medium rounded-md text-rose-700 bg-white hover:bg-rose-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-rose-500 transition duration-300"
+                >
+                    {% if LANGUAGE_CODE == 'ar' %}عرض الوثيقة{% else %}View Document{% endif %}
+                </button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if coach.business_document_file %}
+<script>
+    function viewDocument() {
+        // Construct the full data URL
+        const documentData = "data:application/pdf;base64,{{coach.business_document_file|escapejs}}";
+
+        try {
+            // Try opening in a new tab first
+            const newWindow = window.open(documentData, '_blank');
+
+            // Fallback if popup is blocked
+            if (!newWindow || newWindow.closed || typeof newWindow.closed == 'undefined') {
+                // Create a temporary link and click it
+                const link = document.createElement('a');
+                link.href = documentData;
+                link.target = '_blank';
+                link.download = 'business_document.pdf';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        } catch (error) {
+            console.error('Error opening document:', error);
+            alert('Unable to open document. Please try downloading it instead.');
+        }
+    }
+</script>
+{% endif %}
+
+{% endblock %}
