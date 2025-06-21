@@ -1,0 +1,13 @@
+html {
+  scroll-behavior: smooth;
+}
+.box {
+  opacity: 0;
+  transform: translate(0, 40px);
+  transition: opacity 0.5s, transform 0.5s;
+}
+
+.box.show {
+  opacity: 1;
+  transform: translate(0, 0);
+}
